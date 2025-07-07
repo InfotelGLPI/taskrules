@@ -1,0 +1,81 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR Infotel
+# This file is distributed under the same license as the GLPI - Mdm2glpi package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: GLPI - Mdm2glpi 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-02 13:57+0200\n"
+"PO-Revision-Date: 2025-07-02 14:06+0200\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fr_FR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+
+#: ../setup.php:118
+msgid "Installed / not configured"
+msgstr "Installé / non configuré"
+
+#: ../inc/condition.class.php:102
+msgid "table"
+msgstr "table"
+
+#: ../inc/condition.class.php:149
+msgid "AND"
+msgstr "ET"
+
+#: ../inc/condition.class.php:150
+msgid "OR"
+msgstr "OU"
+
+#: ../inc/condition.class.php:151
+msgid "NOT"
+msgstr "PAS"
+
+#: ../inc/condition.class.php:157
+msgid "Condition(s)"
+msgstr "Condition(s)"
+
+#: ../inc/condition.class.php:159
+msgid "Active : "
+msgstr "Actif : "
+
+#: ../inc/condition.class.php:169
+msgid "Object"
+msgstr "Objet"
+
+#: ../inc/condition.class.php:178
+msgid "of the type"
+msgstr "de type"
+
+#: ../inc/condition.class.php:205
+msgid "of status"
+msgstr "de statut"
+
+#: ../inc/condition.class.php:216
+msgid "Trigger"
+msgstr "Déclencheur"
+
+#: ../inc/condition.class.php:219
+msgid "Activate when a task is added to the ticket"
+msgstr "Déclencher à l'ajout de la tâche dans le ticket"
+
+#: ../inc/condition.class.php:221
+msgid "Trigger upon updating the task status from \"to do\" to \"done\""
+msgstr ""
+"Déclencher à la mise à jour du statut de la tâche de \"à faire\" vers "
+"\"fait\""
+
+#: ../inc/condition.class.php:227
+msgid "Action(s)"
+msgstr "Action(s)"
+
+#: ../inc/condition.class.php:274 ../inc/condition.class.php:310
+msgid "----------"
+msgstr "----------"
