@@ -50,6 +50,19 @@ function plugin_init_taskrules()
 
     $PLUGIN_HOOKS['csrf_compliant']['taskrules'] = true;
 
+    $plugin = new Plugin();
+    if (
+        $plugin->isInstalled('taskrules')
+        && $plugin->isActivated('taskrules')
+    ) 
+    {
+
+    // if (Plugin::isPluginActive('followingprocess')) {
+    //     if (Session::getLoginUserID()) {
+            Plugin::registerClass("PluginTaskruleProfile", ['addtabon' => "Profile"]);
+    //     }
+    // }
+
     $PLUGIN_HOOKS['add_css']['taskrules'][] = "css/accordion.css";
 
     if (array_key_exists('REQUEST_URI', $_SERVER) && strpos($_SERVER['REQUEST_URI'], "tasktemplate.form.php") !== false && isset($_GET['id'])) {
@@ -63,10 +76,8 @@ function plugin_init_taskrules()
 
     /* Add a new tab on the Task template page */
     Plugin::registerClass('PluginTaskrulesCondition', ['addtabon' => ['TaskTemplate']]);
-      
-
+    }
 }
-
 
 /**
  * Get the name and the version of the plugin

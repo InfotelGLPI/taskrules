@@ -32,7 +32,6 @@ if (!defined('GLPI_ROOT')) {
 }
 
 $GLPI_TYPES = [];
-$OPERATORS = [];
 
 /**
  * Class PluginTaskrulesCondition
@@ -54,7 +53,7 @@ static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtem
         return;
 
     $ID = $item->getID();
-    echo "ID=$ID";
+    //echo "ID=$ID";
 
     $prof = new self();
     $prof->showForm($ID);
@@ -63,8 +62,9 @@ static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtem
 }
 
 public function showForm($ID, array $options = [])
-    {
+{
         Global $DB;
+        Global $OPERATORS;
 
         $this->getFromDB($ID);
 
@@ -72,9 +72,7 @@ public function showForm($ID, array $options = [])
         $options['colspan'] = 1;
         
         echo "<div class='center'>";
-        //echo "<form name='form' method='post' action='" . $this->getFormURL() . "'>";
-        //echo "<form name='form' method='post' action='" . self::getFormURL() . "'>";
-        echo "<form name='form' method='post' action='" . Toolbox::getItemTypeFormURL($this->getType()) . "'>";
+        echo "<form name='form' method='post' action='" . $this->getFormURL() . "'>";
 
         echo Html::hidden('id', ['value' => $ID]);
 
@@ -94,7 +92,7 @@ public function showForm($ID, array $options = [])
         /* Draw a row with all the dropdowns */
         $this::ShowCriteriaRow(1);
 
-        echo "<a id='more-criteria' role='button' style='display: none;'>not shown</a>";
+        echo "<a id='more-criteria' class='hespace' role='button' style='display: block;'></a>";
 
         echo '<button id="addsearchcriteria" class="btn btn-sm btn-outline-secondary me-1" type="button">
         <i class="ti ti-square-plus"></i>
@@ -120,6 +118,20 @@ public function showForm($ID, array $options = [])
         <span class="d-none d-sm-block">groupe</span>
         </button>';
 
+        echo "<script>
+        var id = '1';
+        $('#addcriteriagroup').on('click', function(event) {
+            event.preventDefault();
+            $.post('".plugin::getWebDir('taskrules')."/ajax/addgroupcriteria.php', {
+                id: id
+            })
+            .done(function(data) {
+                $(data).insertBefore('#more-criteria');
+                id++;
+            });
+        });
+        </script>";
+
         echo "<br><br>";
 
         /* ----------------- */
@@ -127,9 +139,9 @@ public function showForm($ID, array $options = [])
         /* ----------------- */
         echo '<button class="accordiontskrul">' . __("Trigger", "taskrules") . '</button>';
         echo '<div class="panel" style="display: block;"><p>';
-        echo '<input type="radio" class="-check-input" id="trigger" name="trigger"/>';
+        echo '<input type="radio" class="-check-input" id="trigger" name="trigger" value="1"/>';
         echo '&nbsp;' . __("Activate when a task is added to the ticket", "taskrules") . '<br><br>';
-        echo '<input type="radio" class="-check-input" id="trigger" name="trigger"/>';
+        echo '<input type="radio" class="-check-input" id="trigger" name="trigger"  value="2"/>';
         echo '&nbsp;' . __('Trigger upon updating the task status from "to do" to "done"', "taskrules") . '';
         echo '</p></div>';
 
@@ -137,219 +149,311 @@ public function showForm($ID, array $options = [])
         /* "Action(s)" section */
         /* ------------------- */
         echo '<button class="accordiontskrul">' . __("Action(s)", "taskrules") . '</button>';
-        echo '<div class="panel" style="display: block;">';
-        echo '<p>
-            <label for="statut">Statut :</label>
-            <select id="statut" name="statut">
+?>
+
+<!-- Critère 1 -->
+<select name="criteria[0][operator]"><option value="test">test</option></select>
+<select name="criteria[0][field]"><option value="test">test</option></select>
+<select name="criteria[0][type]"><option value="test">test</option></select>
+<select name="criteria[0][status]"><option value="test">test</option></select>
+
+<!-- Critère 2 -->
+<select name="criteria[1][operator]"><option value="test">test</option></select>
+<select name="criteria[1][field]"><option value="test">test</option></select>
+<select name="criteria[1][type]"><option value="test">test</option></select>
+<select name="criteria[1][status]"><option value="test">test</option></select>
+
+<!-- Groupe (sous-critères) -->
+<select name="criteria[2][operator]"><option value="test">test</option></select>
+<!-- Sous-critère 1 -->
+<select name="criteria[2][group][0][operator]"><option value="test">test</option></select>
+<select name="criteria[2][group][0][field]"><option value="test">test</option></select>
+<select name="criteria[2][group][0][type]"><option value="test">test</option></select>
+<select name="criteria[2][group][0][status]"><option value="test">test</option></select>
+<!-- Sous-critère 2 -->
+<select name="criteria[2][group][1][operator]"><option value="test">test</option></select>
+<select name="criteria[2][group][1][field]"><option value="test">test</option></select>
+<select name="criteria[2][group][1][type]"><option value="test">test</option></select>
+<select name="criteria[2][group][1][status]"><option value="test">test</option></select>
+
+
+<!--<div class="list-group list-group-flush list-group-hoverable criteria-list pt-2" id="criteriatablecomputer">
+  <div class="list-group-item p-2 border-0 normalcriteria" id="row1">
+    <div class="row g-1">
+      <div class="col-auto"></div>
+      <div class="col-auto d-flex align-items-center">Statut</div>
+      <div class="col-auto d-flex align-items-center"><select id="statut" name="statut">
                 <option value="preparation">En préparation</option>
                 <option value="autre">Autre</option>
-            </select>
-
-    <div class="form-row">
-        <div class="form-group">
-            <label for="lieu">Lieu :</label>
-            <select id="lieu" name="lieu">
+            </select></div>
+      <div class="col-auto d-flex align-items-center"></div>
+    </div>
+    <div class="row g-1">
+      <div class="col-auto"></div>
+      <div class="col-auto d-flex align-items-center">Lieu</div>
+      <div class="col-auto d-flex align-items-center"><select id="lieu" name="lieu">
                 <option value="petit_stock">Petit stock</option>
                 <option value="autre">Autre</option>
-            </select>
-        </div>
-        <div class="form-group">
+            </select></div>
+      <div class="col-auto d-flex align-items-center">
             <input type="checkbox" id="vider_lieu" name="vider_lieu">
-            <label for="vider_lieu">Vider le champ Lieu</label>
-        </div>
+            <label for="vider_lieu">Vider le champ Lieu</label>        
+      </div>
     </div>
-
-    <div class="form-row">
-        <div class="form-group">
-            <label for="usager">Usager :</label>
-            <select id="usager" name="usager">
+    <div class="row g-1">
+      <div class="col-auto"></div>
+      <div class="col-auto d-flex align-items-center">Usager :</div>
+      <div class="col-auto d-flex align-items-center"><select id="usager" name="usager">
                 <option value="usager_du_materiel">Usager du matériel</option>
                 <option value="autre">Autre</option>
-            </select>
-        </div>
-        <div class="form-group">
+            </select></div>
+      <div class="col-auto d-flex align-items-center">
             <input type="checkbox" id="vider_usager" name="vider_usager">
-            <label for="vider_usager">Vider le champ Usager</label>
-        </div>
+            <label for="vider_usager">Vider le champ Usager</label>       
+      </div>
     </div>
-
-    <div class="form-row">
-        <div class="form-group">
-            <label for="utilisateur">Utilisateur :</label>
-            <select id="utilisateur" name="utilisateur">
+    <div class="row g-1">
+      <div class="col-auto"></div>
+      <div class="col-auto d-flex align-items-center">Utilisateur :</div>
+      <div class="col-auto d-flex align-items-center"><select id="utilisateur" name="utilisateur">
                 <option value="demandeur">Demandeur</option>
                 <option value="autre">Autre</option>
-            </select>
-        </div>
-        <div class="form-group">
+            </select></div>
+      <div class="col-auto d-flex align-items-center">
             <input type="checkbox" id="vider_utilisateur" name="vider_utilisateur">
-            <label for="vider_utilisateur">Vider le champ Utilisateur</label>
-        </div>
+            <label for="vider_utilisateur">Vider le champ Utilisateur</label>       
+      </div>
     </div>
-
-    <div class="form-row">
-        <div class="form-group">
-            <label for="groupe">Groupe :</label>
-            <select id="groupe" name="groupe">
+    <div class="row g-1">
+      <div class="col-auto"></div>
+      <div class="col-auto d-flex align-items-center">Groupe :</div>
+      <div class="col-auto d-flex align-items-center"><select id="groupe" name="groupe">
                 <option value="groupe_du_demandeur">Groupe du demandeur</option>
                 <option value="autre">Autre</option>
-            </select>
-        </div>
-        <div class="form-group">
-            <input type="checkbox" id="vider_groupe" name="vider_groupe">
-            <label for="vider_groupe">Vider le champ Groupe</label>
-        </div>
-    </div>        
-        
+            </select></div>
+      <div class="col-auto d-flex align-items-center">
+      <input type="checkbox" id="vider_groupe" name="vider_groupe">
+            <label for="vider_groupe">Vider le champ Groupe</label>       
+      </div>
+    </div>
+  </div>
+</div> -->
+<?php
+
+        echo '<div class="panel" style="display: block;">';
+        echo '<p>
         </p>';
         echo '</div>';
     
         echo "</div>";
 
-       $options['candel'] = false;
+        $options['candel'] = false;  // Hide [Cancel] button
+        $options['no_save'] = false; // Display [Save] button
+        // $options['id'] =$ID;
         $this->showFormButtons($options);
-
-        echo "<input type='submit' name='submit' value='Sauvegarder'>";
 
         Html::closeForm();
 
         return true;
     }  
 
-public static function ShowCriteriaRow($id)
+public static function ShowCriteriaRow($cnt)
 {
-    static $isInitialized = false;
-
-    if (!$isInitialized) {
-        global $OPERATORS;
-        $OPERATORS = [
-            'None' => '-------',
-            'AND' => __("AND", "taskrules"),
-            'OR' => __("OR", "taskrules"),
-            'NOT' => __("NOT", "taskrules"),
-        ];
-        $isInitialized = true;
-    }
-
-    echo '
-          <div class="list-group-item p-2 border-0 normalcriteria" id="searchrowcomputer">
+    echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row'.$cnt.'" style="background-color: #e4e8ed;">
              <div class="row g-1">
                 <div class="col-auto">
-                   <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button" data-rowid="'.$id.'"
+                <!--<h5>'.$cnt.'</h5>-->
+                   <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button" data-rowid="row'.$cnt.'"
                    data-bs-toggle="tooltip" data-bs-placement="left"
-                   title=' . __s('Delete a rule') . '">
+                   title=' . __("Delete a rule", "taskrules") . '">
                       <i class="ti ti-square-minus" alt="-"></i>
                    </button>
-                </div>
-                <div class="col-auto">';
-            /* First dropdown : list of operators */
-            $value = "None";
-            $operator = "";
-            $cr = Dropdown::showFromArray('operator_'.$id, $OPERATORS, [
-                'value' => $operator
-            ]);
-    echo '</div>
-    <div class="col-auto d-flex align-items-center">';
+                </div>';
 
     echo Html::scriptBlock('$(document).on("click", ".remove-search-criteria", function() {
         // force removal of tooltip
         var tooltip = bootstrap.Tooltip.getInstance($(this)[0]);
         if (tooltip !== null) {
-           tooltip.dispose();
+            tooltip.dispose();
         }
         var rowID = $(this).data("rowid");
-        alert("rowID : " + rowID);
         $("#" + rowID).remove();
-     });
-                ');    
+        });
+    ');
 
-    echo "&nbsp;&nbsp;" . __("Object", "taskrules") . "&nbsp;&nbsp;";
-    echo '</div>
-    <div class="col-auto">';
-            /* Second dropdown : list of itemtypes */
-            $value = "None";
-            $itemtype = "";
-            $cr = Dropdown::showFromArray('operator_'.$id, self::getItemtypes(true), [
-                'value' => $itemtype,
-                'on_change' => "updateTypesDropdown$id(this.value)"
-            ]);
-    echo '</div>
-    <div class="col-auto d-flex align-items-center">';
-    echo "&nbsp;&nbsp;" . __("of the type", "taskrules") . "&nbsp;&nbsp;";
-    echo '</div>
-    <div class="col-auto">';
-            /* Third dropdown : list of types for the selected itemtype */
-            $value = "None";
-            $selectedItemtype = "";
-            $cr = Dropdown::showFromArray('type_'.$id, self::getObjectTypes($selectedItemtype), [
-                'value' => $itemtype
-            ]);
-                    /* Ajax code to update the second dropdown from the first dropdown selection */
-                    $selectId = "dropdown_type_$id$cr";
-                    echo Html::scriptBlock("
-                    function updateTypesDropdown$id(itemType) {
-                        //alert('Appel ajax pour '+itemType);
-                        $.ajax({
-                            url: '".plugin::getWebDir('taskrules')."/ajax/typesdropdown.php',
-                            type: 'GET',
-                            data: { item_Type: itemType },
-                            success: function(response) {
-                                $('#".$selectId."').html(response);
-                            },
-                            error: function (xhr, status, error) {
-                            console.log(xhr);
-                            console.log(status);
-                            console.log(error);
-                            }
-                        });
-                    }");
-    echo '</div>
-    <div class="col-auto d-flex align-items-center">';
-    echo "&nbsp;&nbsp;" . __("of status", "taskrules") . "&nbsp;&nbsp;";
-    echo '</div>
-    <div class="col-auto">';
-            /* Fourth dropdown : list of statuses for the selected object type */
-            $value = "None";
-            $cr = Dropdown::showFromArray('type_'.$id, self::getStatuses(), [
-                'value' => $itemtype
-            ]);
-
-    echo '</div>
-    </div>
- </div>
- <a class="normalcriteria fold-search list-group-item p-2 border-0 headerRow"></a>
-</div>';
-
+    $operator = "";
+    self::showOperatorsDropdown($cnt, $operator);
+    echo '<div class="col-auto d-flex align-items-center">';
+    echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
+    echo '</div>';
+    $itemtype = "";
+    self::showItemtypesDropdown($cnt, $itemtype);
+    echo '<div class="col-auto d-flex align-items-center">';
+    echo '  <span class="espace">' . __("of the type", "taskrules") . '</span>';
+    echo '</div>';
+    self::showObjectTypesDropdown($cnt, $itemtype);
+    echo '<div class="col-auto d-flex align-items-center">';
+    echo '  <span class="espace">' . __("of status", "taskrules") . '</span>';
+    echo '</div>';
+    self::showStatusesDropdown($cnt, $itemtype);
+    echo '</div>';
+    echo '</div>';
+    echo '</div>';
 }
 
-    public static function showSwitchField($name, $value)
-    {
-        echo Html::hidden($name, ['id' => $name,
-            'value' => $value]);
-        echo Html::scriptBlock("(function(){
-                             var toggleButton = $('.$name');
-                             toggleButton.click(function() {
-                             if ($(this).hasClass('fa-toggle-on')) {
-                                   toggleButton.removeClass('fa-toggle-on');
-                                   toggleButton.addClass('fa-toggle-off');
-                                   toggleButton.removeClass('enabled');
-                                   toggleButton.addClass('disabled');
-                                   document.getElementById('$name').value = '0';
-                                 } else {
-                                   toggleButton.removeClass('fa-toggle-off');
-                                   toggleButton.addClass('fa-toggle-on');
-                                   toggleButton.removeClass('disabled');
-                                   toggleButton.addClass('enabled');
-                                   document.getElementById('$name').value = '1';
-                                 }
-                             });
-                           })();");
-        if ($value == 1) {
-            echo "<a class=\"button\"><i class=\"$name fa-fw fas fa-2x fa-toggle-on enabled\"></i></a>";
-        } else {
-            echo "<a class=\"button\"><i class=\"$name fa-fw fas fa-2x fa-toggle-off disabled\"></i></a>";
+public static function ShowGroupRow($cnt)
+{
+    echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row'.$cnt.'" style="background-color: #e4e8ed;">
+             <div class="row g-1">
+                <div class="col-auto">
+                <!--<h5>'.$cnt.'</h5>-->
+                   <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button" data-rowid="row'.$cnt.'"
+                   data-bs-toggle="tooltip" data-bs-placement="left"
+                   title=' . __("Delete a rule", "taskrules") . '">
+                      <i class="ti ti-square-minus" alt="-"></i>
+                   </button>
+                </div>';
+    echo Html::scriptBlock('$(document).on("click", ".remove-search-criteria", function() {
+        // force removal of tooltip
+        var tooltip = bootstrap.Tooltip.getInstance($(this)[0]);
+        if (tooltip !== null) {
+            tooltip.dispose();
         }
+        var rowID = $(this).data("rowid");
+        $("#" + rowID).remove();
+        });
+        ');
+
+    $operator = "";
+    self::showOperatorsDropdown($cnt, $operator);
+    echo '<div class="col-auto d-flex align-items-center">';
+
+    /** Group begins */
+    echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row'.$cnt.'" style="background-color: #ced4db;">
+             <div class="row g-1">
+                <div class="col-auto">
+                   <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button" data-rowid="row'.$cnt.'"
+                   data-bs-toggle="tooltip" data-bs-placement="left"
+                   title=' . __("Delete a rule", "taskrules") . '">
+                      <i class="ti ti-square-minus" alt="-"></i>
+                   </button>
+                </div>';
+    echo Html::scriptBlock('$(document).on("click", ".remove-search-criteria", function() {
+        // force removal of tooltip
+        var tooltip = bootstrap.Tooltip.getInstance($(this)[0]);
+        if (tooltip !== null) {
+            tooltip.dispose();
+        }
+        var rowID = $(this).data("rowid");
+        $("#" + rowID).remove();
+        });
+        ');                
+    $operator = "";
+    self::showOperatorsDropdown($cnt, $operator);
+    echo '<div class="col-auto d-flex align-items-center">';
+    echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
+    echo '</div>';
+    $itemtype = "";
+    self::showItemtypesDropdown($cnt, $itemtype);
+    echo '<div class="col-auto d-flex align-items-center">';
+    echo '  <span class="espace">' . __("of the type", "taskrules") . '</span>';
+    echo '</div>';
+    self::showObjectTypesDropdown($cnt, $itemtype);
+    echo '<div class="col-auto d-flex align-items-center">';
+    echo '  <span class="espace">' . __("of status", "taskrules") . '</span>';
+    echo '</div>';
+    self::showStatusesDropdown($cnt, $itemtype);
+    echo '</div>
+    <div style="background-color: white; padding:2px 0 10px 0;">';
+
+    echo "<a id='more-grpcriteria' class='hespace' role='button' style='display: block;'></a>";
+
+    echo '<button id="addsearchcriteria" class="btn btn-sm btn-outline-secondary me-1" type="button">
+    <i class="ti ti-square-plus"></i>
+    <span class="d-none d-sm-block">règle</span>
+    </button>';
+
+    echo "<script>
+    var id = '1';
+    $('#addsearchcriteria').on('click', function(event) {
+        event.preventDefault();
+        $.post('".plugin::getWebDir('taskrules')."/ajax/addcriteria.php', {
+            id: id
+        })
+        .done(function(data) {
+            $(data).insertBefore('#more-grpcriteria');
+            id++;
+        });
+    });
+    </script>";
+
+    echo '<button id="addcriteriagroup" class="btn btn-sm btn-outline-secondary me-1" type="button">
+    <i class="ti ti-code-plus"></i>
+    <span class="d-none d-sm-block">groupe</span>
+    </button>';
+
+    echo "<script>
+    var id = '1';
+    $('#addcriteriagroup').on('click', function(event) {
+        event.preventDefault();
+        $.post('".plugin::getWebDir('taskrules')."/ajax/addgroupcriteria.php', {
+            id: id
+        })
+        .done(function(data) {
+            $(data).insertBefore('#more-grpcriteria');
+            id++;
+        });
+    });
+    </script>";
+
+    echo '</div>';
+    echo '</div>';
+    echo '</div>';
+    echo '</div>';
+}
+
+public static function showSwitchField($name, $value)
+{
+    echo Html::hidden($name, ['id' => $name,
+        'value' => $value]);
+    echo Html::scriptBlock("(function(){
+                            var toggleButton = $('.$name');
+                            toggleButton.click(function() {
+                            if ($(this).hasClass('fa-toggle-on')) {
+                                toggleButton.removeClass('fa-toggle-on');
+                                toggleButton.addClass('fa-toggle-off');
+                                toggleButton.removeClass('enabled');
+                                toggleButton.addClass('disabled');
+                                document.getElementById('$name').value = '0';
+                                } else {
+                                toggleButton.removeClass('fa-toggle-off');
+                                toggleButton.addClass('fa-toggle-on');
+                                toggleButton.removeClass('disabled');
+                                toggleButton.addClass('enabled');
+                                document.getElementById('$name').value = '1';
+                                }
+                            });
+                        })();");
+    if ($value == 1) {
+        echo "<a class=\"button\"><i class=\"$name fa-fw fas fa-2x fa-toggle-on enabled\"></i></a>";
+    } else {
+        echo "<a class=\"button\"><i class=\"$name fa-fw fas fa-2x fa-toggle-off disabled\"></i></a>";
     }
+}
+
+/* Return an array of operators */
+public static function getOperators()
+{
+	$OPERATORS = [
+		'None' => '-------',
+		'AND' => __("AND", "taskrules"),
+		'OR' => __("OR", "taskrules"),
+		'AND NOT' => __("AND NOT", "taskrules"),
+		'OR NOT' => __("OR NOT", "taskrules"),
+	];
+
+    return $OPERATORS;
+}
 
 public static function getStatuses() 
 {
@@ -427,7 +531,7 @@ public static function getObjectTypes($selectedItemtype)
   }
 
 /**
- * Return all types that can be injected using datainjection
+ * Return all types that can be treated in the current plugin
  *
  * @return void
  */
@@ -451,5 +555,69 @@ public static function getTypesToInject(): void
 
 }
 
+public static function showOperatorsDropdown($id, $operator, $name = "operator") 
+{
+    echo '<div class="col-auto">';
+    /* First dropdown : list of operators */
+    $value = "None";
+    $cr = Dropdown::showFromArray($name.'['.$id.']', self::getOperators(), [
+        'value' => $operator
+    ]);
+    echo '</div>';
+}
+
+public static function showItemtypesDropdown($id, $itemtype, $name = "itemtype") 
+{
+    echo '<div class="col-auto">';
+            /* Second dropdown : list of itemtypes */
+            $value = "None";
+            $cr = Dropdown::showFromArray($name.'['.$id.']', self::getItemtypes(true), [
+                'value' => $itemtype,
+                'on_change' => "updateTypesDropdown$id(this.value)"
+            ]);
+    echo '</div>';
+}
+
+public static function showObjectTypesDropdown($id, $itemtype, $name = "type") 
+{
+    echo '<div class="col-auto">';
+            /* Third dropdown : list of types for the selected itemtype */
+            $value = "None";
+            $selectedItemtype = "";
+            $cr = Dropdown::showFromArray($name.'['.$id.']', self::getObjectTypes($selectedItemtype), [
+                'value' => $itemtype
+            ]);
+                    /* Ajax code to update the second dropdown from the first dropdown selection */
+                    $selectId = "dropdown_type_".$id."_".$cr;
+                    echo Html::scriptBlock("
+                    function updateTypesDropdown$id(itemType) {
+                        $.ajax({
+                            url: '".plugin::getWebDir('taskrules')."/ajax/typesdropdown.php',
+                            type: 'GET',
+                            data: { item_Type: itemType },
+                            success: function(response) {
+                                $('#".$selectId."').html(response);
+                            },
+                            error: function (xhr, status, error) {
+                            console.log(xhr);
+                            console.log(status);
+                            console.log(error);
+                            }
+                        });
+                    }");
+    echo '</div>';
+}
+
+public static function showStatusesDropdown($id, $itemtype, $name = "status") 
+{
+    echo '<div class="col-auto">';
+            /* Fourth dropdown : list of statuses for the selected object type */
+            $value = "None";
+            $cr = Dropdown::showFromArray($name.'['.$id.']', self::getStatuses(), [
+                'value' => $itemtype
+            ]);
+
+    echo '</div>';
+}
 
 }

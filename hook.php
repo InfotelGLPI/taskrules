@@ -122,6 +122,9 @@ function plugin_taskrules_install()
         $DB->runFile(PLUGIN_TASKRULES_DIR . "/install/sql/empty-1.0.0.sql");
     }
 
+    PluginTaskrulesProfile::createFirstAccess($_SESSION['glpiactiveprofile']['id']);
+    PluginTaskrulesProfile::initProfile();
+
     return true;
 }
 
@@ -138,6 +141,9 @@ function plugin_taskrules_uninstall()
 
     foreach($tables as $table) 
         {$DB->query("DROP TABLE IF EXISTS `$table`;");}
+
+    PluginTaskrulesProfile::removeRightsFromSession();
+    PluginTaskrulesProfile::removeRightsFromDB();
 
     return true;
 }

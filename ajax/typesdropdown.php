@@ -6,6 +6,8 @@ Html::header_nocache();
 
 Session::checkLoginUser();
 
+Toolbox::logInFile("EdmondDebug","je passe dans ajax/typesdropdown.php et _GET vaut ".print_r($_GET,true)."\n");
+
 /* Retrieve itemtype from ajax call */
 $item_Type = $_GET['item_Type'];
 
@@ -16,4 +18,3 @@ $arrTypes = PluginTaskrulesCondition::getObjectTypes($item_Type);
 foreach ( $arrTypes as $id => $name) {
     echo "<option value='".$id."'>".$name."</option>";
 }
-

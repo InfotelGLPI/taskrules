@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GLPI - Mdm2glpi 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-02 13:57+0200\n"
-"PO-Revision-Date: 2025-07-02 14:06+0200\n"
+"POT-Creation-Date: 2025-07-08 13:54+0200\n"
+"PO-Revision-Date: 2025-07-08 13:56+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -18,64 +18,80 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.5\n"
 
-#: ../setup.php:118
+#: ../setup.php:123
 msgid "Installed / not configured"
 msgstr "Installé / non configuré"
 
-#: ../inc/condition.class.php:102
-msgid "table"
-msgstr "table"
+#: ../front/condition.form.php:50
+msgid "Taskrules"
+msgstr "Taskrules"
 
-#: ../inc/condition.class.php:149
-msgid "AND"
-msgstr "ET"
-
-#: ../inc/condition.class.php:150
-msgid "OR"
-msgstr "OU"
-
-#: ../inc/condition.class.php:151
-msgid "NOT"
-msgstr "PAS"
-
-#: ../inc/condition.class.php:157
+#: ../inc/condition.class.php:82
 msgid "Condition(s)"
 msgstr "Condition(s)"
 
-#: ../inc/condition.class.php:159
+#: ../inc/condition.class.php:85
 msgid "Active : "
 msgstr "Actif : "
 
-#: ../inc/condition.class.php:169
-msgid "Object"
-msgstr "Objet"
-
-#: ../inc/condition.class.php:178
-msgid "of the type"
-msgstr "de type"
-
-#: ../inc/condition.class.php:205
-msgid "of status"
-msgstr "de statut"
-
-#: ../inc/condition.class.php:216
+#: ../inc/condition.class.php:140
 msgid "Trigger"
 msgstr "Déclencheur"
 
-#: ../inc/condition.class.php:219
+#: ../inc/condition.class.php:143
 msgid "Activate when a task is added to the ticket"
 msgstr "Déclencher à l'ajout de la tâche dans le ticket"
 
-#: ../inc/condition.class.php:221
+#: ../inc/condition.class.php:145
 msgid "Trigger upon updating the task status from \"to do\" to \"done\""
 msgstr ""
 "Déclencher à la mise à jour du statut de la tâche de \"à faire\" vers "
 "\"fait\""
 
-#: ../inc/condition.class.php:227
+#: ../inc/condition.class.php:151
 msgid "Action(s)"
 msgstr "Action(s)"
 
-#: ../inc/condition.class.php:274 ../inc/condition.class.php:310
+#: ../inc/condition.class.php:242 ../inc/condition.class.php:286
+#: ../inc/condition.class.php:311
+msgid "Delete a rule"
+msgstr "Supprimer une règle"
+
+#: ../inc/condition.class.php:261 ../inc/condition.class.php:328
+msgid "Object"
+msgstr "Objet"
+
+#: ../inc/condition.class.php:266 ../inc/condition.class.php:333
+msgid "of the type"
+msgstr "de type"
+
+#: ../inc/condition.class.php:270 ../inc/condition.class.php:337
+msgid "of status"
+msgstr "de statut"
+
+#: ../inc/condition.class.php:421 ../inc/condition.class.php:438
+#: ../inc/condition.class.php:456 ../inc/condition.class.php:492
 msgid "----------"
 msgstr "----------"
+
+#: ../inc/condition.class.php:425
+msgid "AND"
+msgstr "ET"
+
+#: ../inc/condition.class.php:426
+msgid "OR"
+msgstr "OU"
+
+#: ../inc/condition.class.php:427
+msgid "AND NOT"
+msgstr "ET PAS"
+
+#: ../inc/condition.class.php:428
+msgid "OR NOT"
+msgstr "OU PAS"
+
+#~ msgid "table"
+#~ msgstr "table"
+
+#~ msgid "NOT"
+#~ msgstr "PAS"

@@ -21,3 +21,13 @@
     background-color: white;
     overflow: hidden;
 }
+
+.espace {
+    padding-left: 1em;
+    padding-right: 1em;
+  }
+    
+.hespace {
+    margin-top: 1em;
+    margin-bottom: 1em;
+  }
