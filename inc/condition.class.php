@@ -77,13 +77,45 @@ public function showForm($ID, array $options = [])
         echo Html::hidden('id', ['value' => $ID]);
 
         /* ---------------------- */
+        /* "Parameters" section */
+        /* ---------------------- */
+        //$this::showSwitchField("actif", false); // show a switch that can be turned off or on
+        // echo '<button class="accordiontskrul">' . __("Parameters", "taskrules") . '</button>';
+
+        // echo '<div class="panel" style="display: flex;">';
+        // echo '  <div style="flex: 1; padding: 10px;"></div>';
+        // echo '  <div style="flex: 4; padding: 10px;">';
+        // echo '    <div style="display: flex;">';
+        // echo '      <div style="display: flex; flex-direction: column; gap: 18px; min-width: 320px;">';
+        // echo '        <div style="height: 38px; display: flex; align-items: center;">';
+        // echo '          <label for="dropdown_active1919881355" class="form-check-label" style="text-align: left;">'. __("Active : ", "taskrules").'</label>';
+        // echo '        </div>';
+        // echo '        <div style="height: 38px; display: flex; align-items: center;">';
+        // echo '          <label for="dropdown_preventcreation1168545998" class="form-check-label" style="text-align: left;">'. __("Prevent task creation on error :", "taskrules").'</label>';
+        // echo '        </div>';
+        // echo '        <div style="height: 38px; display: flex; align-items: center;">';
+        // echo '          <label for="dropdown_preventchange1593546928" class="form-check-label" style="text-align: left;">'. __("Prevent the task from changing its status (from \"to do\" to \"done\") in case of an error :", "taskrules").'</label>';
+        // echo '        </div>';
+        // echo '      </div>';
+        // echo '      <div style="display: flex; flex-direction: column; gap: 18px; min-width: 120px;">';
+        // echo '        <div style="height: 38px; display: flex; align-items: center;">';
+        // Dropdown::showYesNo('active', false);
+        // echo '        </div>';
+        // echo '        <div style="height: 38px; display: flex; align-items: center;">';
+        // Dropdown::showYesNo('preventcreation', false);
+        // echo '        </div>';
+        // echo '        <div style="height: 38px; display: flex; align-items: center;">';
+        // Dropdown::showYesNo('preventchange', false);
+        // echo '        </div>';
+        // echo '      </div>';
+        // echo '    </div>';
+        // echo '  </div>';
+        // echo '</div>';
+
+        /* ---------------------- */
         /* "Condition(s)" section */
         /* ---------------------- */
         echo '<button class="accordiontskrul">' . __("Condition(s)", "taskrules") . '</button>';
-
-        /* Active (Yes/No) on top of the section */
-        echo "<p>" . __("Active : ", "taskrules");
-        $this::showSwitchField("actif", false);
 
         echo '<div class="search-form card card-sm mb-4">
         <div id="searchcriteria">
@@ -138,106 +170,136 @@ public function showForm($ID, array $options = [])
         /* "Trigger" section */
         /* ----------------- */
         echo '<button class="accordiontskrul">' . __("Trigger", "taskrules") . '</button>';
-        echo '<div class="panel" style="display: block;"><p>';
-        echo '<input type="radio" class="-check-input" id="trigger" name="trigger" value="1"/>';
-        echo '&nbsp;' . __("Activate when a task is added to the ticket", "taskrules") . '<br><br>';
-        echo '<input type="radio" class="-check-input" id="trigger" name="trigger"  value="2"/>';
-        echo '&nbsp;' . __('Trigger upon updating the task status from "to do" to "done"', "taskrules") . '';
-        echo '</p></div>';
+        echo '<div class="panel" style="display: flex;">
+        <div style="flex: 1; padding: 10px;">
+        </div>
+        <div style="flex: 4; padding: 10px;">
+        <label class="form-check" style="display: block; text-align: left;">
+            <input class="form-check-input" type="checkbox" name="trigger_creation" checked="checked" value="1" style="margin-right: 10px;">
+            <span class="form-check-label" style="vertical-align: middle;">
+            ' . __("Activate when a task is added to the ticket", "taskrules") . '
+            </span>
+        </label>
+        <label class="form-check" style="display: block; text-align: left;">
+            <input class="form-check-input" type="checkbox" name="trigger_update" checked="checked" value="1" style="margin-right: 10px;">
+            <span class="form-check-label" style="vertical-align: middle;">
+            ' . __('Trigger upon updating the task status from "to do" to "done"', "taskrules") . '   
+            </span>
+        </label>
+        </div>
+        </div>';
+
+        echo '</div>';
 
         /* ------------------- */
         /* "Action(s)" section */
         /* ------------------- */
         echo '<button class="accordiontskrul">' . __("Action(s)", "taskrules") . '</button>';
+
+        /** ATTENTION : NE PAS OUBLIER */
+        /** POUR LES AFFECTATIONS AUX GROUPES, NE PAS INCLURE DANS LA LISTE DES GROUPES SELECTIONNABLES
+         * CEUX DONT LA CONFIGURATION "PEUT CONTENIR DES ELEMENTS" EST A "NON"
+         */
 ?>
 
-<!-- Critère 1 -->
-<select name="criteria[0][operator]"><option value="test">test</option></select>
-<select name="criteria[0][field]"><option value="test">test</option></select>
-<select name="criteria[0][type]"><option value="test">test</option></select>
-<select name="criteria[0][status]"><option value="test">test</option></select>
+<!-- 
+<select name="filter[0][operator]"><option value="test">test</option></select>
+<select name="filter[0][field]"><option value="test">test</option></select>
+<select name="filter[0][type]"><option value="test">test</option></select>
+<select name="filter[0][status]"><option value="test">test</option></select>
 
-<!-- Critère 2 -->
-<select name="criteria[1][operator]"><option value="test">test</option></select>
-<select name="criteria[1][field]"><option value="test">test</option></select>
-<select name="criteria[1][type]"><option value="test">test</option></select>
-<select name="criteria[1][status]"><option value="test">test</option></select>
+<select name="filter[1][operator]"><option value="test">test</option></select>
+<select name="filter[1][field]"><option value="test">test</option></select>
+<select name="filter[1][type]"><option value="test">test</option></select>
+<select name="filter[1][status]"><option value="test">test</option></select>
 
-<!-- Groupe (sous-critères) -->
-<select name="criteria[2][operator]"><option value="test">test</option></select>
-<!-- Sous-critère 1 -->
-<select name="criteria[2][group][0][operator]"><option value="test">test</option></select>
-<select name="criteria[2][group][0][field]"><option value="test">test</option></select>
-<select name="criteria[2][group][0][type]"><option value="test">test</option></select>
-<select name="criteria[2][group][0][status]"><option value="test">test</option></select>
-<!-- Sous-critère 2 -->
-<select name="criteria[2][group][1][operator]"><option value="test">test</option></select>
-<select name="criteria[2][group][1][field]"><option value="test">test</option></select>
-<select name="criteria[2][group][1][type]"><option value="test">test</option></select>
-<select name="criteria[2][group][1][status]"><option value="test">test</option></select>
+<select name="filter[2][operator]"><option value="test">test</option></select>
 
+<select name="filter[2][group][0][operator]"><option value="test">test</option></select>
+<select name="filter[2][group][0][field]"><option value="test">test</option></select>
+<select name="filter[2][group][0][type]"><option value="test">test</option></select>
+<select name="filter[2][group][0][status]"><option value="test">test</option></select>
 
-<!--<div class="list-group list-group-flush list-group-hoverable criteria-list pt-2" id="criteriatablecomputer">
+<select name="filter[2][group][1][operator]"><option value="test">test</option></select>
+<select name="filter[2][group][1][field]"><option value="test">test</option></select>
+<select name="filter[2][group][1][type]"><option value="test">test</option></select>
+<select name="filter[2][group][1][status]"><option value="test">test</option></select>
+-->
+
+<div class='center'>
+<div class="list-group list-group-flush list-group-hoverable criteria-list pt-2" style="background-color: white; id="criteriatablecomputer">
   <div class="list-group-item p-2 border-0 normalcriteria" id="row1">
     <div class="row g-1">
-      <div class="col-auto"></div>
-      <div class="col-auto d-flex align-items-center">Statut</div>
-      <div class="col-auto d-flex align-items-center"><select id="statut" name="statut">
-                <option value="preparation">En préparation</option>
-                <option value="autre">Autre</option>
-            </select></div>
-      <div class="col-auto d-flex align-items-center"></div>
+      <div class="col-1"></div> <!-- Colonne vide à gauche -->
+      <div class="col-2 d-flex align-items-center">Statut :</div>
+      <div class="col-2 d-flex align-items-center">
+        <select id="statut" name="statut">
+          <option value="preparation">En préparation</option>
+          <option value="autre">Autre</option>
+        </select>
+      </div>
+      <div class="col d-flex align-items-center"></div>
     </div>
     <div class="row g-1">
-      <div class="col-auto"></div>
-      <div class="col-auto d-flex align-items-center">Lieu</div>
-      <div class="col-auto d-flex align-items-center"><select id="lieu" name="lieu">
-                <option value="petit_stock">Petit stock</option>
-                <option value="autre">Autre</option>
-            </select></div>
-      <div class="col-auto d-flex align-items-center">
-            <input type="checkbox" id="vider_lieu" name="vider_lieu">
-            <label for="vider_lieu">Vider le champ Lieu</label>        
+      <div class="col-1"></div>
+      <div class="col-2 d-flex align-items-center">Lieu :</div>
+      <div class="col-2 d-flex align-items-center">
+        <select id="lieu" name="lieu">
+          <option value="petit_stock">Petit stock</option>
+          <option value="autre">Autre</option>
+        </select>
+      </div>
+      <div class="col d-flex align-items-center">
+        <input type="checkbox" id="vider_lieu" name="vider_lieu">
+        <label for="vider_lieu">Vider le champ Lieu</label>
       </div>
     </div>
     <div class="row g-1">
-      <div class="col-auto"></div>
-      <div class="col-auto d-flex align-items-center">Usager :</div>
-      <div class="col-auto d-flex align-items-center"><select id="usager" name="usager">
-                <option value="usager_du_materiel">Usager du matériel</option>
-                <option value="autre">Autre</option>
-            </select></div>
-      <div class="col-auto d-flex align-items-center">
-            <input type="checkbox" id="vider_usager" name="vider_usager">
-            <label for="vider_usager">Vider le champ Usager</label>       
+      <div class="col-1"></div>
+      <div class="col-2 d-flex align-items-center">Usager :</div>
+      <div class="col-2 d-flex align-items-center">
+        <select id="usager" name="usager">
+          <option value="usager_du_materiel">Usager du matériel</option>
+          <option value="autre">Autre</option>
+        </select>
+      </div>
+      <div class="col d-flex align-items-center">
+        <input type="checkbox" id="vider_usager" name="vider_usager">
+        <label for="vider_usager">Vider le champ Usager</label>
       </div>
     </div>
     <div class="row g-1">
-      <div class="col-auto"></div>
-      <div class="col-auto d-flex align-items-center">Utilisateur :</div>
-      <div class="col-auto d-flex align-items-center"><select id="utilisateur" name="utilisateur">
-                <option value="demandeur">Demandeur</option>
-                <option value="autre">Autre</option>
-            </select></div>
-      <div class="col-auto d-flex align-items-center">
-            <input type="checkbox" id="vider_utilisateur" name="vider_utilisateur">
-            <label for="vider_utilisateur">Vider le champ Utilisateur</label>       
+      <div class="col-1"></div>
+      <div class="col-2 d-flex align-items-center">Utilisateur :</div>
+      <div class="col-2 d-flex align-items-center">
+        <select id="utilisateur" name="utilisateur">
+          <option value="demandeur">Demandeur</option>
+          <option value="autre">Autre</option>
+        </select>
+      </div>
+      <div class="col d-flex align-items-center">
+        <input type="checkbox" id="vider_utilisateur" name="vider_utilisateur">
+        <label for="vider_utilisateur">Vider le champ Utilisateur</label>
       </div>
     </div>
     <div class="row g-1">
-      <div class="col-auto"></div>
-      <div class="col-auto d-flex align-items-center">Groupe :</div>
-      <div class="col-auto d-flex align-items-center"><select id="groupe" name="groupe">
-                <option value="groupe_du_demandeur">Groupe du demandeur</option>
-                <option value="autre">Autre</option>
-            </select></div>
-      <div class="col-auto d-flex align-items-center">
-      <input type="checkbox" id="vider_groupe" name="vider_groupe">
-            <label for="vider_groupe">Vider le champ Groupe</label>       
+      <div class="col-1"></div>
+      <div class="col-2 d-flex align-items-center">Groupe :</div>
+      <div class="col-2 d-flex align-items-center">
+        <select id="groupe" name="groupe">
+          <option value="groupe_du_demandeur">Groupe du demandeur</option>
+          <option value="autre">Autre</option>
+        </select>
+      </div>
+      <div class="col d-flex align-items-center">
+        <input type="checkbox" id="vider_groupe" name="vider_groupe">
+        <label for="vider_groupe">Vider le champ Groupe</label>
       </div>
     </div>
   </div>
-</div> -->
+</div>
+</div>
+
 <?php
 
         echo '<div class="panel" style="display: block;">';
@@ -250,7 +312,14 @@ public function showForm($ID, array $options = [])
         $options['candel'] = false;  // Hide [Cancel] button
         $options['no_save'] = false; // Display [Save] button
         // $options['id'] =$ID;
-        $this->showFormButtons($options);
+
+        echo '<div class="card-body mx-n2 mb-4 border-top d-flex flex-row-reverse align-items-start flex-wrap">
+        <button class="btn btn-primary me-2" type="submit" name="save" value="1">
+                  <i class="far fa-save"></i>
+                  <span>Sauvegarder</span>
+               </button></div>';
+
+        //$this->showFormButtons($options);
 
         Html::closeForm();
 
@@ -282,20 +351,14 @@ public static function ShowCriteriaRow($cnt)
     ');
 
     $operator = "";
-    self::showOperatorsDropdown($cnt, $operator);
+    self::showOperatorsDropdown($cnt, $operator, 'filter['.$cnt.'][operator]');
     echo '<div class="col-auto d-flex align-items-center">';
     echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
     echo '</div>';
     $itemtype = "";
-    self::showItemtypesDropdown($cnt, $itemtype);
-    echo '<div class="col-auto d-flex align-items-center">';
-    echo '  <span class="espace">' . __("of the type", "taskrules") . '</span>';
-    echo '</div>';
-    self::showObjectTypesDropdown($cnt, $itemtype);
-    echo '<div class="col-auto d-flex align-items-center">';
-    echo '  <span class="espace">' . __("of status", "taskrules") . '</span>';
-    echo '</div>';
-    self::showStatusesDropdown($cnt, $itemtype);
+    self::showItemtypesDropdown($cnt, $itemtype, 'filter['.$cnt.'][itemtype]');
+    self::showCriteriaDropdown($cnt, $itemtype, 'filter['.$cnt.'][criteria]');
+    self::showLastDropdown($cnt, $itemtype, 'filter['.$cnt.'][last]');
     echo '</div>';
     echo '</div>';
     echo '</div>';
@@ -303,6 +366,9 @@ public static function ShowCriteriaRow($cnt)
 
 public static function ShowGroupRow($cnt)
 {
+    $grpcnt = 0;
+    $grpcnt++;
+
     echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row'.$cnt.'" style="background-color: #e4e8ed;">
              <div class="row g-1">
                 <div class="col-auto">
@@ -325,12 +391,12 @@ public static function ShowGroupRow($cnt)
         ');
 
     $operator = "";
-    self::showOperatorsDropdown($cnt, $operator);
+    self::showOperatorsDropdown($cnt, $operator, 'filter['.$cnt.'][operator]');
     echo '<div class="col-auto d-flex align-items-center">';
 
     /** Group begins */
     echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row'.$cnt.'" style="background-color: #ced4db;">
-             <div class="row g-1">
+             <div class="row g-1" style="margin: 0;">
                 <div class="col-auto">
                    <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button" data-rowid="row'.$cnt.'"
                    data-bs-toggle="tooltip" data-bs-placement="left"
@@ -349,24 +415,21 @@ public static function ShowGroupRow($cnt)
         });
         ');                
     $operator = "";
-    self::showOperatorsDropdown($cnt, $operator);
+    self::showOperatorsDropdown($cnt, $operator, 'filter['.$cnt.'][group]['.$grpcnt.'][operator]');
     echo '<div class="col-auto d-flex align-items-center">';
     echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
     echo '</div>';
     $itemtype = "";
-    self::showItemtypesDropdown($cnt, $itemtype);
-    echo '<div class="col-auto d-flex align-items-center">';
-    echo '  <span class="espace">' . __("of the type", "taskrules") . '</span>';
+    self::showItemtypesDropdown($cnt, $itemtype, 'filter['.$cnt.'][group]['.$grpcnt.'][itemtype]');
+    self::showCriteriaDropdown($cnt, $itemtype, 'filter['.$cnt.'][group]['.$grpcnt.'][criteria]');
+    self::showLastDropdown($cnt, $itemtype, 'filter['.$cnt.'][group]['.$grpcnt.'][last]');
     echo '</div>';
-    self::showObjectTypesDropdown($cnt, $itemtype);
-    echo '<div class="col-auto d-flex align-items-center">';
-    echo '  <span class="espace">' . __("of status", "taskrules") . '</span>';
-    echo '</div>';
-    self::showStatusesDropdown($cnt, $itemtype);
-    echo '</div>
-    <div style="background-color: white; padding:2px 0 10px 0;">';
 
     echo "<a id='more-grpcriteria' class='hespace' role='button' style='display: block;'></a>";
+
+    echo '<div style="background-color: white; padding:2px 0 10px 0;">';
+
+    // echo "<a id='more-grpcriteria' class='hespace' role='button' style='display: block;'></a>";
 
     echo '<button id="addsearchcriteria" class="btn btn-sm btn-outline-secondary me-1" type="button">
     <i class="ti ti-square-plus"></i>
@@ -455,15 +518,16 @@ public static function getOperators()
     return $OPERATORS;
 }
 
-public static function getStatuses() 
+public static function getStatuses($itemtype) 
 {
     global $DB;
 
     $values[self::NO_VALUE] = __('----------', 'taskrules');
 
     /** Retrieve object types data from the database */
-    $iterateur = $DB->request(['FIELDS' => ['glpi_states' => ['id', 'name']], 'FROM' => 'glpi_states']);
-    
+    $itemtypecriteria = 'is_visible_'.$itemtype;
+    $iterateur = $DB->request(['FIELDS' => ['glpi_states' => ['id', 'name']], 'FROM' => 'glpi_states', 'WHERE' => [$itemtypecriteria => 1]]);
+
     foreach ($iterateur as $data) {
         $values[$data['id']] = $data['name'];
     }
@@ -555,67 +619,105 @@ public static function getTypesToInject(): void
 
 }
 
-public static function showOperatorsDropdown($id, $operator, $name = "operator") 
+public static function showOperatorsDropdown($id, $operator, $controlId) 
 {
     echo '<div class="col-auto">';
     /* First dropdown : list of operators */
     $value = "None";
-    $cr = Dropdown::showFromArray($name.'['.$id.']', self::getOperators(), [
+    //$cr = Dropdown::showFromArray('filter['.$id.']['.$name.']', self::getOperators(), [
+    $cr = Dropdown::showFromArray($controlId, self::getOperators(), [
         'value' => $operator
     ]);
     echo '</div>';
 }
 
-public static function showItemtypesDropdown($id, $itemtype, $name = "itemtype") 
+public static function showItemtypesDropdown($id, $itemtype, $controlId) 
 {
     echo '<div class="col-auto">';
-            /* Second dropdown : list of itemtypes */
+        /* Second dropdown : list of itemtypes */
+        $value = "None";
+        //$cr = Dropdown::showFromArray('filter['.$id.']['.$name.']', self::getItemtypes(true), [
+        $cr = Dropdown::showFromArray($controlId, self::getItemtypes(true), [
+            'value' => $itemtype,
+            'on_change' => "updateHidden$id(this.value)"
+        ]);
+    echo '<input type="hidden" id="itemtype'.$id.'" value="">';
+    echo '</div>';
+}
+
+public static function showCriteriaDropdown($id, $itemtype, $controlId) 
+{
+    echo "controlId=".$controlId; //
+    $criteria = [
+		'None' => '-------',
+        'Status' => __("Status", "taskrules"),
+        'Type' => __("Type", "taskrules"),
+    ];
+
+    echo '<div class="col-auto">';
+            /* Third dropdown : status or type */
             $value = "None";
-            $cr = Dropdown::showFromArray($name.'['.$id.']', self::getItemtypes(true), [
+            //$selectedItemtype = "";
+            // $cr = Dropdown::showFromArray('filter['.$id.']['.$name.']', $criteria, [
+            $cr = Dropdown::showFromArray($controlId, $criteria, [
                 'value' => $itemtype,
-                'on_change' => "updateTypesDropdown$id(this.value)"
+                 'on_change' => "updateLastDropdown$id(this.value)"
             ]);
+            /* Ajax code to reset the criteria dropdown */
+            $selectId = str_replace("[", "_", $controlId);
+            $selectId = "dropdown_".str_replace("]", "_", $selectId).$cr;
+            echo Html::scriptBlock("
+            function updateHidden$id(value) {
+                var input = document.getElementById('itemtype".$id."');
+                input.value = value;            
+                $.ajax({
+                    url: '".plugin::getWebDir('taskrules')."/ajax/resetcriteria.php',
+                    type: 'GET',
+                    data: { item_type: value },
+                    success: function(response) {
+                        $('#".$selectId."').html(response);
+                    },
+                    error: function (xhr, status, error) {
+                    console.log(xhr);
+                    console.log(status);
+                    console.log(error);
+                    }
+                });
+            }");
     echo '</div>';
 }
 
-public static function showObjectTypesDropdown($id, $itemtype, $name = "type") 
-{
-    echo '<div class="col-auto">';
-            /* Third dropdown : list of types for the selected itemtype */
-            $value = "None";
-            $selectedItemtype = "";
-            $cr = Dropdown::showFromArray($name.'['.$id.']', self::getObjectTypes($selectedItemtype), [
-                'value' => $itemtype
-            ]);
-                    /* Ajax code to update the second dropdown from the first dropdown selection */
-                    $selectId = "dropdown_type_".$id."_".$cr;
-                    echo Html::scriptBlock("
-                    function updateTypesDropdown$id(itemType) {
-                        $.ajax({
-                            url: '".plugin::getWebDir('taskrules')."/ajax/typesdropdown.php',
-                            type: 'GET',
-                            data: { item_Type: itemType },
-                            success: function(response) {
-                                $('#".$selectId."').html(response);
-                            },
-                            error: function (xhr, status, error) {
-                            console.log(xhr);
-                            console.log(status);
-                            console.log(error);
-                            }
-                        });
-                    }");
-    echo '</div>';
-}
-
-public static function showStatusesDropdown($id, $itemtype, $name = "status") 
+public static function showLastDropdown($id, $itemtype, $controlId) 
 {
     echo '<div class="col-auto">';
             /* Fourth dropdown : list of statuses for the selected object type */
             $value = "None";
-            $cr = Dropdown::showFromArray($name.'['.$id.']', self::getStatuses(), [
+            //$cr = Dropdown::showFromArray('filter['.$id.']['.$name.']', self::getStatuses(''), [
+            $cr = Dropdown::showFromArray($controlId, self::getStatuses(''), [
                 'value' => $itemtype
             ]);
+
+    /* Ajax code to update the last dropdown from the third dropdown selection */
+    $selectId = str_replace("[", "_", $controlId);
+    $selectId = "dropdown_".str_replace("]", "_", $selectId).$cr;
+    echo Html::scriptBlock("
+    function updateLastDropdown$id(criteria) {
+        // Retrieve itemtype from stored value in hidden field
+        var itemtype = document.getElementById('itemtype".$id."');
+        $.ajax({
+            url: '".plugin::getWebDir('taskrules')."/ajax/lastdropdown.php',
+            type: 'GET',
+            data: { criteria_Type: criteria, item_type: itemtype.value },
+            success: function(response) {
+                $('#".$selectId."').html(response);
+            },
+            error: function (xhr, status, error) {
+            console.log(xhr);
+            console.log(status);
+            console.log(error);
+            }
+        });
+    }");
 
     echo '</div>';
 }

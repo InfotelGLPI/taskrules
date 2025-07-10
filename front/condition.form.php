@@ -34,9 +34,12 @@ include("../../../inc/includes.php");
     $config = new PluginTaskrulesCondition();
     //Session::checkRightsOr(PluginTaskrulesCondition::$rightname, [READ, UPDATE]);
 
-    Toolbox::logInFile("EdmondDebug","front/condition.form.php > _POST=".print_r($_POST,true)."\n");
+    // Toolbox::logInFile("EdmondDebug","front/condition.form.php > _POST=".print_r($_POST,true)."\n");
 
-    if (isset($_POST["add"])) {
+    Toolbox::logInFile("EdmondDebug","front/condition.form.php > _POST=\n".formatArray($_POST)."\n");
+    
+
+    if (isset($_POST["add"]) || isset($_POST["save"]) ) {
         foreach ( $_POST as $type => $val)
         {
             //echo "<b>type</b>=$type <b>val</b>=$val<br>";
@@ -56,3 +59,16 @@ include("../../../inc/includes.php");
     
         Html::footer();
     }
+
+function formatArray($array, $prefix = '') {
+    $result = '';
+    foreach ($array as $key => $value) {
+        $newKey = $prefix . '[' . $key . ']';
+        if (is_array($value)) {
+            $result .= formatArray($value, $newKey);
+        } else {
+            $result .= $newKey . '=' . $value . PHP_EOL;
+        }
+    }
+    return $result;
+}
