@@ -6,7 +6,7 @@ Html::header_nocache();
 
 Session::checkLoginUser();
 
-Toolbox::logInFile("EdmondDebug","je passe dans ajax/addgroupcriteria.php et _POST vaut ".print_r($_POST,true)."\n");
+Toolbox::logInFile("EdmondDebug","ajax/addgroupcriteria.php > _POST=\n".PluginTaskrulesCondition::formatArray($_POST)."\n");
 
 /* Retrieve id value from ajax call */
 $id = $_POST['id'] + 1;

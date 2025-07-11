@@ -74,49 +74,69 @@ public function showForm($ID, array $options = [])
         echo "<div class='center'>";
         echo "<form name='form' method='post' action='" . $this->getFormURL() . "'>";
 
+        echo Html::scriptBlock("document.querySelectorAll('.accordiontskrul').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var next = btn.nextElementSibling;
+                if (
+                    next &&
+                    (next.classList.contains('panel') || next.classList.contains('center'))
+                ) {
+                    // Toggle display
+                    if (next.style.display === 'none' || getComputedStyle(next).display === 'none') {
+                        next.style.display = 'flex';
+                    } else {
+                        next.style.display = 'none';
+                    }
+                }
+            });
+        });");
+
         echo Html::hidden('id', ['value' => $ID]);
+        echo Html::hidden('groupIndex', ['value' => 0]);
+        echo Html::hidden('boolUpdStatuses', ['value' => 0]);
+        // echo '<input type="text" id="groupIndex" value="0">';
 
         /* ---------------------- */
         /* "Parameters" section */
         /* ---------------------- */
         //$this::showSwitchField("actif", false); // show a switch that can be turned off or on
-        // echo '<button class="accordiontskrul">' . __("Parameters", "taskrules") . '</button>';
+        echo '<button type="button" class="accordiontskrul">' . __("Parameters", "taskrules") . '</button>';
 
-        // echo '<div class="panel" style="display: flex;">';
-        // echo '  <div style="flex: 1; padding: 10px;"></div>';
-        // echo '  <div style="flex: 4; padding: 10px;">';
-        // echo '    <div style="display: flex;">';
-        // echo '      <div style="display: flex; flex-direction: column; gap: 18px; min-width: 320px;">';
-        // echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        // echo '          <label for="dropdown_active1919881355" class="form-check-label" style="text-align: left;">'. __("Active : ", "taskrules").'</label>';
-        // echo '        </div>';
-        // echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        // echo '          <label for="dropdown_preventcreation1168545998" class="form-check-label" style="text-align: left;">'. __("Prevent task creation on error :", "taskrules").'</label>';
-        // echo '        </div>';
-        // echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        // echo '          <label for="dropdown_preventchange1593546928" class="form-check-label" style="text-align: left;">'. __("Prevent the task from changing its status (from \"to do\" to \"done\") in case of an error :", "taskrules").'</label>';
-        // echo '        </div>';
-        // echo '      </div>';
-        // echo '      <div style="display: flex; flex-direction: column; gap: 18px; min-width: 120px;">';
-        // echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        // Dropdown::showYesNo('active', false);
-        // echo '        </div>';
-        // echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        // Dropdown::showYesNo('preventcreation', false);
-        // echo '        </div>';
-        // echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        // Dropdown::showYesNo('preventchange', false);
-        // echo '        </div>';
-        // echo '      </div>';
-        // echo '    </div>';
-        // echo '  </div>';
-        // echo '</div>';
+        echo '<div class="panel" style="display: none;">';
+        echo '  <div style="flex: 1; padding: 10px;"></div>';
+        echo '  <div style="flex: 4; padding: 10px;">';
+        echo '    <div style="display: flex;">';
+        echo '      <div style="display: flex; flex-direction: column; gap: 18px; min-width: 320px;">';
+        echo '        <div style="height: 38px; display: flex; align-items: center;">';
+        echo '          <label for="dropdown_active1919881355" class="form-check-label" style="text-align: left;">'. __("Active : ", "taskrules").'</label>';
+        echo '        </div>';
+        echo '        <div style="height: 38px; display: flex; align-items: center;">';
+        echo '          <label for="dropdown_preventcreation1168545998" class="form-check-label" style="text-align: left;">'. __("Prevent task creation on error :", "taskrules").'</label>';
+        echo '        </div>';
+        echo '        <div style="height: 38px; display: flex; align-items: center;">';
+        echo '          <label for="dropdown_preventchange1593546928" class="form-check-label" style="text-align: left;">'. __("Prevent the task from changing its status (from \"to do\" to \"done\") in case of an error :", "taskrules").'</label>';
+        echo '        </div>';
+        echo '      </div>';
+        echo '      <div style="display: flex; flex-direction: column; gap: 18px; min-width: 120px;">';
+        echo '        <div style="height: 38px; display: flex; align-items: center;">';
+        Dropdown::showYesNo('active', false);
+        echo '        </div>';
+        echo '        <div style="height: 38px; display: flex; align-items: center;">';
+        Dropdown::showYesNo('preventcreation', false);
+        echo '        </div>';
+        echo '        <div style="height: 38px; display: flex; align-items: center;">';
+        Dropdown::showYesNo('preventchange', false);
+        echo '        </div>';
+        echo '      </div>';
+        echo '    </div>';
+        echo '  </div>';
+        echo '</div>';
 
         /* ---------------------- */
         /* "Condition(s)" section */
         /* ---------------------- */
-        echo '<button class="accordiontskrul">' . __("Condition(s)", "taskrules") . '</button>';
-
+        echo '<button type="button" class="accordiontskrul">' . __("Condition(s)", "taskrules") . '</button>';
+        // echo '<div class="panel" style="display: none;">';
         echo '<div class="search-form card card-sm mb-4">
         <div id="searchcriteria">
         <div class="list-group list-group-flush list-group-hoverable criteria-list pt-2" id="criteriatablecomputer">';
@@ -135,8 +155,12 @@ public function showForm($ID, array $options = [])
         var id = '1';
         $('#addsearchcriteria').on('click', function(event) {
             event.preventDefault();
+            // Make the statuses dropdown updatable in the Action(s) section
+            var bStatus = document.getElementsByName('boolUpdStatuses')[0];
+            bStatus.value = 0;
             $.post('".plugin::getWebDir('taskrules')."/ajax/addcriteria.php', {
-                id: id
+                id: id,
+                groupIndex: -1
             })
             .done(function(data) {
                 $(data).insertBefore('#more-criteria');
@@ -154,6 +178,9 @@ public function showForm($ID, array $options = [])
         var id = '1';
         $('#addcriteriagroup').on('click', function(event) {
             event.preventDefault();
+            // var input = document.getElementById('groupIndex');
+            var input = document.getElementsByName('groupIndex')[0];
+            input.value = (parseInt(input.value, 10) || 0) + 1;
             $.post('".plugin::getWebDir('taskrules')."/ajax/addgroupcriteria.php', {
                 id: id
             })
@@ -169,8 +196,9 @@ public function showForm($ID, array $options = [])
         /* ----------------- */
         /* "Trigger" section */
         /* ----------------- */
-        echo '<button class="accordiontskrul">' . __("Trigger", "taskrules") . '</button>';
-        echo '<div class="panel" style="display: flex;">
+        echo '<button type="button" class="accordiontskrul">' . __("Trigger", "taskrules") . '</button>';
+        // echo '<div class="panel" style="display: flex;">
+        echo '<div class="panel" style="display: none;">
         <div style="flex: 1; padding: 10px;">
         </div>
         <div style="flex: 4; padding: 10px;">
@@ -194,43 +222,78 @@ public function showForm($ID, array $options = [])
         /* ------------------- */
         /* "Action(s)" section */
         /* ------------------- */
-        echo '<button class="accordiontskrul">' . __("Action(s)", "taskrules") . '</button>';
+        echo '<button type="button" class="accordiontskrul">' . __("Action(s)", "taskrules") . '</button>';
 
+        // echo '<div class="panel" style="display: flex;">';
         /** ATTENTION : NE PAS OUBLIER */
         /** POUR LES AFFECTATIONS AUX GROUPES, NE PAS INCLURE DANS LA LISTE DES GROUPES SELECTIONNABLES
          * CEUX DONT LA CONFIGURATION "PEUT CONTENIR DES ELEMENTS" EST A "NON"
          */
+        echo '<div class="center">';
+        echo "<div>".__("(i) attention, n'apparaissent que les statuts communs aux objets sélectionnés dans les conditions", "taskrules")."</div>";
+
+/** Créer une liste déroulante des statuts avec les valeurs suivantes :
+ * Ne pas changer le statut (en dur)
+ * Vider le statut (en dur)
+ * Statut 1 (commun aux matériels listés dans les conditions)
+ * Statut 2 (commun aux matériels listés dans les conditions)
+ */
+$actionsStatuses = [
+    'None' => '-------',
+    'DoNotChange' => __("Keep current status", "taskrules"),
+    'Empty' => __("Empty current status", "taskrules"),
+];
+
+        echo '<div class="col-auto">';
+        // /* Action statuses dropdown */
+        echo '<select id="actionStatus" onclick="handleClick()">';
+        foreach ( $actionsStatuses as $id => $name) {
+            echo "<option value='".$id."'>".$name."</option>";
+        }
+        echo '</select>';
+
+        echo '</div>';
+        $selectId = 'actionStatus';
+        echo Html::scriptBlock('
+        function handleClick() {
+            var bStatus = document.getElementsByName("boolUpdStatuses")[0];
+            console.log("bStatus.value=" + bStatus.value);
+            if ( bStatus.value == 1 )
+                return;
+            const selectElement = document.getElementById("actionStatus");
+            const selectedValue = selectElement.value;
+            console.log("selectedValue=" + selectedValue);
+            /* Get the comma separated list of itemtypes in the Condition(s) section */
+            let values = "";
+            document.querySelectorAll("select[name*=\'itemtype\']").forEach(function(select) {
+                values += select.value + ",";
+            });
+            values = values.slice(0, -1);
+            /* Ajax call to populate statuses belonging to itemtypes in the Condition(s) section */
+            $.ajax({
+                url: "'.plugin::getWebDir('taskrules').'/ajax/getactionstatuses.php",
+                type: "GET",
+                data: { item_types: values },
+                success: function(response) {
+                    $("#'.$selectId.'").html(response);
+                },
+                error: function (xhr, status, error) {
+                console.log(xhr);
+                console.log(status);
+                console.log(error);
+                }
+            });
+            bStatus.value = 1;
+        }
+        ');
+
 ?>
 
-<!-- 
-<select name="filter[0][operator]"><option value="test">test</option></select>
-<select name="filter[0][field]"><option value="test">test</option></select>
-<select name="filter[0][type]"><option value="test">test</option></select>
-<select name="filter[0][status]"><option value="test">test</option></select>
 
-<select name="filter[1][operator]"><option value="test">test</option></select>
-<select name="filter[1][field]"><option value="test">test</option></select>
-<select name="filter[1][type]"><option value="test">test</option></select>
-<select name="filter[1][status]"><option value="test">test</option></select>
-
-<select name="filter[2][operator]"><option value="test">test</option></select>
-
-<select name="filter[2][group][0][operator]"><option value="test">test</option></select>
-<select name="filter[2][group][0][field]"><option value="test">test</option></select>
-<select name="filter[2][group][0][type]"><option value="test">test</option></select>
-<select name="filter[2][group][0][status]"><option value="test">test</option></select>
-
-<select name="filter[2][group][1][operator]"><option value="test">test</option></select>
-<select name="filter[2][group][1][field]"><option value="test">test</option></select>
-<select name="filter[2][group][1][type]"><option value="test">test</option></select>
-<select name="filter[2][group][1][status]"><option value="test">test</option></select>
--->
-
-<div class='center'>
-<div class="list-group list-group-flush list-group-hoverable criteria-list pt-2" style="background-color: white; id="criteriatablecomputer">
+<div class="list-group list-group-flush list-group-hoverable criteria-list pt-2" style="background-color: white; id="actiontable">
   <div class="list-group-item p-2 border-0 normalcriteria" id="row1">
     <div class="row g-1">
-      <div class="col-1"></div> <!-- Colonne vide à gauche -->
+      <div class="col-1"></div>
       <div class="col-2 d-flex align-items-center">Statut :</div>
       <div class="col-2 d-flex align-items-center">
         <select id="statut" name="statut">
@@ -301,17 +364,9 @@ public function showForm($ID, array $options = [])
 </div>
 
 <?php
-
-        echo '<div class="panel" style="display: block;">';
-        echo '<p>
-        </p>';
-        echo '</div>';
-    
-        echo "</div>";
-
+        // echo '</div>';
         $options['candel'] = false;  // Hide [Cancel] button
         $options['no_save'] = false; // Display [Save] button
-        // $options['id'] =$ID;
 
         echo '<div class="card-body mx-n2 mb-4 border-top d-flex flex-row-reverse align-items-start flex-wrap">
         <button class="btn btn-primary me-2" type="submit" name="save" value="1">
@@ -326,10 +381,17 @@ public function showForm($ID, array $options = [])
         return true;
     }  
 
-public static function ShowCriteriaRow($cnt)
+public static function ShowCriteriaRow($cnt, $groupIndex = 0)
 {
-    echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row'.$cnt.'" style="background-color: #e4e8ed;">
-             <div class="row g-1">
+    $bkcolor = $groupIndex > 0 ? '#ced4db' : '#e4e8ed';
+
+    echo '<script>
+    var input = document.getElementsByName("groupIndex")[0];
+    input.value = (parseInt(input.value, 10) || 0) + 1;
+    </script>';
+
+    echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row'.$cnt.'" style="background-color: '.$bkcolor.';">';
+    echo '<div class="row g-1">
                 <div class="col-auto">
                 <!--<h5>'.$cnt.'</h5>-->
                    <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button" data-rowid="row'.$cnt.'"
@@ -340,6 +402,9 @@ public static function ShowCriteriaRow($cnt)
                 </div>';
 
     echo Html::scriptBlock('$(document).on("click", ".remove-search-criteria", function() {
+        // Make the statuses dropdown updatable in the Action(s) section
+        var bStatus = document.getElementsByName("boolUpdStatuses")[0];
+        bStatus.value = 0;
         // force removal of tooltip
         var tooltip = bootstrap.Tooltip.getInstance($(this)[0]);
         if (tooltip !== null) {
@@ -351,14 +416,26 @@ public static function ShowCriteriaRow($cnt)
     ');
 
     $operator = "";
-    self::showOperatorsDropdown($cnt, $operator, 'filter['.$cnt.'][operator]');
+    $controlId = 'filter['.$cnt.'][operator]';
+    if ( $groupIndex > 0 )
+        $controlId = 'filter['.$cnt.'][group]['.$groupIndex.'][operator]';
+    self::showOperatorsDropdown($cnt, $operator, $controlId);
     echo '<div class="col-auto d-flex align-items-center">';
     echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
     echo '</div>';
     $itemtype = "";
-    self::showItemtypesDropdown($cnt, $itemtype, 'filter['.$cnt.'][itemtype]');
-    self::showCriteriaDropdown($cnt, $itemtype, 'filter['.$cnt.'][criteria]');
-    self::showLastDropdown($cnt, $itemtype, 'filter['.$cnt.'][last]');
+    $controlId = 'filter['.$cnt.'][itemtype]';
+    if ( $groupIndex > 0 )
+        $controlId = 'filter['.$cnt.'][group]['.$groupIndex.'][itemtype]';    
+    self::showItemtypesDropdown($cnt, $itemtype, $controlId);
+    $controlId = 'filter['.$cnt.'][criteria]';
+    if ( $groupIndex > 0 )
+        $controlId = 'filter['.$cnt.'][group]['.$groupIndex.'][criteria]';
+    self::showCriteriaDropdown($cnt, $itemtype, $controlId);
+    $controlId = 'filter['.$cnt.'][last]';
+    if ( $groupIndex > 0 )
+        $controlId = 'filter['.$cnt.'][group]['.$groupIndex.'][last]';
+    self::showLastDropdown($cnt, $itemtype, $controlId);
     echo '</div>';
     echo '</div>';
     echo '</div>';
@@ -433,15 +510,18 @@ public static function ShowGroupRow($cnt)
 
     echo '<button id="addsearchcriteria" class="btn btn-sm btn-outline-secondary me-1" type="button">
     <i class="ti ti-square-plus"></i>
-    <span class="d-none d-sm-block">règle</span>
+    <span class="d-none d-sm-block">règle de groupe</span>
     </button>';
 
     echo "<script>
     var id = '1';
+    // var input = document.getElementById('groupIndex');
+    var input = document.getElementsByName('groupIndex')[0];
     $('#addsearchcriteria').on('click', function(event) {
         event.preventDefault();
         $.post('".plugin::getWebDir('taskrules')."/ajax/addcriteria.php', {
-            id: id
+            id: id,
+            groupIndex: input.value
         })
         .done(function(data) {
             $(data).insertBefore('#more-grpcriteria');
@@ -450,24 +530,24 @@ public static function ShowGroupRow($cnt)
     });
     </script>";
 
-    echo '<button id="addcriteriagroup" class="btn btn-sm btn-outline-secondary me-1" type="button">
-    <i class="ti ti-code-plus"></i>
-    <span class="d-none d-sm-block">groupe</span>
-    </button>';
+    // echo '<button id="addcriteriagroup" class="btn btn-sm btn-outline-secondary me-1" type="button">
+    // <i class="ti ti-code-plus"></i>
+    // <span class="d-none d-sm-block">groupe</span>
+    // </button>';
 
-    echo "<script>
-    var id = '1';
-    $('#addcriteriagroup').on('click', function(event) {
-        event.preventDefault();
-        $.post('".plugin::getWebDir('taskrules')."/ajax/addgroupcriteria.php', {
-            id: id
-        })
-        .done(function(data) {
-            $(data).insertBefore('#more-grpcriteria');
-            id++;
-        });
-    });
-    </script>";
+    // echo "<script>
+    // var id = '1';
+    // $('#addcriteriagroup').on('click', function(event) {
+    //     event.preventDefault();
+    //     $.post('".plugin::getWebDir('taskrules')."/ajax/addgroupcriteria.php', {
+    //         id: id
+    //     })
+    //     .done(function(data) {
+    //         $(data).insertBefore('#more-grpcriteria');
+    //         id++;
+    //     });
+    // });
+    // </script>";
 
     echo '</div>';
     echo '</div>';
@@ -518,15 +598,23 @@ public static function getOperators()
     return $OPERATORS;
 }
 
-public static function getStatuses($itemtype) 
+public static function getStatuses($itemtypes) 
 {
     global $DB;
 
     $values[self::NO_VALUE] = __('----------', 'taskrules');
 
+    $arrItemtypes = explode(',', $itemtypes);
+
+    $itemtypecriteria = array();
+    foreach ($arrItemtypes as $itemtype) {    
+        $itemtypecriteria["is_visible_" . $itemtype] = 1;
+    }
+
     /** Retrieve object types data from the database */
-    $itemtypecriteria = 'is_visible_'.$itemtype;
-    $iterateur = $DB->request(['FIELDS' => ['glpi_states' => ['id', 'name']], 'FROM' => 'glpi_states', 'WHERE' => [$itemtypecriteria => 1]]);
+    $iterateur = $DB->request(['FIELDS' => ['glpi_states' => ['id', 'name']], 
+                               'FROM' => 'glpi_states', 
+                               'WHERE' => ['OR' => $itemtypecriteria]]);
 
     foreach ($iterateur as $data) {
         $values[$data['id']] = $data['name'];
@@ -624,7 +712,6 @@ public static function showOperatorsDropdown($id, $operator, $controlId)
     echo '<div class="col-auto">';
     /* First dropdown : list of operators */
     $value = "None";
-    //$cr = Dropdown::showFromArray('filter['.$id.']['.$name.']', self::getOperators(), [
     $cr = Dropdown::showFromArray($controlId, self::getOperators(), [
         'value' => $operator
     ]);
@@ -636,7 +723,6 @@ public static function showItemtypesDropdown($id, $itemtype, $controlId)
     echo '<div class="col-auto">';
         /* Second dropdown : list of itemtypes */
         $value = "None";
-        //$cr = Dropdown::showFromArray('filter['.$id.']['.$name.']', self::getItemtypes(true), [
         $cr = Dropdown::showFromArray($controlId, self::getItemtypes(true), [
             'value' => $itemtype,
             'on_change' => "updateHidden$id(this.value)"
@@ -647,7 +733,6 @@ public static function showItemtypesDropdown($id, $itemtype, $controlId)
 
 public static function showCriteriaDropdown($id, $itemtype, $controlId) 
 {
-    echo "controlId=".$controlId; //
     $criteria = [
 		'None' => '-------',
         'Status' => __("Status", "taskrules"),
@@ -657,8 +742,6 @@ public static function showCriteriaDropdown($id, $itemtype, $controlId)
     echo '<div class="col-auto">';
             /* Third dropdown : status or type */
             $value = "None";
-            //$selectedItemtype = "";
-            // $cr = Dropdown::showFromArray('filter['.$id.']['.$name.']', $criteria, [
             $cr = Dropdown::showFromArray($controlId, $criteria, [
                 'value' => $itemtype,
                  'on_change' => "updateLastDropdown$id(this.value)"
@@ -692,7 +775,6 @@ public static function showLastDropdown($id, $itemtype, $controlId)
     echo '<div class="col-auto">';
             /* Fourth dropdown : list of statuses for the selected object type */
             $value = "None";
-            //$cr = Dropdown::showFromArray('filter['.$id.']['.$name.']', self::getStatuses(''), [
             $cr = Dropdown::showFromArray($controlId, self::getStatuses(''), [
                 'value' => $itemtype
             ]);
@@ -721,5 +803,16 @@ public static function showLastDropdown($id, $itemtype, $controlId)
 
     echo '</div>';
 }
-
+public static function formatArray($array, $prefix = '') {
+    $result = '';
+    foreach ($array as $key => $value) {
+        $newKey = $prefix . '[' . $key . ']';
+        if (is_array($value)) {
+            $result .= formatArray($value, $newKey);
+        } else {
+            $result .= $newKey . '=' . $value . PHP_EOL;
+        }
+    }
+    return $result;
+}
 }

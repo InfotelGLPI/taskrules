@@ -6,9 +6,12 @@ Html::header_nocache();
 
 Session::checkLoginUser();
 
-// Toolbox::logInFile("EdmondDebug","je passe dans ajax/addcriteria.php et _GET vaut ".print_r($_POST,true)."\n");
+Toolbox::logInFile("EdmondDebug","je passe dans ajax/addcriteria.php > _POST=\n".PluginTaskrulesCondition::formatArray($_POST)."\n");
 
 /* Retrieve id value from ajax call */
 $id = $_POST['id'] + 1;
+$groupIndex = $_POST['groupIndex'];
 
-PluginTaskrulesCondition::ShowCriteriaRow($id);
+Toolbox::logInFile("EdmondDebug","Nouveau groupIndex=\n".$groupIndex."\n");
+
+PluginTaskrulesCondition::ShowCriteriaRow($id,$groupIndex);
