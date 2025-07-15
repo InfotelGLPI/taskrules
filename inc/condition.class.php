@@ -3,7 +3,7 @@
 /*
  -------------------------------------------------------------------------
  Taskrules plugin for GLPI
- Copyright (C) 2018-2022 by the Taskrules Development Team.
+ Copyright (C) 2025-2025 by the Taskrules Development Team.
 
  https://github.com/InfotelGLPI/taskrules
  -------------------------------------------------------------------------
@@ -38,39 +38,42 @@ $GLPI_TYPES = [];
  */
 class PluginTaskrulesCondition extends CommonDBTM
 {
-    static $rightname = 'plugin_taskrules_setup';
+    public static $rightname = 'plugin_taskrules_setup';
 
-    const NO_VALUE = 'none';
+    public const NO_VALUE = 'none';
 
 
-function getTabNameForItem(CommonGLPI $item, $withtemplate = 0) {
-    return ['Règle(s)'];
-}
+    public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
+    {
+        return ['Règle(s)'];
+    }
 
-static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0) {
+    public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
+    {
 
-    if ( $item->getType() != 'TaskTemplate')
-        return;
+        if ($item->getType() != 'TaskTemplate') {
+            return;
+        }
 
-    $ID = $item->getID();
-    //echo "ID=$ID";
+        $ID = $item->getID();
+        //echo "ID=$ID";
 
-    $prof = new self();
-    $prof->showForm($ID);
+        $prof = new self();
+        $prof->showForm($ID);
 
-    return true;
-}
+        return true;
+    }
 
-public function showForm($ID, array $options = [])
-{
-        Global $DB;
-        Global $OPERATORS;
+    public function showForm($ID, array $options = [])
+    {
+        global $DB;
+        global $OPERATORS;
 
         $this->getFromDB($ID);
 
         //The configuration is not deletable
         $options['colspan'] = 1;
-        
+
         echo "<div class='center'>";
         echo "<form name='form' method='post' action='" . $this->getFormURL() . "'>";
 
@@ -108,13 +111,13 @@ public function showForm($ID, array $options = [])
         echo '    <div style="display: flex;">';
         echo '      <div style="display: flex; flex-direction: column; gap: 18px; min-width: 320px;">';
         echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        echo '          <label for="dropdown_active1919881355" class="form-check-label" style="text-align: left;">'. __("Active : ", "taskrules").'</label>';
+        echo '          <label for="dropdown_active1919881355" class="form-check-label" style="text-align: left;">' . __("Active : ", "taskrules") . '</label>';
         echo '        </div>';
         echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        echo '          <label for="dropdown_preventcreation1168545998" class="form-check-label" style="text-align: left;">'. __("Prevent task creation on error :", "taskrules").'</label>';
+        echo '          <label for="dropdown_preventcreation1168545998" class="form-check-label" style="text-align: left;">' . __("Prevent task creation on error :", "taskrules") . '</label>';
         echo '        </div>';
         echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        echo '          <label for="dropdown_preventchange1593546928" class="form-check-label" style="text-align: left;">'. __("Prevent the task from changing its status (from \"to do\" to \"done\") in case of an error :", "taskrules").'</label>';
+        echo '          <label for="dropdown_preventchange1593546928" class="form-check-label" style="text-align: left;">' . __("Prevent the task from changing its status (from \"to do\" to \"done\") in case of an error :", "taskrules") . '</label>';
         echo '        </div>';
         echo '      </div>';
         echo '      <div style="display: flex; flex-direction: column; gap: 18px; min-width: 120px;">';
@@ -158,7 +161,7 @@ public function showForm($ID, array $options = [])
             // Make the statuses dropdown updatable in the Action(s) section
             var bStatus = document.getElementsByName('boolUpdStatuses')[0];
             bStatus.value = 0;
-            $.post('".plugin::getWebDir('taskrules')."/ajax/addcriteria.php', {
+            $.post('" . plugin::getWebDir('taskrules') . "/ajax/addcriteria.php', {
                 id: id,
                 groupIndex: -1
             })
@@ -181,7 +184,7 @@ public function showForm($ID, array $options = [])
             // var input = document.getElementById('groupIndex');
             var input = document.getElementsByName('groupIndex')[0];
             input.value = (parseInt(input.value, 10) || 0) + 1;
-            $.post('".plugin::getWebDir('taskrules')."/ajax/addgroupcriteria.php', {
+            $.post('" . plugin::getWebDir('taskrules') . "/ajax/addgroupcriteria.php', {
                 id: id
             })
             .done(function(data) {
@@ -230,25 +233,25 @@ public function showForm($ID, array $options = [])
          * CEUX DONT LA CONFIGURATION "PEUT CONTENIR DES ELEMENTS" EST A "NON"
          */
         echo '<div class="center">';
-        echo "<div>".__("(i) attention, n'apparaissent que les statuts communs aux objets sélectionnés dans les conditions", "taskrules")."</div>";
+        echo "<div>" . __("(i) attention, n'apparaissent que les statuts communs aux objets sélectionnés dans les conditions", "taskrules") . "</div>";
 
-/** Créer une liste déroulante des statuts avec les valeurs suivantes :
- * Ne pas changer le statut (en dur)
- * Vider le statut (en dur)
- * Statut 1 (commun aux matériels listés dans les conditions)
- * Statut 2 (commun aux matériels listés dans les conditions)
- */
-$actionsStatuses = [
-    'None' => '-------',
-    'DoNotChange' => __("Keep current status", "taskrules"),
-    'Empty' => __("Empty current status", "taskrules"),
-];
+        /** Créer une liste déroulante des statuts avec les valeurs suivantes :
+         * Ne pas changer le statut (en dur)
+         * Vider le statut (en dur)
+         * Statut 1 (commun aux matériels listés dans les conditions)
+         * Statut 2 (commun aux matériels listés dans les conditions)
+         */
+        $actionsStatuses = [
+            'None' => '-------',
+            'DoNotChange' => __("Keep current status", "taskrules"),
+            'Empty' => __("Empty current status", "taskrules"),
+        ];
 
         echo '<div class="col-auto">';
         // /* Action statuses dropdown */
         echo '<select id="actionStatus" onclick="handleClick()">';
-        foreach ( $actionsStatuses as $id => $name) {
-            echo "<option value='".$id."'>".$name."</option>";
+        foreach ($actionsStatuses as $id => $name) {
+            echo "<option value='" . $id . "'>" . $name . "</option>";
         }
         echo '</select>';
 
@@ -271,11 +274,11 @@ $actionsStatuses = [
             values = values.slice(0, -1);
             /* Ajax call to populate statuses belonging to itemtypes in the Condition(s) section */
             $.ajax({
-                url: "'.plugin::getWebDir('taskrules').'/ajax/getactionstatuses.php",
+                url: "' . plugin::getWebDir('taskrules') . '/ajax/getactionstatuses.php",
                 type: "GET",
                 data: { item_types: values },
                 success: function(response) {
-                    $("#'.$selectId.'").html(response);
+                    $("#' . $selectId . '").html(response);
                 },
                 error: function (xhr, status, error) {
                 console.log(xhr);
@@ -287,7 +290,7 @@ $actionsStatuses = [
         }
         ');
 
-?>
+        ?>
 
 
 <div class="list-group list-group-flush list-group-hoverable criteria-list pt-2" style="background-color: white; id="actiontable">
@@ -364,8 +367,8 @@ $actionsStatuses = [
 </div>
 
 <?php
-        // echo '</div>';
-        $options['candel'] = false;  // Hide [Cancel] button
+                // echo '</div>';
+                $options['candel'] = false;  // Hide [Cancel] button
         $options['no_save'] = false; // Display [Save] button
 
         echo '<div class="card-body mx-n2 mb-4 border-top d-flex flex-row-reverse align-items-start flex-wrap">
@@ -379,29 +382,29 @@ $actionsStatuses = [
         Html::closeForm();
 
         return true;
-    }  
+    }
 
-public static function ShowCriteriaRow($cnt, $groupIndex = 0)
-{
-    $bkcolor = $groupIndex > 0 ? '#ced4db' : '#e4e8ed';
+    public static function ShowCriteriaRow($cnt, $groupIndex = 0)
+    {
+        $bkcolor = $groupIndex > 0 ? '#ced4db' : '#e4e8ed';
 
-    echo '<script>
+        echo '<script>
     var input = document.getElementsByName("groupIndex")[0];
     input.value = (parseInt(input.value, 10) || 0) + 1;
     </script>';
 
-    echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row'.$cnt.'" style="background-color: '.$bkcolor.';">';
-    echo '<div class="row g-1">
+        echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row' . $cnt . '" style="background-color: ' . $bkcolor . ';">';
+        echo '<div class="row g-1">
                 <div class="col-auto">
-                <!--<h5>'.$cnt.'</h5>-->
-                   <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button" data-rowid="row'.$cnt.'"
+                <!--<h5>' . $cnt . '</h5>-->
+                   <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button" data-rowid="row' . $cnt . '"
                    data-bs-toggle="tooltip" data-bs-placement="left"
                    title=' . __("Delete a rule", "taskrules") . '">
                       <i class="ti ti-square-minus" alt="-"></i>
                    </button>
                 </div>';
 
-    echo Html::scriptBlock('$(document).on("click", ".remove-search-criteria", function() {
+        echo Html::scriptBlock('$(document).on("click", ".remove-search-criteria", function() {
         // Make the statuses dropdown updatable in the Action(s) section
         var bStatus = document.getElementsByName("boolUpdStatuses")[0];
         bStatus.value = 0;
@@ -415,48 +418,52 @@ public static function ShowCriteriaRow($cnt, $groupIndex = 0)
         });
     ');
 
-    $operator = "";
-    $controlId = 'filter['.$cnt.'][operator]';
-    if ( $groupIndex > 0 )
-        $controlId = 'filter['.$cnt.'][group]['.$groupIndex.'][operator]';
-    self::showOperatorsDropdown($cnt, $operator, $controlId);
-    echo '<div class="col-auto d-flex align-items-center">';
-    echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
-    echo '</div>';
-    $itemtype = "";
-    $controlId = 'filter['.$cnt.'][itemtype]';
-    if ( $groupIndex > 0 )
-        $controlId = 'filter['.$cnt.'][group]['.$groupIndex.'][itemtype]';    
-    self::showItemtypesDropdown($cnt, $itemtype, $controlId);
-    $controlId = 'filter['.$cnt.'][criteria]';
-    if ( $groupIndex > 0 )
-        $controlId = 'filter['.$cnt.'][group]['.$groupIndex.'][criteria]';
-    self::showCriteriaDropdown($cnt, $itemtype, $controlId);
-    $controlId = 'filter['.$cnt.'][last]';
-    if ( $groupIndex > 0 )
-        $controlId = 'filter['.$cnt.'][group]['.$groupIndex.'][last]';
-    self::showLastDropdown($cnt, $itemtype, $controlId);
-    echo '</div>';
-    echo '</div>';
-    echo '</div>';
-}
+        $operator = "";
+        $controlId = 'filter[' . $cnt . '][operator]';
+        if ($groupIndex > 0) {
+            $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][operator]';
+        }
+        self::showOperatorsDropdown($cnt, $operator, $controlId);
+        echo '<div class="col-auto d-flex align-items-center">';
+        echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
+        echo '</div>';
+        $itemtype = "";
+        $controlId = 'filter[' . $cnt . '][itemtype]';
+        if ($groupIndex > 0) {
+            $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][itemtype]';
+        }
+        self::showItemtypesDropdown($cnt, $itemtype, $controlId);
+        $controlId = 'filter[' . $cnt . '][criteria]';
+        if ($groupIndex > 0) {
+            $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][criteria]';
+        }
+        self::showCriteriaDropdown($cnt, $itemtype, $controlId);
+        $controlId = 'filter[' . $cnt . '][last]';
+        if ($groupIndex > 0) {
+            $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][last]';
+        }
+        self::showLastDropdown($cnt, $itemtype, $controlId);
+        echo '</div>';
+        echo '</div>';
+        echo '</div>';
+    }
 
-public static function ShowGroupRow($cnt)
-{
-    $grpcnt = 0;
-    $grpcnt++;
+    public static function ShowGroupRow($cnt)
+    {
+        $grpcnt = 0;
+        $grpcnt++;
 
-    echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row'.$cnt.'" style="background-color: #e4e8ed;">
+        echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row' . $cnt . '" style="background-color: #e4e8ed;">
              <div class="row g-1">
                 <div class="col-auto">
-                <!--<h5>'.$cnt.'</h5>-->
-                   <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button" data-rowid="row'.$cnt.'"
+                <!--<h5>' . $cnt . '</h5>-->
+                   <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button" data-rowid="row' . $cnt . '"
                    data-bs-toggle="tooltip" data-bs-placement="left"
                    title=' . __("Delete a rule", "taskrules") . '">
                       <i class="ti ti-square-minus" alt="-"></i>
                    </button>
                 </div>';
-    echo Html::scriptBlock('$(document).on("click", ".remove-search-criteria", function() {
+        echo Html::scriptBlock('$(document).on("click", ".remove-search-criteria", function() {
         // force removal of tooltip
         var tooltip = bootstrap.Tooltip.getInstance($(this)[0]);
         if (tooltip !== null) {
@@ -467,21 +474,21 @@ public static function ShowGroupRow($cnt)
         });
         ');
 
-    $operator = "";
-    self::showOperatorsDropdown($cnt, $operator, 'filter['.$cnt.'][operator]');
-    echo '<div class="col-auto d-flex align-items-center">';
+        $operator = "";
+        self::showOperatorsDropdown($cnt, $operator, 'filter[' . $cnt . '][operator]');
+        echo '<div class="col-auto d-flex align-items-center">';
 
-    /** Group begins */
-    echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row'.$cnt.'" style="background-color: #ced4db;">
+        /** Group begins */
+        echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row' . $cnt . '" style="background-color: #ced4db;">
              <div class="row g-1" style="margin: 0;">
                 <div class="col-auto">
-                   <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button" data-rowid="row'.$cnt.'"
+                   <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button" data-rowid="row' . $cnt . '"
                    data-bs-toggle="tooltip" data-bs-placement="left"
                    title=' . __("Delete a rule", "taskrules") . '">
                       <i class="ti ti-square-minus" alt="-"></i>
                    </button>
                 </div>';
-    echo Html::scriptBlock('$(document).on("click", ".remove-search-criteria", function() {
+        echo Html::scriptBlock('$(document).on("click", ".remove-search-criteria", function() {
         // force removal of tooltip
         var tooltip = bootstrap.Tooltip.getInstance($(this)[0]);
         if (tooltip !== null) {
@@ -490,36 +497,36 @@ public static function ShowGroupRow($cnt)
         var rowID = $(this).data("rowid");
         $("#" + rowID).remove();
         });
-        ');                
-    $operator = "";
-    self::showOperatorsDropdown($cnt, $operator, 'filter['.$cnt.'][group]['.$grpcnt.'][operator]');
-    echo '<div class="col-auto d-flex align-items-center">';
-    echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
-    echo '</div>';
-    $itemtype = "";
-    self::showItemtypesDropdown($cnt, $itemtype, 'filter['.$cnt.'][group]['.$grpcnt.'][itemtype]');
-    self::showCriteriaDropdown($cnt, $itemtype, 'filter['.$cnt.'][group]['.$grpcnt.'][criteria]');
-    self::showLastDropdown($cnt, $itemtype, 'filter['.$cnt.'][group]['.$grpcnt.'][last]');
-    echo '</div>';
+        ');
+        $operator = "";
+        self::showOperatorsDropdown($cnt, $operator, 'filter[' . $cnt . '][group][' . $grpcnt . '][operator]');
+        echo '<div class="col-auto d-flex align-items-center">';
+        echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
+        echo '</div>';
+        $itemtype = "";
+        self::showItemtypesDropdown($cnt, $itemtype, 'filter[' . $cnt . '][group][' . $grpcnt . '][itemtype]');
+        self::showCriteriaDropdown($cnt, $itemtype, 'filter[' . $cnt . '][group][' . $grpcnt . '][criteria]');
+        self::showLastDropdown($cnt, $itemtype, 'filter[' . $cnt . '][group][' . $grpcnt . '][last]');
+        echo '</div>';
 
-    echo "<a id='more-grpcriteria' class='hespace' role='button' style='display: block;'></a>";
+        echo "<a id='more-grpcriteria' class='hespace' role='button' style='display: block;'></a>";
 
-    echo '<div style="background-color: white; padding:2px 0 10px 0;">';
+        echo '<div style="background-color: white; padding:2px 0 10px 0;">';
 
-    // echo "<a id='more-grpcriteria' class='hespace' role='button' style='display: block;'></a>";
+        // echo "<a id='more-grpcriteria' class='hespace' role='button' style='display: block;'></a>";
 
-    echo '<button id="addsearchcriteria" class="btn btn-sm btn-outline-secondary me-1" type="button">
+        echo '<button id="addsearchcriteria" class="btn btn-sm btn-outline-secondary me-1" type="button">
     <i class="ti ti-square-plus"></i>
     <span class="d-none d-sm-block">règle de groupe</span>
     </button>';
 
-    echo "<script>
+        echo "<script>
     var id = '1';
     // var input = document.getElementById('groupIndex');
     var input = document.getElementsByName('groupIndex')[0];
     $('#addsearchcriteria').on('click', function(event) {
         event.preventDefault();
-        $.post('".plugin::getWebDir('taskrules')."/ajax/addcriteria.php', {
+        $.post('" . plugin::getWebDir('taskrules') . "/ajax/addcriteria.php', {
             id: id,
             groupIndex: input.value
         })
@@ -530,36 +537,36 @@ public static function ShowGroupRow($cnt)
     });
     </script>";
 
-    // echo '<button id="addcriteriagroup" class="btn btn-sm btn-outline-secondary me-1" type="button">
-    // <i class="ti ti-code-plus"></i>
-    // <span class="d-none d-sm-block">groupe</span>
-    // </button>';
+        // echo '<button id="addcriteriagroup" class="btn btn-sm btn-outline-secondary me-1" type="button">
+        // <i class="ti ti-code-plus"></i>
+        // <span class="d-none d-sm-block">groupe</span>
+        // </button>';
 
-    // echo "<script>
-    // var id = '1';
-    // $('#addcriteriagroup').on('click', function(event) {
-    //     event.preventDefault();
-    //     $.post('".plugin::getWebDir('taskrules')."/ajax/addgroupcriteria.php', {
-    //         id: id
-    //     })
-    //     .done(function(data) {
-    //         $(data).insertBefore('#more-grpcriteria');
-    //         id++;
-    //     });
-    // });
-    // </script>";
+        // echo "<script>
+        // var id = '1';
+        // $('#addcriteriagroup').on('click', function(event) {
+        //     event.preventDefault();
+        //     $.post('".plugin::getWebDir('taskrules')."/ajax/addgroupcriteria.php', {
+        //         id: id
+        //     })
+        //     .done(function(data) {
+        //         $(data).insertBefore('#more-grpcriteria');
+        //         id++;
+        //     });
+        // });
+        // </script>";
 
-    echo '</div>';
-    echo '</div>';
-    echo '</div>';
-    echo '</div>';
-}
+        echo '</div>';
+        echo '</div>';
+        echo '</div>';
+        echo '</div>';
+    }
 
-public static function showSwitchField($name, $value)
-{
-    echo Html::hidden($name, ['id' => $name,
-        'value' => $value]);
-    echo Html::scriptBlock("(function(){
+    public static function showSwitchField($name, $value)
+    {
+        echo Html::hidden($name, ['id' => $name,
+            'value' => $value]);
+        echo Html::scriptBlock("(function(){
                             var toggleButton = $('.$name');
                             toggleButton.click(function() {
                             if ($(this).hasClass('fa-toggle-on')) {
@@ -577,188 +584,188 @@ public static function showSwitchField($name, $value)
                                 }
                             });
                         })();");
-    if ($value == 1) {
-        echo "<a class=\"button\"><i class=\"$name fa-fw fas fa-2x fa-toggle-on enabled\"></i></a>";
-    } else {
-        echo "<a class=\"button\"><i class=\"$name fa-fw fas fa-2x fa-toggle-off disabled\"></i></a>";
-    }
-}
-
-/* Return an array of operators */
-public static function getOperators()
-{
-	$OPERATORS = [
-		'None' => '-------',
-		'AND' => __("AND", "taskrules"),
-		'OR' => __("OR", "taskrules"),
-		'AND NOT' => __("AND NOT", "taskrules"),
-		'OR NOT' => __("OR NOT", "taskrules"),
-	];
-
-    return $OPERATORS;
-}
-
-public static function getStatuses($itemtypes) 
-{
-    global $DB;
-
-    $values[self::NO_VALUE] = __('----------', 'taskrules');
-
-    $arrItemtypes = explode(',', $itemtypes);
-
-    $itemtypecriteria = array();
-    foreach ($arrItemtypes as $itemtype) {    
-        $itemtypecriteria["is_visible_" . $itemtype] = 1;
-    }
-
-    /** Retrieve object types data from the database */
-    $iterateur = $DB->request(['FIELDS' => ['glpi_states' => ['id', 'name']], 
-                               'FROM' => 'glpi_states', 
-                               'WHERE' => ['OR' => $itemtypecriteria]]);
-
-    foreach ($iterateur as $data) {
-        $values[$data['id']] = $data['name'];
-    }
-
-    asort($values);
-    return $values;
-}
-
-/* Return an array of types from the Itemtype passed as parameter */
-public static function getObjectTypes($selectedItemtype)
-{
-    global $DB;
-
-    $values[self::NO_VALUE] = __('----------', 'taskrules');
-
-    $OBJECTTYPES = [
-        'Computer' => 'glpi_computertypes',
-        'Printer' => 'glpi_printertypes',
-        'Phone' => 'glpi_phonetypes',
-        'Monitor' => 'glpi_monitortypes',
-        'Cluster' => 'glpi_clustertypes',
-        'Peripheral' => 'glpi_peripheraltypes',
-        'NetworkEquipment' => 'glpi_networkequipmenttypes',
-    ];
-
-    if ( $selectedItemtype!="" ) {
-        /** Retrieve object types data from the database */
-        $iterateur = $DB->request(['FIELDS' => [$OBJECTTYPES[$selectedItemtype] => ['id', 'name']], 'FROM' => $OBJECTTYPES[$selectedItemtype]]);
-        
-        foreach ($iterateur as $data) {
-            $values[$data['id']] = $data['name'];
+        if ($value == 1) {
+            echo "<a class=\"button\"><i class=\"$name fa-fw fas fa-2x fa-toggle-on enabled\"></i></a>";
+        } else {
+            echo "<a class=\"button\"><i class=\"$name fa-fw fas fa-2x fa-toggle-off disabled\"></i></a>";
         }
     }
 
-    asort($values);
-    return $values;
-}
+    /* Return an array of operators */
+    public static function getOperators()
+    {
+        $OPERATORS = [
+            'None' => '-------',
+            'AND' => __("AND", "taskrules"),
+            'OR' => __("OR", "taskrules"),
+            'AND NOT' => __("AND NOT", "taskrules"),
+            'OR NOT' => __("OR NOT", "taskrules"),
+        ];
 
-/**
-    * Return all types
-    *
-    * @return an array which contains array(itemtype => itemtype name)
-   **/
-  public static function getItemtypes()
-  {
-      global $GLPI_TYPES;
-
-      self::getTypesToInject();
-
-      $values[self::NO_VALUE] = __('----------', 'taskrules');
-
-      foreach ($GLPI_TYPES as $type => $connected) {
-          if ( class_exists($type) ) {
-              $instance = new $type();
-              //If user has no right to create an object of this type, do not display type in the list
-              if (!$instance->canCreate()) {
-                  continue;
-              }
-              $name = call_user_func([$type, 'getTypeName']);
-              $values[$type] = $name;
-          }
-      }
-      asort($values);
-      return $values;
-  }
-
-/**
- * Return all types that can be treated in the current plugin
- *
- * @return void
- */
-public static function getTypesToInject(): void
-{
-    global $GLPI_TYPES;
-
-    if (is_array($GLPI_TYPES) && count($GLPI_TYPES)) {
-        // already populated
-        return;
+        return $OPERATORS;
     }
 
-    $GLPI_TYPES = [
-        'Computer' => ['Computer'],
-        'Peripheral' => ['Peripheral'],
-        'Phone' => ['Phone'],
-        'Printer' => ['Printer'],
-        'Monitor' => ['Monitor'],
-        'NetworkEquipment' => ['NetworkEquipment'],
-    ];
+    public static function getStatuses($itemtypes)
+    {
+        global $DB;
 
-}
+        $values[self::NO_VALUE] = __('----------', 'taskrules');
 
-public static function showOperatorsDropdown($id, $operator, $controlId) 
-{
-    echo '<div class="col-auto">';
-    /* First dropdown : list of operators */
-    $value = "None";
-    $cr = Dropdown::showFromArray($controlId, self::getOperators(), [
-        'value' => $operator
-    ]);
-    echo '</div>';
-}
+        $arrItemtypes = explode(',', $itemtypes);
 
-public static function showItemtypesDropdown($id, $itemtype, $controlId) 
-{
-    echo '<div class="col-auto">';
+        $itemtypecriteria = [];
+        foreach ($arrItemtypes as $itemtype) {
+            $itemtypecriteria["is_visible_" . $itemtype] = 1;
+        }
+
+        /** Retrieve object types data from the database */
+        $iterateur = $DB->request(['FIELDS' => ['glpi_states' => ['id', 'name']],
+            'FROM' => 'glpi_states',
+            'WHERE' => ['OR' => $itemtypecriteria]]);
+
+        foreach ($iterateur as $data) {
+            $values[$data['id']] = $data['name'];
+        }
+
+        asort($values);
+        return $values;
+    }
+
+    /* Return an array of types from the Itemtype passed as parameter */
+    public static function getObjectTypes($selectedItemtype)
+    {
+        global $DB;
+
+        $values[self::NO_VALUE] = __('----------', 'taskrules');
+
+        $OBJECTTYPES = [
+            'Computer' => 'glpi_computertypes',
+            'Printer' => 'glpi_printertypes',
+            'Phone' => 'glpi_phonetypes',
+            'Monitor' => 'glpi_monitortypes',
+            'Cluster' => 'glpi_clustertypes',
+            'Peripheral' => 'glpi_peripheraltypes',
+            'NetworkEquipment' => 'glpi_networkequipmenttypes',
+        ];
+
+        if ($selectedItemtype != "") {
+            /** Retrieve object types data from the database */
+            $iterateur = $DB->request(['FIELDS' => [$OBJECTTYPES[$selectedItemtype] => ['id', 'name']], 'FROM' => $OBJECTTYPES[$selectedItemtype]]);
+
+            foreach ($iterateur as $data) {
+                $values[$data['id']] = $data['name'];
+            }
+        }
+
+        asort($values);
+        return $values;
+    }
+
+    /**
+        * Return all types
+        *
+        * @return an array which contains array(itemtype => itemtype name)
+       **/
+    public static function getItemtypes()
+    {
+        global $GLPI_TYPES;
+
+        self::getTypesToInject();
+
+        $values[self::NO_VALUE] = __('----------', 'taskrules');
+
+        foreach ($GLPI_TYPES as $type => $connected) {
+            if (class_exists($type)) {
+                $instance = new $type();
+                //If user has no right to create an object of this type, do not display type in the list
+                if (!$instance->canCreate()) {
+                    continue;
+                }
+                $name = call_user_func([$type, 'getTypeName']);
+                $values[$type] = $name;
+            }
+        }
+        asort($values);
+        return $values;
+    }
+
+    /**
+     * Return all types that can be treated in the current plugin
+     *
+     * @return void
+     */
+    public static function getTypesToInject(): void
+    {
+        global $GLPI_TYPES;
+
+        if (is_array($GLPI_TYPES) && count($GLPI_TYPES)) {
+            // already populated
+            return;
+        }
+
+        $GLPI_TYPES = [
+            'Computer' => ['Computer'],
+            'Peripheral' => ['Peripheral'],
+            'Phone' => ['Phone'],
+            'Printer' => ['Printer'],
+            'Monitor' => ['Monitor'],
+            'NetworkEquipment' => ['NetworkEquipment'],
+        ];
+
+    }
+
+    public static function showOperatorsDropdown($id, $operator, $controlId)
+    {
+        echo '<div class="col-auto">';
+        /* First dropdown : list of operators */
+        $value = "None";
+        $cr = Dropdown::showFromArray($controlId, self::getOperators(), [
+            'value' => $operator,
+        ]);
+        echo '</div>';
+    }
+
+    public static function showItemtypesDropdown($id, $itemtype, $controlId)
+    {
+        echo '<div class="col-auto">';
         /* Second dropdown : list of itemtypes */
         $value = "None";
         $cr = Dropdown::showFromArray($controlId, self::getItemtypes(true), [
             'value' => $itemtype,
-            'on_change' => "updateHidden$id(this.value)"
+            'on_change' => "updateHidden$id(this.value)",
         ]);
-    echo '<input type="hidden" id="itemtype'.$id.'" value="">';
-    echo '</div>';
-}
+        echo '<input type="hidden" id="itemtype' . $id . '" value="">';
+        echo '</div>';
+    }
 
-public static function showCriteriaDropdown($id, $itemtype, $controlId) 
-{
-    $criteria = [
-		'None' => '-------',
-        'Status' => __("Status", "taskrules"),
-        'Type' => __("Type", "taskrules"),
-    ];
+    public static function showCriteriaDropdown($id, $itemtype, $controlId)
+    {
+        $criteria = [
+            'None' => '-------',
+            'Status' => __("Status", "taskrules"),
+            'Type' => __("Type", "taskrules"),
+        ];
 
-    echo '<div class="col-auto">';
-            /* Third dropdown : status or type */
-            $value = "None";
-            $cr = Dropdown::showFromArray($controlId, $criteria, [
-                'value' => $itemtype,
-                 'on_change' => "updateLastDropdown$id(this.value)"
-            ]);
-            /* Ajax code to reset the criteria dropdown */
-            $selectId = str_replace("[", "_", $controlId);
-            $selectId = "dropdown_".str_replace("]", "_", $selectId).$cr;
-            echo Html::scriptBlock("
+        echo '<div class="col-auto">';
+        /* Third dropdown : status or type */
+        $value = "None";
+        $cr = Dropdown::showFromArray($controlId, $criteria, [
+            'value' => $itemtype,
+            'on_change' => "updateLastDropdown$id(this.value)",
+        ]);
+        /* Ajax code to reset the criteria dropdown */
+        $selectId = str_replace("[", "_", $controlId);
+        $selectId = "dropdown_" . str_replace("]", "_", $selectId) . $cr;
+        echo Html::scriptBlock("
             function updateHidden$id(value) {
-                var input = document.getElementById('itemtype".$id."');
+                var input = document.getElementById('itemtype" . $id . "');
                 input.value = value;            
                 $.ajax({
-                    url: '".plugin::getWebDir('taskrules')."/ajax/resetcriteria.php',
+                    url: '" . plugin::getWebDir('taskrules') . "/ajax/resetcriteria.php',
                     type: 'GET',
                     data: { item_type: value },
                     success: function(response) {
-                        $('#".$selectId."').html(response);
+                        $('#" . $selectId . "').html(response);
                     },
                     error: function (xhr, status, error) {
                     console.log(xhr);
@@ -767,31 +774,31 @@ public static function showCriteriaDropdown($id, $itemtype, $controlId)
                     }
                 });
             }");
-    echo '</div>';
-}
+        echo '</div>';
+    }
 
-public static function showLastDropdown($id, $itemtype, $controlId) 
-{
-    echo '<div class="col-auto">';
-            /* Fourth dropdown : list of statuses for the selected object type */
-            $value = "None";
-            $cr = Dropdown::showFromArray($controlId, self::getStatuses(''), [
-                'value' => $itemtype
-            ]);
+    public static function showLastDropdown($id, $itemtype, $controlId)
+    {
+        echo '<div class="col-auto">';
+        /* Fourth dropdown : list of statuses for the selected object type */
+        $value = "None";
+        $cr = Dropdown::showFromArray($controlId, self::getStatuses(''), [
+            'value' => $itemtype,
+        ]);
 
-    /* Ajax code to update the last dropdown from the third dropdown selection */
-    $selectId = str_replace("[", "_", $controlId);
-    $selectId = "dropdown_".str_replace("]", "_", $selectId).$cr;
-    echo Html::scriptBlock("
+        /* Ajax code to update the last dropdown from the third dropdown selection */
+        $selectId = str_replace("[", "_", $controlId);
+        $selectId = "dropdown_" . str_replace("]", "_", $selectId) . $cr;
+        echo Html::scriptBlock("
     function updateLastDropdown$id(criteria) {
         // Retrieve itemtype from stored value in hidden field
-        var itemtype = document.getElementById('itemtype".$id."');
+        var itemtype = document.getElementById('itemtype" . $id . "');
         $.ajax({
-            url: '".plugin::getWebDir('taskrules')."/ajax/lastdropdown.php',
+            url: '" . plugin::getWebDir('taskrules') . "/ajax/lastdropdown.php',
             type: 'GET',
             data: { criteria_Type: criteria, item_type: itemtype.value },
             success: function(response) {
-                $('#".$selectId."').html(response);
+                $('#" . $selectId . "').html(response);
             },
             error: function (xhr, status, error) {
             console.log(xhr);
@@ -801,18 +808,19 @@ public static function showLastDropdown($id, $itemtype, $controlId)
         });
     }");
 
-    echo '</div>';
-}
-public static function formatArray($array, $prefix = '') {
-    $result = '';
-    foreach ($array as $key => $value) {
-        $newKey = $prefix . '[' . $key . ']';
-        if (is_array($value)) {
-            $result .= formatArray($value, $newKey);
-        } else {
-            $result .= $newKey . '=' . $value . PHP_EOL;
-        }
+        echo '</div>';
     }
-    return $result;
-}
+    public static function formatArray($array, $prefix = '')
+    {
+        $result = '';
+        foreach ($array as $key => $value) {
+            $newKey = $prefix . '[' . $key . ']';
+            if (is_array($value)) {
+                $result .= formatArray($value, $newKey);
+            } else {
+                $result .= $newKey . '=' . $value . PHP_EOL;
+            }
+        }
+        return $result;
+    }
 }

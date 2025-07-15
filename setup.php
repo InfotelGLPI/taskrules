@@ -1,33 +1,32 @@
 <?php
 
-/**
- * -------------------------------------------------------------------------
- * TaskRules plugin for GLPI
- * Copyright (C) 2025 by the TaskRules Development Team.
- * -------------------------------------------------------------------------
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
- * --------------------------------------------------------------------------
+/*
+ -------------------------------------------------------------------------
+ Taskrules plugin for GLPI
+ Copyright (C) 2025-2025 by the Taskrules Development Team.
+
+ https://github.com/InfotelGLPI/taskrules
+ -------------------------------------------------------------------------
+
+ LICENSE
+
+ This file is part of Taskrules.
+
+ Taskrules is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or
+ (at your option) any later version.
+
+ Taskrules is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Taskrules. If not, see <http://www.gnu.org/licenses/>.
+ --------------------------------------------------------------------------
  */
+
 
 define('PLUGIN_TASKRULES_VERSION', '1.0.0');
 
@@ -54,28 +53,23 @@ function plugin_init_taskrules()
     if (
         $plugin->isInstalled('taskrules')
         && $plugin->isActivated('taskrules')
-    ) 
-    {
+    ) {
 
-    // if (Plugin::isPluginActive('followingprocess')) {
-    //     if (Session::getLoginUserID()) {
-            Plugin::registerClass("PluginTaskruleProfile", ['addtabon' => "Profile"]);
-    //     }
-    // }
+        Plugin::registerClass("PluginTaskrulesProfile", ['addtabon' => "Profile"]);
 
-    $PLUGIN_HOOKS['add_css']['taskrules'][] = "css/accordion.css";
+        $PLUGIN_HOOKS['add_css']['taskrules'][] = "css/accordion.css";
 
-    if (array_key_exists('REQUEST_URI', $_SERVER) && strpos($_SERVER['REQUEST_URI'], "tasktemplate.form.php") !== false && isset($_GET['id'])) {
-        $PLUGIN_HOOKS['add_javascript']['taskrules'][] = 'js/accordion.js';
-    }
+        if (array_key_exists('REQUEST_URI', $_SERVER) && strpos($_SERVER['REQUEST_URI'], "tasktemplate.form.php") !== false && isset($_GET['id'])) {
+            $PLUGIN_HOOKS['add_javascript']['taskrules'][] = 'js/accordion.js';
+        }
 
-    /* Prepare hooks to intercept tasks events (add task and task update) */
-    $PLUGIN_HOOKS['pre_item_add']['taskrules'] = ['TicketTask' => 'taskrules_pre_additem_called'];
-    $PLUGIN_HOOKS['item_add']['taskrules'] = ['TicketTask' => 'taskrules_additem_called'];
-    $PLUGIN_HOOKS['item_update']['taskrules'] = ['TicketTask' => 'taskrules_updateitem_called'];
+        /* Prepare hooks to intercept tasks events (add task and task update) */
+        $PLUGIN_HOOKS['pre_item_add']['taskrules'] = ['TicketTask' => 'taskrules_pre_additem_called'];
+        $PLUGIN_HOOKS['item_add']['taskrules'] = ['TicketTask' => 'taskrules_additem_called'];
+        $PLUGIN_HOOKS['item_update']['taskrules'] = ['TicketTask' => 'taskrules_updateitem_called'];
 
-    /* Add a new tab on the Task template page */
-    Plugin::registerClass('PluginTaskrulesCondition', ['addtabon' => ['TaskTemplate']]);
+        /* Add a new tab on the Task template page */
+        Plugin::registerClass('PluginTaskrulesCondition', ['addtabon' => ['TaskTemplate']]);
     }
 }
 
@@ -97,37 +91,7 @@ function plugin_version_taskrules()
             'glpi'       => [
                 'min' => PLUGIN_TASKRULES_MIN_GLPI_VERSION,
                 'max' => PLUGIN_TASKRULES_MAX_GLPI_VERSION,
-            ]
-        ]
+            ],
+        ],
     ];
-}
-
-/**
- * Check pre-requisites before install
- * OPTIONNAL, but recommanded
- *
- * @return boolean
- */
-function plugin_taskrules_check_prerequisites()
-{
-    return true;
-}
-
-/**
- * Check configuration process
- *
- * @param boolean $verbose Whether to display message on failure. Defaults to false
- *
- * @return boolean
- */
-function plugin_taskrules_check_config($verbose = false)
-{
-    if (true) { // Your configuration check
-        return true;
-    }
-
-    if ($verbose) {
-        echo __('Installed / not configured', 'taskrules');
-    }
-    return false;
 }

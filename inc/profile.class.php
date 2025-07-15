@@ -1,29 +1,29 @@
 <?php
+
 /*
- * @version $Id: HEADER 15930 2011-10-30 15:47:55Z tsmr $
  -------------------------------------------------------------------------
- taskrules plugin for GLPI
- Copyright (C) 2018-2022 by the taskrules Development Team.
+ Taskrules plugin for GLPI
+ Copyright (C) 2025-2025 by the Taskrules Development Team.
 
  https://github.com/InfotelGLPI/taskrules
  -------------------------------------------------------------------------
 
  LICENSE
 
- This file is part of taskrules.
+ This file is part of Taskrules.
 
- taskrules is free software; you can redistribute it and/or modify
+ Taskrules is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
  the Free Software Foundation; either version 2 of the License, or
  (at your option) any later version.
 
- taskrules is distributed in the hope that it will be useful,
+ Taskrules is distributed in the hope that it will be useful,
  but WITHOUT ANY WARRANTY; without even the implied warranty of
  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  GNU General Public License for more details.
 
  You should have received a copy of the GNU General Public License
- along with taskrules. If not, see <http://www.gnu.org/licenses/>.
+ along with Taskrules. If not, see <http://www.gnu.org/licenses/>.
  --------------------------------------------------------------------------
  */
 
@@ -93,10 +93,10 @@ class PluginTaskrulesProfile extends Profile
         $dbu = new DbUtils();
         foreach ($rights as $right => $value) {
             if ($dbu->countElementsInTable(
-                    'glpi_profilerights',
-                    ["profiles_id" => $profiles_id,
-                        "name"        => $right]
-                ) && $drop_existing) {
+                'glpi_profilerights',
+                ["profiles_id" => $profiles_id,
+                    "name"        => $right]
+            ) && $drop_existing) {
                 $profileRight->deleteByCriteria(['profiles_id' => $profiles_id, 'name' => $right]);
             }
             if (!$dbu->countElementsInTable(
@@ -126,9 +126,9 @@ class PluginTaskrulesProfile extends Profile
         $profile = new Profile();
         $profile->getFromDB($profiles_id);
         $rights = $this->getAllRights();
-        $profile->displayRightsChoiceMatrix($rights, array('canedit'       => $canedit,
+        $profile->displayRightsChoiceMatrix($rights, ['canedit'       => $canedit,
             'default_class' => 'tab_bg_2',
-            'title'         => __('General')));
+            'title'         => __('General')]);
 
         if ($canedit
             && $closeform) {
@@ -147,7 +147,7 @@ class PluginTaskrulesProfile extends Profile
             [
                 'itemtype' => 'PluginTaskrulesCondition',
                 'label' => PluginTaskrulesCondition::getTypeName(2),
-                'field' => 'plugin_taskrules_taskrules'
+                'field' => 'plugin_taskrules_taskrules',
             ],
         ];
 
@@ -181,9 +181,9 @@ class PluginTaskrulesProfile extends Profile
         //Add new rights in glpi_profilerights table
         foreach ($profile->getAllRights(true) as $data) {
             if ($dbu->countElementsInTable(
-                    "glpi_profilerights",
-                    ["name" => $data['field']]
-                ) == 0) {
+                "glpi_profilerights",
+                ["name" => $data['field']]
+            ) == 0) {
                 ProfileRight::addProfileRights([$data['field']]);
             }
         }
