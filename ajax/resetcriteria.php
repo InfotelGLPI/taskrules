@@ -34,10 +34,8 @@ Html::header_nocache();
 
 Session::checkLoginUser();
 
-// Toolbox::logInFile("EdmondDebug","je passe dans ajax/resetcriteria.php et _GET vaut ".print_r($_GET,true)."\n");
-
 $criteria = [
-    'None' => '-------',
+    Dropdown::EMPTY_VALUE => Dropdown::EMPTY_VALUE,
     'Status' => __("Status", "taskrules"),
     'Type' => __("Type", "taskrules"),
 ];

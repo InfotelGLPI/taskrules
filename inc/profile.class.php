@@ -54,9 +54,7 @@ class PluginTaskrulesProfile extends Profile
 
     public static function getTypeName($nb = 0)
     {
-        //return PluginTaskrulesCondition::getTypeName();
-
-        return "TaskARule";
+        return PluginTaskrulesCondition::getTypeName();
     }
 
     /**
@@ -68,7 +66,9 @@ class PluginTaskrulesProfile extends Profile
      */
     public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
     {
-        if ($item->getType() == 'Profile') {
+        if ($item->getType() == 'Profile'
+            && $item->fields['interface'] == 'central'
+        ) {
             $ID = $item->getID();
             $prof = new self();
 

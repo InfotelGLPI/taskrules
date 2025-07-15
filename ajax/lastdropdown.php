@@ -34,11 +34,9 @@ Html::header_nocache();
 
 Session::checkLoginUser();
 
-// Toolbox::logInFile("EdmondDebug","je passe dans ajax/lastdropdown.php et _GET vaut ".print_r($_GET,true)."\n");
-
 /* Retrieve itemtype from ajax call */
-$criteria_Type = $_GET['criteria_Type'];
-$itemtype = $_GET['item_type'];
+$criteria_Type = $_POST['criteria_Type'];
+$itemtype = [$_POST['item_type']];
 
 /* Fill the dropdown according to the chosen criteria */
 if ($criteria_Type == 'Type') {

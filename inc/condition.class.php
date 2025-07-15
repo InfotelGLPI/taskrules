@@ -31,21 +31,20 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access directly to this file");
 }
 
-$GLPI_TYPES = [];
-
 /**
  * Class PluginTaskrulesCondition
  */
 class PluginTaskrulesCondition extends CommonDBTM
 {
-    public static $rightname = 'plugin_taskrules_setup';
+    public static $rightname = 'plugin_taskrules_taskrules';
 
+    public static $types     = ['Computer', 'Peripheral', 'Phone', 'Printer', 'Monitor', 'NetworkEquipment'];
     public const NO_VALUE = 'none';
 
 
     public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
     {
-        return ['Règle(s)'];
+        return _n('Task rule', 'Task rules', 2, 'taskrules');
     }
 
     public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
@@ -55,11 +54,8 @@ class PluginTaskrulesCondition extends CommonDBTM
             return;
         }
 
-        $ID = $item->getID();
-        //echo "ID=$ID";
-
-        $prof = new self();
-        $prof->showForm($ID);
+        $rule = new self();
+        $rule->showForm($item->getID());
 
         return true;
     }
@@ -275,7 +271,7 @@ class PluginTaskrulesCondition extends CommonDBTM
             /* Ajax call to populate statuses belonging to itemtypes in the Condition(s) section */
             $.ajax({
                 url: "' . plugin::getWebDir('taskrules') . '/ajax/getactionstatuses.php",
-                type: "GET",
+                type: "POST",
                 data: { item_types: values },
                 success: function(response) {
                     $("#' . $selectId . '").html(response);
@@ -427,7 +423,7 @@ class PluginTaskrulesCondition extends CommonDBTM
         echo '<div class="col-auto d-flex align-items-center">';
         echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
         echo '</div>';
-        $itemtype = "";
+        $itemtype = '';
         $controlId = 'filter[' . $cnt . '][itemtype]';
         if ($groupIndex > 0) {
             $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][itemtype]';
@@ -437,6 +433,7 @@ class PluginTaskrulesCondition extends CommonDBTM
         if ($groupIndex > 0) {
             $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][criteria]';
         }
+
         self::showCriteriaDropdown($cnt, $itemtype, $controlId);
         $controlId = 'filter[' . $cnt . '][last]';
         if ($groupIndex > 0) {
@@ -595,7 +592,7 @@ class PluginTaskrulesCondition extends CommonDBTM
     public static function getOperators()
     {
         $OPERATORS = [
-            'None' => '-------',
+            Dropdown::EMPTY_VALUE => Dropdown::EMPTY_VALUE,
             'AND' => __("AND", "taskrules"),
             'OR' => __("OR", "taskrules"),
             'AND NOT' => __("AND NOT", "taskrules"),
@@ -609,26 +606,27 @@ class PluginTaskrulesCondition extends CommonDBTM
     {
         global $DB;
 
-        $values[self::NO_VALUE] = __('----------', 'taskrules');
-
-        $arrItemtypes = explode(',', $itemtypes);
+        $values[0] = Dropdown::EMPTY_VALUE;
 
         $itemtypecriteria = [];
-        foreach ($arrItemtypes as $itemtype) {
-            $itemtypecriteria["is_visible_" . $itemtype] = 1;
+        if (is_array($itemtypes) && count($itemtypes) > 0) {
+            foreach ($itemtypes as $k => $itemtype) {
+                $itemtypecriteria["is_visible_" . $itemtype] = 1;
+            }
+
+            /** Retrieve object types data from the database */
+            $iterateur = $DB->request(['FIELDS' => ['glpi_states' => ['id', 'name']],
+                'FROM' => 'glpi_states',
+                'WHERE' => ['OR' => $itemtypecriteria]]);
+
+            foreach ($iterateur as $data) {
+                $values[$data['id']] = $data['name'];
+            }
+
+            asort($values);
         }
-
-        /** Retrieve object types data from the database */
-        $iterateur = $DB->request(['FIELDS' => ['glpi_states' => ['id', 'name']],
-            'FROM' => 'glpi_states',
-            'WHERE' => ['OR' => $itemtypecriteria]]);
-
-        foreach ($iterateur as $data) {
-            $values[$data['id']] = $data['name'];
-        }
-
-        asort($values);
         return $values;
+
     }
 
     /* Return an array of types from the Itemtype passed as parameter */
@@ -636,14 +634,13 @@ class PluginTaskrulesCondition extends CommonDBTM
     {
         global $DB;
 
-        $values[self::NO_VALUE] = __('----------', 'taskrules');
+        $values[0] = Dropdown::EMPTY_VALUE;
 
         $OBJECTTYPES = [
             'Computer' => 'glpi_computertypes',
             'Printer' => 'glpi_printertypes',
             'Phone' => 'glpi_phonetypes',
             'Monitor' => 'glpi_monitortypes',
-            'Cluster' => 'glpi_clustertypes',
             'Peripheral' => 'glpi_peripheraltypes',
             'NetworkEquipment' => 'glpi_networkequipmenttypes',
         ];
@@ -662,64 +659,37 @@ class PluginTaskrulesCondition extends CommonDBTM
     }
 
     /**
-        * Return all types
-        *
-        * @return an array which contains array(itemtype => itemtype name)
-       **/
-    public static function getItemtypes()
+     * Type than could be linked to a Rack
+     *
+     * @param $all boolean, all type, or only allowed ones
+     *
+     * @return array of types
+     **/
+    public static function getTypes()
     {
-        global $GLPI_TYPES;
 
-        self::getTypesToInject();
+        // Only allowed types
+        $types = self::$types;
 
-        $values[self::NO_VALUE] = __('----------', 'taskrules');
+        foreach ($types as $key => $itemtype) {
+            if (!class_exists($itemtype)) {
+                continue;
+            }
 
-        foreach ($GLPI_TYPES as $type => $connected) {
-            if (class_exists($type)) {
-                $instance = new $type();
-                //If user has no right to create an object of this type, do not display type in the list
-                if (!$instance->canCreate()) {
-                    continue;
-                }
-                $name = call_user_func([$type, 'getTypeName']);
-                $values[$type] = $name;
+            if (!$itemtype::canView()) {
+                unset($types[$key]);
             }
         }
-        asort($values);
-        return $values;
+
+        return $types;
     }
 
-    /**
-     * Return all types that can be treated in the current plugin
-     *
-     * @return void
-     */
-    public static function getTypesToInject(): void
-    {
-        global $GLPI_TYPES;
-
-        if (is_array($GLPI_TYPES) && count($GLPI_TYPES)) {
-            // already populated
-            return;
-        }
-
-        $GLPI_TYPES = [
-            'Computer' => ['Computer'],
-            'Peripheral' => ['Peripheral'],
-            'Phone' => ['Phone'],
-            'Printer' => ['Printer'],
-            'Monitor' => ['Monitor'],
-            'NetworkEquipment' => ['NetworkEquipment'],
-        ];
-
-    }
 
     public static function showOperatorsDropdown($id, $operator, $controlId)
     {
         echo '<div class="col-auto">';
         /* First dropdown : list of operators */
-        $value = "None";
-        $cr = Dropdown::showFromArray($controlId, self::getOperators(), [
+        Dropdown::showFromArray($controlId, self::getOperators(), [
             'value' => $operator,
         ]);
         echo '</div>';
@@ -729,8 +699,17 @@ class PluginTaskrulesCondition extends CommonDBTM
     {
         echo '<div class="col-auto">';
         /* Second dropdown : list of itemtypes */
-        $value = "None";
-        $cr = Dropdown::showFromArray($controlId, self::getItemtypes(true), [
+        $possible_values[Dropdown::EMPTY_VALUE] = Dropdown::EMPTY_VALUE;
+        $itemtypes = self::getTypes();
+        if (!empty($itemtypes)) {
+            foreach ($itemtypes as $k => $itemtype) {
+                if ($item = getItemForItemtype($itemtype)) {
+                    $possible_values[$itemtype] = $item->getTypeName();
+                }
+            }
+        }
+
+        Dropdown::showFromArray($controlId, $possible_values, [
             'value' => $itemtype,
             'on_change' => "updateHidden$id(this.value)",
         ]);
@@ -741,14 +720,14 @@ class PluginTaskrulesCondition extends CommonDBTM
     public static function showCriteriaDropdown($id, $itemtype, $controlId)
     {
         $criteria = [
-            'None' => '-------',
+            Dropdown::EMPTY_VALUE => Dropdown::EMPTY_VALUE,
             'Status' => __("Status", "taskrules"),
             'Type' => __("Type", "taskrules"),
         ];
 
         echo '<div class="col-auto">';
         /* Third dropdown : status or type */
-        $value = "None";
+//        $controlId = is_int($controlId) ?? 0;
         $cr = Dropdown::showFromArray($controlId, $criteria, [
             'value' => $itemtype,
             'on_change' => "updateLastDropdown$id(this.value)",
@@ -779,10 +758,11 @@ class PluginTaskrulesCondition extends CommonDBTM
 
     public static function showLastDropdown($id, $itemtype, $controlId)
     {
+
         echo '<div class="col-auto">';
         /* Fourth dropdown : list of statuses for the selected object type */
-        $value = "None";
-        $cr = Dropdown::showFromArray($controlId, self::getStatuses(''), [
+//        $controlId = is_int($controlId) ?? 0;
+        $cr = Dropdown::showFromArray($controlId, self::getStatuses(self::getTypes()), [
             'value' => $itemtype,
         ]);
 
@@ -795,7 +775,7 @@ class PluginTaskrulesCondition extends CommonDBTM
         var itemtype = document.getElementById('itemtype" . $id . "');
         $.ajax({
             url: '" . plugin::getWebDir('taskrules') . "/ajax/lastdropdown.php',
-            type: 'GET',
+            type: 'POST',
             data: { criteria_Type: criteria, item_type: itemtype.value },
             success: function(response) {
                 $('#" . $selectId . "').html(response);

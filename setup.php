@@ -59,7 +59,9 @@ function plugin_init_taskrules()
 
         $PLUGIN_HOOKS['add_css']['taskrules'][] = "css/accordion.css";
 
-        if (array_key_exists('REQUEST_URI', $_SERVER) && strpos($_SERVER['REQUEST_URI'], "tasktemplate.form.php") !== false && isset($_GET['id'])) {
+        if (array_key_exists('REQUEST_URI', $_SERVER)
+            && strpos($_SERVER['REQUEST_URI'], "tasktemplate.form.php") !== false
+            && isset($_GET['id'])) {
             $PLUGIN_HOOKS['add_javascript']['taskrules'][] = 'js/accordion.js';
         }
 

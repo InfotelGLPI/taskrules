@@ -32,42 +32,15 @@ include("../../../inc/includes.php");
 
 global $DB;
 
-$config = new PluginTaskrulesCondition();
-//Session::checkRightsOr(PluginTaskrulesCondition::$rightname, [READ, UPDATE]);
-
-Toolbox::logInFile("EdmondDebug", "front/condition.form.php > _POST=\n" . formatArray($_POST) . "\n");
+$cond = new PluginTaskrulesCondition();
 
 if (isset($_POST["add"]) || isset($_POST["save"])) {
-    Session::addMessageAfterRedirect("Une grosse erreur vient de survenir", false, ERROR);
-    foreach ($_POST as $type => $val) {
-        //echo "<b>type</b>=$type <b>val</b>=$val<br>";
-
-
-    }
-    //$config->updateFields($data);
-    //$config->update($_POST);
+    Toolbox::logInfo($_POST);
     Html::back();
 } else {
     Html::header(__('Taskrules', 'taskrules'), $_SERVER['PHP_SELF'], 'config', 'taskrules', );
-    /* showForm() affiche seulement le formulaire */
-    $config->showForm(1);
 
-    /* display() affiche le formulaire ET les onglets */
-    // $config->display($_GET);
+    $cond->showForm(1);
 
     Html::footer();
-}
-
-function formatArray($array, $prefix = '')
-{
-    $result = '';
-    foreach ($array as $key => $value) {
-        $newKey = $prefix . '[' . $key . ']';
-        if (is_array($value)) {
-            $result .= formatArray($value, $newKey);
-        } else {
-            $result .= $newKey . '=' . $value . PHP_EOL;
-        }
-    }
-    return $result;
 }
