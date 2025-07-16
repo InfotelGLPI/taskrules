@@ -36,6 +36,7 @@ define("PLUGIN_TASKRULES_MIN_GLPI_VERSION", "10.0.0");
 define("PLUGIN_TASKRULES_MAX_GLPI_VERSION", "10.0.99");
 
 define("PLUGIN_TASKRULES_DIR", Plugin::getPhpDir("taskrules"));
+define("PLUGIN_TASKRULES_NOTFULL_DIR", Plugin::getPhpDir("taskrules", false));
 
 /**
  * Init hooks of the plugin.
@@ -56,22 +57,15 @@ function plugin_init_taskrules()
     ) {
 
         Plugin::registerClass("PluginTaskrulesProfile", ['addtabon' => "Profile"]);
-
+        $PLUGIN_HOOKS['add_javascript']['taskrules'][] = 'js/accordion.js';
         $PLUGIN_HOOKS['add_css']['taskrules'][] = "css/accordion.css";
-
-        if (array_key_exists('REQUEST_URI', $_SERVER)
-            && strpos($_SERVER['REQUEST_URI'], "tasktemplate.form.php") !== false
-            && isset($_GET['id'])) {
-            $PLUGIN_HOOKS['add_javascript']['taskrules'][] = 'js/accordion.js';
-        }
-
         /* Prepare hooks to intercept tasks events (add task and task update) */
         $PLUGIN_HOOKS['pre_item_add']['taskrules'] = ['TicketTask' => 'taskrules_pre_additem_called'];
         $PLUGIN_HOOKS['item_add']['taskrules'] = ['TicketTask' => 'taskrules_additem_called'];
         $PLUGIN_HOOKS['item_update']['taskrules'] = ['TicketTask' => 'taskrules_updateitem_called'];
 
         /* Add a new tab on the Task template page */
-        Plugin::registerClass('PluginTaskrulesCondition', ['addtabon' => ['TaskTemplate']]);
+        Plugin::registerClass('PluginTaskrulesRule', ['addtabon' => ['TaskTemplate']]);
     }
 }
 
@@ -84,7 +78,7 @@ function plugin_init_taskrules()
 function plugin_version_taskrules()
 {
     return [
-        'name'           => 'TaskRules',
+        'name'           => _n('Task rule', 'Task rules', 2, 'taskrules'),
         'version'        => PLUGIN_TASKRULES_VERSION,
         'author'         => 'Doudard Edmond / Infotel',
         'license'        => 'GPLv2+',

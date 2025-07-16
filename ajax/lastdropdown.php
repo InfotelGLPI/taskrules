@@ -37,13 +37,17 @@ Session::checkLoginUser();
 /* Retrieve itemtype from ajax call */
 $criteria_Type = $_POST['criteria_Type'];
 $itemtype = [$_POST['item_type']];
+$cond = new PluginTaskrulesCondition();
 
+if (empty(array_filter($itemtype))) {
+    $itemtype = [];
+}
 /* Fill the dropdown according to the chosen criteria */
 if ($criteria_Type == 'Type') {
-    $arrValues = PluginTaskrulesCondition::getObjectTypes($itemtype);
+    $arrValues = $cond->getObjectTypes($itemtype);
 }
 if ($criteria_Type == 'Status') {
-    $arrValues = PluginTaskrulesCondition::getStatuses($itemtype);
+    $arrValues = $cond->getStatuses($itemtype);
 }
 
 /* Build the dropdown content */

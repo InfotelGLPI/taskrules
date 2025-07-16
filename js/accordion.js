@@ -1,22 +1,21 @@
-document.addEventListener('DOMContentLoaded', function() {
-    var acc = document.getElementsByClassName("accordiontskrul");
+function accordion_taskrules(id = 'accordion_rules', openall = true) {
+    jQuery(function () {
+        const $accordion = $("#" + id); // $accordion est une variable JS, pas PHP
 
-    // Vérifie si des éléments accordion existent
-    if (acc.length > 0) {
-        var firstPanel = acc[0].nextElementSibling;
-        acc[0].classList.add("active");
-        firstPanel.style.display = "block";
-    }
-
-    for (var i = 0; i < acc.length; i++) {
-        acc[i].addEventListener("click", function() {
-            this.classList.toggle("active");
-            var panel = this.nextElementSibling;
-            if (panel.style.display === "block") {
-                panel.style.display = "none";
-            } else {
-                panel.style.display = "block";
-            }
+        $accordion.accordion({
+            collapsible: true,
+            active: false, // tout fermé à l'init
+            heightStyle: "content"
         });
-    }
-});
+
+        if (openall) {
+            // Ouvre tous les panneaux manuellement
+            $accordion.find('.ui-accordion-content').each(function () {
+                $(this).show().addClass('ui-accordion-content-active');
+                $(this).prev('.ui-accordion-header')
+                    .addClass('ui-accordion-header-active ui-state-active ui-corner-top')
+                    .removeClass('ui-corner-all');
+            });
+        }
+    });
+}

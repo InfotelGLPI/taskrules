@@ -39,109 +39,24 @@ class PluginTaskrulesCondition extends CommonDBTM
     public static $rightname = 'plugin_taskrules_taskrules';
 
     public static $types     = ['Computer', 'Peripheral', 'Phone', 'Printer', 'Monitor', 'NetworkEquipment'];
-    public const NO_VALUE = 'none';
-
 
     public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
     {
-        return _n('Task rule', 'Task rules', 2, 'taskrules');
+        return _n('Task condition', 'Task conditions', 2, 'taskrules');
     }
 
-    public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
+    public function showCriteriasForm()
     {
 
-        if ($item->getType() != 'TaskTemplate') {
-            return;
-        }
-
-        $rule = new self();
-        $rule->showForm($item->getID());
-
-        return true;
-    }
-
-    public function showForm($ID, array $options = [])
-    {
-        global $DB;
-        global $OPERATORS;
-
-        $this->getFromDB($ID);
-
-        //The configuration is not deletable
-        $options['colspan'] = 1;
-
-        echo "<div class='center'>";
-        echo "<form name='form' method='post' action='" . $this->getFormURL() . "'>";
-
-        echo Html::scriptBlock("document.querySelectorAll('.accordiontskrul').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                var next = btn.nextElementSibling;
-                if (
-                    next &&
-                    (next.classList.contains('panel') || next.classList.contains('center'))
-                ) {
-                    // Toggle display
-                    if (next.style.display === 'none' || getComputedStyle(next).display === 'none') {
-                        next.style.display = 'flex';
-                    } else {
-                        next.style.display = 'none';
-                    }
-                }
-            });
-        });");
-
-        echo Html::hidden('id', ['value' => $ID]);
-        echo Html::hidden('groupIndex', ['value' => 0]);
-        echo Html::hidden('boolUpdStatuses', ['value' => 0]);
-        // echo '<input type="text" id="groupIndex" value="0">';
-
-        /* ---------------------- */
-        /* "Parameters" section */
-        /* ---------------------- */
-        //$this::showSwitchField("actif", false); // show a switch that can be turned off or on
-        echo '<button type="button" class="accordiontskrul">' . __("Parameters", "taskrules") . '</button>';
-
-        echo '<div class="panel" style="display: none;">';
-        echo '  <div style="flex: 1; padding: 10px;"></div>';
-        echo '  <div style="flex: 4; padding: 10px;">';
-        echo '    <div style="display: flex;">';
-        echo '      <div style="display: flex; flex-direction: column; gap: 18px; min-width: 320px;">';
-        echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        echo '          <label for="dropdown_active1919881355" class="form-check-label" style="text-align: left;">' . __("Active : ", "taskrules") . '</label>';
-        echo '        </div>';
-        echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        echo '          <label for="dropdown_preventcreation1168545998" class="form-check-label" style="text-align: left;">' . __("Prevent task creation on error :", "taskrules") . '</label>';
-        echo '        </div>';
-        echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        echo '          <label for="dropdown_preventchange1593546928" class="form-check-label" style="text-align: left;">' . __("Prevent the task from changing its status (from \"to do\" to \"done\") in case of an error :", "taskrules") . '</label>';
-        echo '        </div>';
-        echo '      </div>';
-        echo '      <div style="display: flex; flex-direction: column; gap: 18px; min-width: 120px;">';
-        echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        Dropdown::showYesNo('active', false);
-        echo '        </div>';
-        echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        Dropdown::showYesNo('preventcreation', false);
-        echo '        </div>';
-        echo '        <div style="height: 38px; display: flex; align-items: center;">';
-        Dropdown::showYesNo('preventchange', false);
-        echo '        </div>';
-        echo '      </div>';
-        echo '    </div>';
-        echo '  </div>';
-        echo '</div>';
-
-        /* ---------------------- */
-        /* "Condition(s)" section */
-        /* ---------------------- */
-        echo '<button type="button" class="accordiontskrul">' . __("Condition(s)", "taskrules") . '</button>';
+        echo "<div>";
+        echo "<table class='tab_cadre' width='100%'>";
         // echo '<div class="panel" style="display: none;">';
         echo '<div class="search-form card card-sm mb-4">
         <div id="searchcriteria">
         <div class="list-group list-group-flush list-group-hoverable criteria-list pt-2" id="criteriatablecomputer">';
 
         /* Draw a row with all the dropdowns */
-        $this::ShowCriteriaRow(1);
+        $this->ShowCriteriaRow(1);
 
         echo "<a id='more-criteria' class='hespace' role='button' style='display: block;'></a>";
 
@@ -190,197 +105,13 @@ class PluginTaskrulesCondition extends CommonDBTM
         });
         </script>";
 
-        echo "<br><br>";
-
-        /* ----------------- */
-        /* "Trigger" section */
-        /* ----------------- */
-        echo '<button type="button" class="accordiontskrul">' . __("Trigger", "taskrules") . '</button>';
-        // echo '<div class="panel" style="display: flex;">
-        echo '<div class="panel" style="display: none;">
-        <div style="flex: 1; padding: 10px;">
-        </div>
-        <div style="flex: 4; padding: 10px;">
-        <label class="form-check" style="display: block; text-align: left;">
-            <input class="form-check-input" type="checkbox" name="trigger_creation" checked="checked" value="1" style="margin-right: 10px;">
-            <span class="form-check-label" style="vertical-align: middle;">
-            ' . __("Activate when a task is added to the ticket", "taskrules") . '
-            </span>
-        </label>
-        <label class="form-check" style="display: block; text-align: left;">
-            <input class="form-check-input" type="checkbox" name="trigger_update" checked="checked" value="1" style="margin-right: 10px;">
-            <span class="form-check-label" style="vertical-align: middle;">
-            ' . __('Trigger upon updating the task status from "to do" to "done"', "taskrules") . '   
-            </span>
-        </label>
-        </div>
-        </div>';
-
-        echo '</div>';
-
-        /* ------------------- */
-        /* "Action(s)" section */
-        /* ------------------- */
-        echo '<button type="button" class="accordiontskrul">' . __("Action(s)", "taskrules") . '</button>';
-
-        // echo '<div class="panel" style="display: flex;">';
-        /** ATTENTION : NE PAS OUBLIER */
-        /** POUR LES AFFECTATIONS AUX GROUPES, NE PAS INCLURE DANS LA LISTE DES GROUPES SELECTIONNABLES
-         * CEUX DONT LA CONFIGURATION "PEUT CONTENIR DES ELEMENTS" EST A "NON"
-         */
-        echo '<div class="center">';
-        echo "<div>" . __("(i) attention, n'apparaissent que les statuts communs aux objets sélectionnés dans les conditions", "taskrules") . "</div>";
-
-        /** Créer une liste déroulante des statuts avec les valeurs suivantes :
-         * Ne pas changer le statut (en dur)
-         * Vider le statut (en dur)
-         * Statut 1 (commun aux matériels listés dans les conditions)
-         * Statut 2 (commun aux matériels listés dans les conditions)
-         */
-        $actionsStatuses = [
-            'None' => '-------',
-            'DoNotChange' => __("Keep current status", "taskrules"),
-            'Empty' => __("Empty current status", "taskrules"),
-        ];
-
-        echo '<div class="col-auto">';
-        // /* Action statuses dropdown */
-        echo '<select id="actionStatus" onclick="handleClick()">';
-        foreach ($actionsStatuses as $id => $name) {
-            echo "<option value='" . $id . "'>" . $name . "</option>";
-        }
-        echo '</select>';
-
-        echo '</div>';
-        $selectId = 'actionStatus';
-        echo Html::scriptBlock('
-        function handleClick() {
-            var bStatus = document.getElementsByName("boolUpdStatuses")[0];
-            console.log("bStatus.value=" + bStatus.value);
-            if ( bStatus.value == 1 )
-                return;
-            const selectElement = document.getElementById("actionStatus");
-            const selectedValue = selectElement.value;
-            console.log("selectedValue=" + selectedValue);
-            /* Get the comma separated list of itemtypes in the Condition(s) section */
-            let values = "";
-            document.querySelectorAll("select[name*=\'itemtype\']").forEach(function(select) {
-                values += select.value + ",";
-            });
-            values = values.slice(0, -1);
-            /* Ajax call to populate statuses belonging to itemtypes in the Condition(s) section */
-            $.ajax({
-                url: "' . plugin::getWebDir('taskrules') . '/ajax/getactionstatuses.php",
-                type: "POST",
-                data: { item_types: values },
-                success: function(response) {
-                    $("#' . $selectId . '").html(response);
-                },
-                error: function (xhr, status, error) {
-                console.log(xhr);
-                console.log(status);
-                console.log(error);
-                }
-            });
-            bStatus.value = 1;
-        }
-        ');
-
-        ?>
-
-
-<div class="list-group list-group-flush list-group-hoverable criteria-list pt-2" style="background-color: white; id="actiontable">
-  <div class="list-group-item p-2 border-0 normalcriteria" id="row1">
-    <div class="row g-1">
-      <div class="col-1"></div>
-      <div class="col-2 d-flex align-items-center">Statut :</div>
-      <div class="col-2 d-flex align-items-center">
-        <select id="statut" name="statut">
-          <option value="preparation">En préparation</option>
-          <option value="autre">Autre</option>
-        </select>
-      </div>
-      <div class="col d-flex align-items-center"></div>
-    </div>
-    <div class="row g-1">
-      <div class="col-1"></div>
-      <div class="col-2 d-flex align-items-center">Lieu :</div>
-      <div class="col-2 d-flex align-items-center">
-        <select id="lieu" name="lieu">
-          <option value="petit_stock">Petit stock</option>
-          <option value="autre">Autre</option>
-        </select>
-      </div>
-      <div class="col d-flex align-items-center">
-        <input type="checkbox" id="vider_lieu" name="vider_lieu">
-        <label for="vider_lieu">Vider le champ Lieu</label>
-      </div>
-    </div>
-    <div class="row g-1">
-      <div class="col-1"></div>
-      <div class="col-2 d-flex align-items-center">Usager :</div>
-      <div class="col-2 d-flex align-items-center">
-        <select id="usager" name="usager">
-          <option value="usager_du_materiel">Usager du matériel</option>
-          <option value="autre">Autre</option>
-        </select>
-      </div>
-      <div class="col d-flex align-items-center">
-        <input type="checkbox" id="vider_usager" name="vider_usager">
-        <label for="vider_usager">Vider le champ Usager</label>
-      </div>
-    </div>
-    <div class="row g-1">
-      <div class="col-1"></div>
-      <div class="col-2 d-flex align-items-center">Utilisateur :</div>
-      <div class="col-2 d-flex align-items-center">
-        <select id="utilisateur" name="utilisateur">
-          <option value="demandeur">Demandeur</option>
-          <option value="autre">Autre</option>
-        </select>
-      </div>
-      <div class="col d-flex align-items-center">
-        <input type="checkbox" id="vider_utilisateur" name="vider_utilisateur">
-        <label for="vider_utilisateur">Vider le champ Utilisateur</label>
-      </div>
-    </div>
-    <div class="row g-1">
-      <div class="col-1"></div>
-      <div class="col-2 d-flex align-items-center">Groupe :</div>
-      <div class="col-2 d-flex align-items-center">
-        <select id="groupe" name="groupe">
-          <option value="groupe_du_demandeur">Groupe du demandeur</option>
-          <option value="autre">Autre</option>
-        </select>
-      </div>
-      <div class="col d-flex align-items-center">
-        <input type="checkbox" id="vider_groupe" name="vider_groupe">
-        <label for="vider_groupe">Vider le champ Groupe</label>
-      </div>
-    </div>
-  </div>
-</div>
-</div>
-
-<?php
-                // echo '</div>';
-                $options['candel'] = false;  // Hide [Cancel] button
-        $options['no_save'] = false; // Display [Save] button
-
-        echo '<div class="card-body mx-n2 mb-4 border-top d-flex flex-row-reverse align-items-start flex-wrap">
-        <button class="btn btn-primary me-2" type="submit" name="save" value="1">
-                  <i class="far fa-save"></i>
-                  <span>Sauvegarder</span>
-               </button></div>';
-
-        //$this->showFormButtons($options);
-
-        Html::closeForm();
-
-        return true;
+        echo "</table>";
+        echo "</div>";
     }
 
-    public static function ShowCriteriaRow($cnt, $groupIndex = 0)
+
+
+    public function ShowCriteriaRow($cnt, $groupIndex = 0)
     {
         $bkcolor = $groupIndex > 0 ? '#ced4db' : '#e4e8ed';
 
@@ -419,33 +150,33 @@ class PluginTaskrulesCondition extends CommonDBTM
         if ($groupIndex > 0) {
             $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][operator]';
         }
-        self::showOperatorsDropdown($cnt, $operator, $controlId);
+        $this->showOperatorsDropdown($cnt, $operator, $controlId);
         echo '<div class="col-auto d-flex align-items-center">';
         echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
         echo '</div>';
-        $itemtype = '';
+        $itemtype = 0;
         $controlId = 'filter[' . $cnt . '][itemtype]';
         if ($groupIndex > 0) {
             $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][itemtype]';
         }
-        self::showItemtypesDropdown($cnt, $itemtype, $controlId);
+        $this->showItemtypesDropdown($cnt, $itemtype, $controlId);
         $controlId = 'filter[' . $cnt . '][criteria]';
         if ($groupIndex > 0) {
             $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][criteria]';
         }
 
-        self::showCriteriaDropdown($cnt, $itemtype, $controlId);
+        $this->showCriteriaDropdown($cnt, $itemtype, $controlId);
         $controlId = 'filter[' . $cnt . '][last]';
         if ($groupIndex > 0) {
             $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][last]';
         }
-        self::showLastDropdown($cnt, $itemtype, $controlId);
+        $this->showLastDropdown($cnt, $itemtype, $controlId);
         echo '</div>';
         echo '</div>';
         echo '</div>';
     }
 
-    public static function ShowGroupRow($cnt)
+    public function ShowGroupRow($cnt)
     {
         $grpcnt = 0;
         $grpcnt++;
@@ -472,7 +203,7 @@ class PluginTaskrulesCondition extends CommonDBTM
         ');
 
         $operator = "";
-        self::showOperatorsDropdown($cnt, $operator, 'filter[' . $cnt . '][operator]');
+        $this->showOperatorsDropdown($cnt, $operator, 'filter[' . $cnt . '][operator]');
         echo '<div class="col-auto d-flex align-items-center">';
 
         /** Group begins */
@@ -496,14 +227,14 @@ class PluginTaskrulesCondition extends CommonDBTM
         });
         ');
         $operator = "";
-        self::showOperatorsDropdown($cnt, $operator, 'filter[' . $cnt . '][group][' . $grpcnt . '][operator]');
+        $this->showOperatorsDropdown($cnt, $operator, 'filter[' . $cnt . '][group][' . $grpcnt . '][operator]');
         echo '<div class="col-auto d-flex align-items-center">';
         echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
         echo '</div>';
         $itemtype = "";
-        self::showItemtypesDropdown($cnt, $itemtype, 'filter[' . $cnt . '][group][' . $grpcnt . '][itemtype]');
-        self::showCriteriaDropdown($cnt, $itemtype, 'filter[' . $cnt . '][group][' . $grpcnt . '][criteria]');
-        self::showLastDropdown($cnt, $itemtype, 'filter[' . $cnt . '][group][' . $grpcnt . '][last]');
+        $this->showItemtypesDropdown($cnt, $itemtype, 'filter[' . $cnt . '][group][' . $grpcnt . '][itemtype]');
+        $this->showCriteriaDropdown($cnt, $itemtype, 'filter[' . $cnt . '][group][' . $grpcnt . '][criteria]');
+        $this->showLastDropdown($cnt, $itemtype, 'filter[' . $cnt . '][group][' . $grpcnt . '][last]');
         echo '</div>';
 
         echo "<a id='more-grpcriteria' class='hespace' role='button' style='display: block;'></a>";
@@ -626,7 +357,6 @@ class PluginTaskrulesCondition extends CommonDBTM
             asort($values);
         }
         return $values;
-
     }
 
     /* Return an array of types from the Itemtype passed as parameter */
@@ -647,7 +377,8 @@ class PluginTaskrulesCondition extends CommonDBTM
 
         if ($selectedItemtype != "") {
             /** Retrieve object types data from the database */
-            $iterateur = $DB->request(['FIELDS' => [$OBJECTTYPES[$selectedItemtype] => ['id', 'name']], 'FROM' => $OBJECTTYPES[$selectedItemtype]]);
+            $iterateur = $DB->request(['FIELDS' => [$OBJECTTYPES[$selectedItemtype] => ['id', 'name']],
+                'FROM' => $OBJECTTYPES[$selectedItemtype]]);
 
             foreach ($iterateur as $data) {
                 $values[$data['id']] = $data['name'];
@@ -685,7 +416,7 @@ class PluginTaskrulesCondition extends CommonDBTM
     }
 
 
-    public static function showOperatorsDropdown($id, $operator, $controlId)
+    public function showOperatorsDropdown($id, $operator, $controlId)
     {
         echo '<div class="col-auto">';
         /* First dropdown : list of operators */
@@ -695,7 +426,7 @@ class PluginTaskrulesCondition extends CommonDBTM
         echo '</div>';
     }
 
-    public static function showItemtypesDropdown($id, $itemtype, $controlId)
+    public function showItemtypesDropdown($id, $itemtype, $controlId)
     {
         echo '<div class="col-auto">';
         /* Second dropdown : list of itemtypes */
@@ -717,7 +448,7 @@ class PluginTaskrulesCondition extends CommonDBTM
         echo '</div>';
     }
 
-    public static function showCriteriaDropdown($id, $itemtype, $controlId)
+    public function showCriteriaDropdown($id, $itemtype, $controlId)
     {
         $criteria = [
             Dropdown::EMPTY_VALUE => Dropdown::EMPTY_VALUE,
@@ -727,7 +458,7 @@ class PluginTaskrulesCondition extends CommonDBTM
 
         echo '<div class="col-auto">';
         /* Third dropdown : status or type */
-//        $controlId = is_int($controlId) ?? 0;
+        //        $controlId = is_int($controlId) ?? 0;
         $cr = Dropdown::showFromArray($controlId, $criteria, [
             'value' => $itemtype,
             'on_change' => "updateLastDropdown$id(this.value)",
@@ -756,13 +487,13 @@ class PluginTaskrulesCondition extends CommonDBTM
         echo '</div>';
     }
 
-    public static function showLastDropdown($id, $itemtype, $controlId)
+    public function showLastDropdown($id, $itemtype, $controlId)
     {
 
         echo '<div class="col-auto">';
         /* Fourth dropdown : list of statuses for the selected object type */
-//        $controlId = is_int($controlId) ?? 0;
-        $cr = Dropdown::showFromArray($controlId, self::getStatuses(self::getTypes()), [
+        //        $controlId = is_int($controlId) ?? 0;
+        $cr = Dropdown::showFromArray($controlId, $this->getStatuses(self::getTypes()), [
             'value' => $itemtype,
         ]);
 

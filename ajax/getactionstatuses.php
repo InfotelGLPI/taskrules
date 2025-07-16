@@ -37,7 +37,8 @@ Session::checkLoginUser();
 /* Retrieve item_types from ajax call */
 $item_types = $_POST['item_types']; // Example : [item_types] => Printer,NetworkEquipment,Computer
 
-$arrValues = PluginTaskrulesCondition::getStatuses($item_types);
+$cond = new PluginTaskrulesCondition();
+$arrValues = $cond->getStatuses($item_types);
 
 /* Build the dropdown content */
 foreach ( $arrValues as $id => $name) {

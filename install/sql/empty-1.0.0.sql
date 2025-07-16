@@ -1,9 +1,12 @@
 DROP TABLE IF EXISTS `glpi_plugin_taskrules_rules`;
 CREATE TABLE IF NOT EXISTS `glpi_plugin_taskrules_rules` (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
-  `active` tinyint NOT NULL DEFAULT '0',
   `tasktemplates_id` int UNSIGNED NOT NULL DEFAULT '0',
-  `trigger` tinyint NOT NULL DEFAULT '0' COMMENT '1 (add task) 2 (changing from [to do] to [done])',
+  `active` tinyint NOT NULL DEFAULT '0',
+  `preventcreation` tinyint NOT NULL DEFAULT '0',
+  `preventchange` tinyint NOT NULL DEFAULT '0',
+  `trigger_creation` tinyint NOT NULL DEFAULT '0',
+  `trigger_update` tinyint NOT NULL DEFAULT '0',
   `states_id` int UNSIGNED NOT NULL DEFAULT '0',
   `locations_id` int UNSIGNED NOT NULL DEFAULT '0',
   `assetcontact` tinyint NOT NULL DEFAULT '0' COMMENT 'Use contact defined for the asset',
@@ -11,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `glpi_plugin_taskrules_rules` (
   `users_id` int UNSIGNED NOT NULL DEFAULT '0',
   `groups_id` int UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
+  KEY `tasktemplates_id` (`tasktemplates_id`),
   KEY `states_id` (`states_id`),
   KEY `locations_id` (`locations_id`),
   KEY `users_id` (`users_id`),

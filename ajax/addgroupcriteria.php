@@ -37,4 +37,5 @@ Session::checkLoginUser();
 /* Retrieve id value from ajax call */
 $id = $_POST['id'] + 1;
 
-PluginTaskrulesCondition::ShowGroupRow($id);
+$cond = new PluginTaskrulesCondition();
+$cond->ShowGroupRow($id);

@@ -38,4 +38,5 @@ Session::checkLoginUser();
 $id = $_POST['id'] + 1;
 $groupIndex = $_POST['groupIndex'];
 
-PluginTaskrulesCondition::ShowCriteriaRow($id, $groupIndex);
+$cond = new PluginTaskrulesCondition();
+$cond->ShowCriteriaRow($id, $groupIndex);
