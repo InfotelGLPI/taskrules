@@ -45,7 +45,7 @@ class PluginTaskrulesCondition extends CommonDBTM
         return _n('Task condition', 'Task conditions', 2, 'taskrules');
     }
 
-    public function showCriteriasForm()
+    public function showCriteriasForm($conditions)
     {
 
         echo "<div>";
@@ -56,7 +56,9 @@ class PluginTaskrulesCondition extends CommonDBTM
         <div class="list-group list-group-flush list-group-hoverable criteria-list pt-2" id="criteriatablecomputer">';
 
         /* Draw a row with all the dropdowns */
-        $this->ShowCriteriaRow(1);
+        $this->ShowCriteriaRow($conditions, 1);
+
+        echo "</div>";
 
         echo "<a id='more-criteria' class='hespace' role='button' style='display: block;'></a>";
 
@@ -111,69 +113,128 @@ class PluginTaskrulesCondition extends CommonDBTM
 
 
 
-    public function ShowCriteriaRow($cnt, $groupIndex = 0)
+    public function ShowCriteriaRow($conditions, $cnt, $groupIndex = 0)
     {
         $bkcolor = $groupIndex > 0 ? '#ced4db' : '#e4e8ed';
 
-        echo '<script>
-    var input = document.getElementsByName("groupIndex")[0];
-    input.value = (parseInt(input.value, 10) || 0) + 1;
-    </script>';
+            echo '<script>
+                        var input = document.getElementsByName("groupIndex")[0];
+                        input.value = (parseInt(input.value, 10) || 0) + 1;
+                        </script>';
 
-        echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row' . $cnt . '" style="background-color: ' . $bkcolor . ';">';
-        echo '<div class="row g-1">
-                <div class="col-auto">
-                <!--<h5>' . $cnt . '</h5>-->
-                   <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button" data-rowid="row' . $cnt . '"
-                   data-bs-toggle="tooltip" data-bs-placement="left"
-                   title=' . __("Delete a rule", "taskrules") . '">
-                      <i class="ti ti-square-minus" alt="-"></i>
-                   </button>
-                </div>';
+            echo '<div class="list-group-item p-2 border-0 normalcriteria" id="row' . $cnt . '" style="background-color: ' . $bkcolor . ';">';
+            echo '<div class="row g-1">
+                                    <div class="col-auto">
+                                    <!--<h5>' . $cnt . '</h5>-->
+                                       <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button" data-rowid="row' . $cnt . '"
+                                       data-bs-toggle="tooltip" data-bs-placement="left"
+                                       title=' . __("Delete a rule", "taskrules") . '">
+                                          <i class="ti ti-square-minus" alt="-"></i>
+                                       </button>
+                                    </div>';
 
-        echo Html::scriptBlock('$(document).on("click", ".remove-search-criteria", function() {
-        // Make the statuses dropdown updatable in the Action(s) section
-        var bStatus = document.getElementsByName("boolUpdStatuses")[0];
-        bStatus.value = 0;
-        // force removal of tooltip
-        var tooltip = bootstrap.Tooltip.getInstance($(this)[0]);
-        if (tooltip !== null) {
-            tooltip.dispose();
-        }
-        var rowID = $(this).data("rowid");
-        $("#" + rowID).remove();
-        });
-    ');
+            echo Html::scriptBlock('$(document).on("click", ".remove-search-criteria", function() {
+                            // Make the statuses dropdown updatable in the Action(s) section
+                            var bStatus = document.getElementsByName("boolUpdStatuses")[0];
+                            bStatus.value = 0;
+                            // force removal of tooltip
+                            var tooltip = bootstrap.Tooltip.getInstance($(this)[0]);
+                            if (tooltip !== null) {
+                                tooltip.dispose();
+                            }
+                            var rowID = $(this).data("rowid");
+                            $("#" + rowID).remove();
+                            });
+                        ');
 
-        $operator = "";
-        $controlId = 'filter[' . $cnt . '][operator]';
-        if ($groupIndex > 0) {
-            $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][operator]';
-        }
-        $this->showOperatorsDropdown($cnt, $operator, $controlId);
-        echo '<div class="col-auto d-flex align-items-center">';
-        echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
-        echo '</div>';
-        $itemtype = 0;
-        $controlId = 'filter[' . $cnt . '][itemtype]';
-        if ($groupIndex > 0) {
-            $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][itemtype]';
-        }
-        $this->showItemtypesDropdown($cnt, $itemtype, $controlId);
-        $controlId = 'filter[' . $cnt . '][criteria]';
-        if ($groupIndex > 0) {
-            $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][criteria]';
-        }
+        if (count($conditions) > 0) {
+            foreach ($conditions as $condition) {
+                $this->getFromDB($condition['id']);
+                $operator = "";
+                $controlId = 'filter[' . $cnt . '][operator]';
+                if ($groupIndex > 0) {
+                    $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][operator]';
+                }
+                $this->showOperatorsDropdown($cnt, $operator, $controlId);
+                echo '<div class="col-auto d-flex align-items-center">';
+                echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
+                echo '</div>';
+                $itemtype = $this->fields['itemtype'];
+                $controlId = 'filter[' . $cnt . '][itemtype]';
+                if ($groupIndex > 0) {
+                    $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][itemtype]';
+                }
+                $this->showItemtypesDropdown($cnt, $itemtype, $controlId);
 
-        $this->showCriteriaDropdown($cnt, $itemtype, $controlId);
-        $controlId = 'filter[' . $cnt . '][last]';
-        if ($groupIndex > 0) {
-            $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][last]';
+                $crit = "";
+                $last = 0;
+                $states_id = $this->fields['states_id'];
+                if ($states_id > 0) {
+                    $crit = "Status";
+                    $last = $states_id;
+                }
+                $objecttypes_id = $this->fields['objecttypes_id'];
+                if ($objecttypes_id > 0) {
+                    $crit = "Type";
+                    $last = $objecttypes_id;
+                }
+                $critfilter = 'filter[' . $cnt . '][criteria]';
+                if ($groupIndex > 0) {
+                    $critfilter = 'filter[' . $cnt . '][group][' . $groupIndex . '][criteria]';
+                }
+                $this->showCriteriaDropdown($cnt, $itemtype, $crit, $critfilter);
+
+                $lastfilter = 'filter[' . $cnt . '][last]';
+                if ($groupIndex > 0) {
+                    $lastfilter = 'filter[' . $cnt . '][group][' . $groupIndex . '][last]';
+                }
+                $this->showLastDropdown($cnt, $itemtype, $crit, $last, $lastfilter);
+                echo "</div>";
+                echo "</div>";
+            }
+        } else {
+            $operator = "";
+            $controlId = 'filter[' . $cnt . '][operator]';
+            if ($groupIndex > 0) {
+                $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][operator]';
+            }
+            $this->showOperatorsDropdown($cnt, $operator, $controlId);
+            echo '<div class="col-auto d-flex align-items-center">';
+            echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
+            echo '</div>';
+            $itemtype = 0;
+            $controlId = 'filter[' . $cnt . '][itemtype]';
+            if ($groupIndex > 0) {
+                $controlId = 'filter[' . $cnt . '][group][' . $groupIndex . '][itemtype]';
+            }
+            $this->showItemtypesDropdown($cnt, $itemtype, $controlId);
+
+            $crit = "";
+            $last = 0;
+            $states_id = $this->fields['states_id'] ?? 0;
+            if ($states_id > 0) {
+                $crit = "Status";
+                $last = $states_id;
+            }
+            $objecttypes_id = $this->fields['objecttypes_id'] ?? 0;
+            if ($objecttypes_id > 0) {
+                $crit = "Type";
+                $last = $objecttypes_id;
+            }
+            $critfilter = 'filter[' . $cnt . '][criteria]';
+            if ($groupIndex > 0) {
+                $critfilter = 'filter[' . $cnt . '][group][' . $groupIndex . '][criteria]';
+            }
+            $this->showCriteriaDropdown($cnt, $itemtype, $crit, $critfilter);
+
+            $lastfilter = 'filter[' . $cnt . '][last]';
+            if ($groupIndex > 0) {
+                $lastfilter = 'filter[' . $cnt . '][group][' . $groupIndex . '][last]';
+            }
+            $this->showLastDropdown($cnt, $itemtype, $crit, $last, $lastfilter);
+            echo "</div>";
+            echo "</div>";
         }
-        $this->showLastDropdown($cnt, $itemtype, $controlId);
-        echo '</div>';
-        echo '</div>';
-        echo '</div>';
     }
 
     public function ShowGroupRow($cnt)
@@ -231,10 +292,12 @@ class PluginTaskrulesCondition extends CommonDBTM
         echo '<div class="col-auto d-flex align-items-center">';
         echo '  <span class="espace">' . __("Object", "taskrules") . '</span>';
         echo '</div>';
-        $itemtype = "";
+        $itemtype = 0;
+        $crit = 0;
+        $last = 0;
         $this->showItemtypesDropdown($cnt, $itemtype, 'filter[' . $cnt . '][group][' . $grpcnt . '][itemtype]');
-        $this->showCriteriaDropdown($cnt, $itemtype, 'filter[' . $cnt . '][group][' . $grpcnt . '][criteria]');
-        $this->showLastDropdown($cnt, $itemtype, 'filter[' . $cnt . '][group][' . $grpcnt . '][last]');
+        $this->showCriteriaDropdown($cnt, $itemtype, $crit, 'filter[' . $cnt . '][group][' . $grpcnt . '][criteria]');
+        $this->showLastDropdown($cnt, $itemtype, $crit, $last, 'filter[' . $cnt . '][group][' . $grpcnt . '][last]');
         echo '</div>';
 
         echo "<a id='more-grpcriteria' class='hespace' role='button' style='display: block;'></a>";
@@ -364,6 +427,7 @@ class PluginTaskrulesCondition extends CommonDBTM
     {
         global $DB;
 
+        $selectedItemtype = $selectedItemtype[0];
         $values[0] = Dropdown::EMPTY_VALUE;
 
         $OBJECTTYPES = [
@@ -433,9 +497,9 @@ class PluginTaskrulesCondition extends CommonDBTM
         $possible_values[Dropdown::EMPTY_VALUE] = Dropdown::EMPTY_VALUE;
         $itemtypes = self::getTypes();
         if (!empty($itemtypes)) {
-            foreach ($itemtypes as $k => $itemtype) {
-                if ($item = getItemForItemtype($itemtype)) {
-                    $possible_values[$itemtype] = $item->getTypeName();
+            foreach ($itemtypes as $k => $it) {
+                if ($item = getItemForItemtype($it)) {
+                    $possible_values[$it] = $item->getTypeName();
                 }
             }
         }
@@ -448,7 +512,7 @@ class PluginTaskrulesCondition extends CommonDBTM
         echo '</div>';
     }
 
-    public function showCriteriaDropdown($id, $itemtype, $controlId)
+    public function showCriteriaDropdown($id, $itemtype, $value, $controlId)
     {
         $criteria = [
             Dropdown::EMPTY_VALUE => Dropdown::EMPTY_VALUE,
@@ -460,7 +524,7 @@ class PluginTaskrulesCondition extends CommonDBTM
         /* Third dropdown : status or type */
         //        $controlId = is_int($controlId) ?? 0;
         $cr = Dropdown::showFromArray($controlId, $criteria, [
-            'value' => $itemtype,
+            'value' => $value,
             'on_change' => "updateLastDropdown$id(this.value)",
         ]);
         /* Ajax code to reset the criteria dropdown */
@@ -476,6 +540,7 @@ class PluginTaskrulesCondition extends CommonDBTM
                     data: { item_type: value },
                     success: function(response) {
                         $('#" . $selectId . "').html(response);
+                        $(\"[name='filter[$id][last]']\").val('').trigger('change');
                     },
                     error: function (xhr, status, error) {
                     console.log(xhr);
@@ -487,37 +552,44 @@ class PluginTaskrulesCondition extends CommonDBTM
         echo '</div>';
     }
 
-    public function showLastDropdown($id, $itemtype, $controlId)
+    public function showLastDropdown($id, $itemtype, $crit, $value, $controlId)
     {
 
+        $arrValues = [];
+        if ($crit == 'Type') {
+            $arrValues = $this->getObjectTypes([$itemtype]);
+        }
+        if ($crit == 'Status') {
+            $arrValues = $this->getStatuses(self::getTypes());
+        }
         echo '<div class="col-auto">';
         /* Fourth dropdown : list of statuses for the selected object type */
         //        $controlId = is_int($controlId) ?? 0;
-        $cr = Dropdown::showFromArray($controlId, $this->getStatuses(self::getTypes()), [
-            'value' => $itemtype,
+        $cr = Dropdown::showFromArray($controlId, $arrValues, [
+            'value' => $value,
         ]);
 
         /* Ajax code to update the last dropdown from the third dropdown selection */
         $selectId = str_replace("[", "_", $controlId);
         $selectId = "dropdown_" . str_replace("]", "_", $selectId) . $cr;
         echo Html::scriptBlock("
-    function updateLastDropdown$id(criteria) {
-        // Retrieve itemtype from stored value in hidden field
-        var itemtype = document.getElementById('itemtype" . $id . "');
-        $.ajax({
-            url: '" . plugin::getWebDir('taskrules') . "/ajax/lastdropdown.php',
-            type: 'POST',
-            data: { criteria_Type: criteria, item_type: itemtype.value },
-            success: function(response) {
-                $('#" . $selectId . "').html(response);
-            },
-            error: function (xhr, status, error) {
-            console.log(xhr);
-            console.log(status);
-            console.log(error);
-            }
-        });
-    }");
+                function updateLastDropdown$id(criteria) {
+                    // Retrieve itemtype from stored value in hidden field
+                    var itemtype = document.getElementById('itemtype" . $id . "');
+                    $.ajax({
+                        url: '" . plugin::getWebDir('taskrules') . "/ajax/lastdropdown.php',
+                        type: 'POST',
+                        data: { criteria_Type: criteria, item_type: itemtype.value },
+                        success: function(response) {
+                            $('#" . $selectId . "').html(response);
+                        },
+                        error: function (xhr, status, error) {
+                        console.log(xhr);
+                        console.log(status);
+                        console.log(error);
+                        }
+                    });
+                }");
 
         echo '</div>';
     }

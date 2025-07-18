@@ -32,15 +32,74 @@ include("../../../inc/includes.php");
 
 global $DB;
 
-$cond = new PluginTaskrulesRule();
+$rule = new PluginTaskrulesRule();
+$cond = new PluginTaskrulesCondition();
 
-if (isset($_POST["add"]) || isset($_POST["save"])) {
-    Toolbox::logInfo($_POST);
+if (isset($_POST["add"])) {
+
+    $input['filter'] = $_POST["filter"];
+    unset($_POST['filter']);
+    $id = $rule->add($_POST);
+    $input['taskrules_id'] = $id;
+
+    if (is_array($input['filter']) && count($input['filter']) > 0) {
+        foreach ($input['filter'] as $id => $name) {
+            $input['operator'] = $input['filter'][$id]['operator'];
+            $input['itemtype'] = $input['filter'][$id]['itemtype'];
+            if ($input['filter'][$id]['criteria'] == "Status") {
+                if ($input['filter'][$id]['last'] > 0) {
+                    $input['states_id'] = $input['filter'][$id]['last'];
+                }
+            }
+            if ($input['filter'][$id]['criteria'] == "Type") {
+                if ($input['filter'][$id]['last'] > 0) {
+                    $input['objecttypes_id'] = $input['filter'][$id]['last'];
+                }
+            }
+            $cond->add($input);
+        }
+    }
+
+
+    Html::back();
+} elseif (isset($_POST["update"])) {
+
+    $input['filter'] = $_POST["filter"];
+    if (is_array($input['filter']) && count($input['filter']) > 0) {
+        foreach ($input['filter'] as $id => $name) {
+            $input['operator'] = $input['filter'][$id]['operator'];
+            $input['itemtype'] = $input['filter'][$id]['itemtype'];
+            if ($input['filter'][$id]['criteria'] == "Status") {
+                if ($input['filter'][$id]['last'] > 0) {
+                    $input['states_id'] = $input['filter'][$id]['last'];
+                }
+            }
+            if ($input['filter'][$id]['criteria'] == "Type") {
+                if ($input['filter'][$id]['last'] > 0) {
+                    $input['objecttypes_id'] = $input['filter'][$id]['last'];
+                }
+            }
+            $input['taskrules_id'] = $_POST['id'];
+
+            if (!$cond->getFromDBByCrit(['taskrules_id' => $input['taskrules_id'],
+                'itemtype' => $input['itemtype'],
+                'objecttypes_id' => $input['objecttypes_id'] ?? 0,
+                'states_id' => $input['states_id'] ?? 0,])) {
+                $cond->add($input);
+            } else {
+                $input['id'] = $cond->fields['id'];
+                $cond->update($input);
+            }
+        }
+    }
+
+    unset($_POST['filter']);
+    $rule->update($_POST);
     Html::back();
 } else {
     Html::header(__('Taskrules', 'taskrules'), $_SERVER['PHP_SELF'], 'config', 'taskrules', );
 
-    $cond->showForm();
+    $rule->showForm();
 
     Html::footer();
 }

@@ -42,6 +42,8 @@ $cond = new PluginTaskrulesCondition();
 if (empty(array_filter($itemtype))) {
     $itemtype = [];
 }
+
+$arrValues = [];
 /* Fill the dropdown according to the chosen criteria */
 if ($criteria_Type == 'Type') {
     $arrValues = $cond->getObjectTypes($itemtype);
@@ -51,6 +53,9 @@ if ($criteria_Type == 'Status') {
 }
 
 /* Build the dropdown content */
-foreach ($arrValues as $id => $name) {
-    echo "<option value='".$id."'>".$name."</option>";
+if (is_array($arrValues) && count($arrValues) > 0) {
+    foreach ($arrValues as $id => $name) {
+        echo "<option value='".$id."'>".$name."</option>";
+    }
 }
+

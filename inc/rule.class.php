@@ -58,29 +58,35 @@ class PluginTaskrulesRule extends CommonDBTM
         return true;
     }
 
-    public function showForm($ID, array $options = [])
+    public function showForm($tasktemplates_id, array $options = [])
     {
         echo Html::css(PLUGIN_TASKRULES_NOTFULL_DIR . "/lib/jquery-ui/jquery-ui.min.css");
         echo Html::script(PLUGIN_TASKRULES_NOTFULL_DIR . "/lib/jquery-ui/jquery-ui.min.js");
 
-
-//        if (!$this->getFromDB($ID)) {
+        $ID = 0;
+        if ($this->getFromDBByCrit(['tasktemplates_id' => $tasktemplates_id])) {
+            $ID = $this->fields['id'];
+            $cond = new PluginTaskrulesCondition();
+            if ($conditions = $cond->find(['taskrules_id' => $ID])) {
+                if (count($conditions) == 0) {
+                    $cond->getEmpty();
+                }
+            }
+        } else {
             $this->getEmpty();
-        $cond = new PluginTaskrulesCondition();
-        $cond->getEmpty();
-//        }
-//        Toolbox::logInfo($this);
+            $cond = new PluginTaskrulesCondition();
+            $cond->getEmpty();
+        }
+
         echo "<form name='form' method='post' action='" . $this->getFormURL() . "'>";
         echo "<table class='tab_cadre_fixe'>\n";
         echo "<tr class='tab_bg_2'>\n";
         echo "<td class='top'>\n";
-        echo Html::hidden('tasktemplates_id', ['value' => $ID]);
+        echo Html::hidden('tasktemplates_id', ['value' => $tasktemplates_id]);
+        echo Html::hidden('id', ['value' => $ID]);
         echo Html::hidden('groupIndex', ['value' => 0]);
         echo Html::hidden('boolUpdStatuses', ['value' => 0]);
 
-//        echo $JS = <<<JAVASCRIPT
-//
-//JAVASCRIPT;
 
         echo "<div id='accordion_rules'>";
 
@@ -94,7 +100,7 @@ class PluginTaskrulesRule extends CommonDBTM
         /* "Condition(s)" section */
         /* ---------------------- */
         echo "<h3><a href='#'>" . _n("Condition", "Conditions", 2, "taskrules") . "</a></h3>";
-        $cond->showCriteriasForm();
+        $cond->showCriteriasForm($conditions);
 
         /* ----------------- */
         /* "Trigger" section */
@@ -114,7 +120,12 @@ class PluginTaskrulesRule extends CommonDBTM
         echo "</td></tr>\n";
 
         echo "<tr class='tab_bg_1'><td class='center' colspan='2'>";
-        echo Html::submit(_sx('button', 'Save'), ['name' => 'save', 'class' => 'btn btn-primary']);
+        if ($ID > 0) {
+            echo Html::submit(_sx('button', 'Update'), ['name' => 'update', 'class' => 'btn btn-primary']);
+        } else {
+            echo Html::submit(_sx('button', 'Add'), ['name' => 'add', 'class' => 'btn btn-primary']);
+        }
+
         echo "</td></tr>";
 
         echo "</table>\n";
@@ -137,7 +148,7 @@ class PluginTaskrulesRule extends CommonDBTM
         echo __("Active", "taskrules");
         echo "</td>";
         echo "<td>";
-        Dropdown::showYesNo('active', $this->fields['active']);
+        self::showSwitchField('active', $this->fields['active']);
         echo "</td>";
         echo "</tr>";
 
@@ -146,7 +157,7 @@ class PluginTaskrulesRule extends CommonDBTM
         echo __("Prevent task creation on error", "taskrules");
         echo "</td>";
         echo "<td>";
-        Dropdown::showYesNo('preventcreation', $this->fields['preventcreation']);
+        self::showSwitchField('preventcreation', $this->fields['preventcreation']);
         echo "</td>";
         echo "</tr>";
 
@@ -155,7 +166,7 @@ class PluginTaskrulesRule extends CommonDBTM
         echo __("Prevent the task from changing its status (from \"to do\" to \"done\") in case of an error", "taskrules");
         echo "</td>";
         echo "<td>";
-        Dropdown::showYesNo('preventchange', $this->fields['preventchange']);
+        self::showSwitchField('preventchange', $this->fields['preventchange']);
         echo "</td>";
         echo "</tr>";
 
@@ -175,7 +186,7 @@ class PluginTaskrulesRule extends CommonDBTM
         echo __("Activate when a task is added to the ticket", "taskrules");
         echo "</td>";
         echo "<td>";
-        Dropdown::showYesNo('trigger_creation', $this->fields['trigger_creation']);
+        self::showSwitchField('trigger_creation', $this->fields['trigger_creation']);
         echo "</td>";
         echo "</tr>";
 
@@ -184,7 +195,7 @@ class PluginTaskrulesRule extends CommonDBTM
         echo __('Trigger upon updating the task status from "to do" to "done"', "taskrules");
         echo "</td>";
         echo "<td>";
-        Dropdown::showYesNo('trigger_update', $this->fields['trigger_update']);
+        self::showSwitchField('trigger_update', $this->fields['trigger_update']);
         echo "</td>";
         echo "</tr>";
 
@@ -220,35 +231,33 @@ class PluginTaskrulesRule extends CommonDBTM
 
         echo '<div class="col-auto">';
         // /* Action statuses dropdown */
-        Dropdown::showFromArray("actionStatus", $actionsStatuses, [
-            'id' => "actionStatus",
+        $cr = Dropdown::showFromArray("actionStatus", $actionsStatuses, [
             'on_change' => "handleClick()",
         ]);
-
-
-        $selectId = 'actionStatus';
-        echo Html::scriptBlock('
+        $selectId = "dropdown_actionStatus$cr";
+        echo Html::scriptBlock("
+        var actionStatus = $selectId;
         function handleClick() {
-            var bStatus = document.getElementsByName("boolUpdStatuses")[0];
-            console.log("bStatus.value=" + bStatus.value);
+            var bStatus = document.getElementsByName('boolUpdStatuses')[0];
+//            console.log('bStatus.value=' + bStatus.value);
             if ( bStatus.value == 1 )
                 return;
-            const selectElement = document.getElementById("actionStatus");
+            const selectElement = document.getElementById('$selectId');
             const selectedValue = selectElement.value;
-            console.log("selectedValue=" + selectedValue);
+//            console.log('selectedValue=' + selectedValue);
             /* Get the comma separated list of itemtypes in the Condition(s) section */
-            let values = "";
-            document.querySelectorAll("select[name*=\'itemtype\']").forEach(function(select) {
-                values += select.value + ",";
+            let values = '';
+            document.querySelectorAll('select[name*=\"itemtype\"]').forEach(function(select) {
+                values += select.value + ',';
             });
             values = values.slice(0, -1);
             /* Ajax call to populate statuses belonging to itemtypes in the Condition(s) section */
             $.ajax({
-                url: "' . plugin::getWebDir('taskrules') . '/ajax/getactionstatuses.php",
-                type: "POST",
+                url: '" . plugin::getWebDir('taskrules') . "/ajax/getactionstatuses.php',
+                type: 'POST',
                 data: { item_types: values },
                 success: function(response) {
-                    $("#' . $selectId . '").html(response);
+                    $('#" . $selectId . "').html(response);
                 },
                 error: function (xhr, status, error) {
                 console.log(xhr);
@@ -258,83 +267,160 @@ class PluginTaskrulesRule extends CommonDBTM
             });
             bStatus.value = 1;
         }
-        ');
+        ");
 
-        echo '</div>';
+        echo "</div>";
 
-        echo '<div class="list-group list-group-flush list-group-hoverable criteria-list pt-2" style="background-color: white; id="actiontable">
-              <div class="list-group-item p-2 border-0 normalcriteria" id="row1">
-                <div class="row g-1">
-                  <div class="col-1"></div>
-                  <div class="col-2 d-flex align-items-center">Statut :</div>
-                  <div class="col-2 d-flex align-items-center">
-                    <select id="statut" name="statut">
-                      <option value="preparation">En préparation</option>
-                      <option value="autre">Autre</option>
-                    </select>
-                  </div>
-                  <div class="col d-flex align-items-center"></div>
-                </div>
-                <div class="row g-1">
-                  <div class="col-1"></div>
-                  <div class="col-2 d-flex align-items-center">Lieu :</div>
-                  <div class="col-2 d-flex align-items-center">
-                    <select id="lieu" name="lieu">
-                      <option value="petit_stock">Petit stock</option>
-                      <option value="autre">Autre</option>
-                    </select>
-                  </div>
-                  <div class="col d-flex align-items-center">
-                    <input type="checkbox" id="vider_lieu" name="vider_lieu">
-                    <label for="vider_lieu">Vider le champ Lieu</label>
-                  </div>
-                </div>
-                <div class="row g-1">
-                  <div class="col-1"></div>
-                  <div class="col-2 d-flex align-items-center">Usager :</div>
-                  <div class="col-2 d-flex align-items-center">
-                    <select id="usager" name="usager">
-                      <option value="usager_du_materiel">Usager du matériel</option>
-                      <option value="autre">Autre</option>
-                    </select>
-                  </div>
-                  <div class="col d-flex align-items-center">
-                    <input type="checkbox" id="vider_usager" name="vider_usager">
-                    <label for="vider_usager">Vider le champ Usager</label>
-                  </div>
-                </div>
-                <div class="row g-1">
-                  <div class="col-1"></div>
-                  <div class="col-2 d-flex align-items-center">Utilisateur :</div>
-                  <div class="col-2 d-flex align-items-center">
-                    <select id="utilisateur" name="utilisateur">
-                      <option value="demandeur">Demandeur</option>
-                      <option value="autre">Autre</option>
-                    </select>
-                  </div>
-                  <div class="col d-flex align-items-center">
-                    <input type="checkbox" id="vider_utilisateur" name="vider_utilisateur">
-                    <label for="vider_utilisateur">Vider le champ Utilisateur</label>
-                  </div>
-                </div>
-                <div class="row g-1">
-                  <div class="col-1"></div>
-                  <div class="col-2 d-flex align-items-center">Groupe :</div>
-                  <div class="col-2 d-flex align-items-center">
-                    <select id="groupe" name="groupe">
-                      <option value="groupe_du_demandeur">Groupe du demandeur</option>
-                      <option value="autre">Autre</option>
-                    </select>
-                  </div>
-                  <div class="col d-flex align-items-center">
-                    <input type="checkbox" id="vider_groupe" name="vider_groupe">
-                    <label for="vider_groupe">Vider le champ Groupe</label>
-                  </div>
-                </div>
-              </div>
-            </div>';
+        echo "<tr class='tab_bg_2'>";
+        echo "<td>";
+        echo __('Status');
+        echo "</td>";
+        echo "<td>";
+        $states[0] = __('Do not change', 'tasrules');
+        $states[1] = __('Empty the field', 'taskrules');
+        $states[2] = __('A specific state', 'taskrules');
+        $randstate = Dropdown::showFromArray('state_action', $states, [
+            'value' => $this->fields['state_action'] ?? 0,
+        ]);
+
+        $params = ['state_action' => '__VALUE__',
+            'states_id' => $this->fields['states_id'] ];
+        Ajax::updateItemOnSelectEvent("dropdown_state_action$randstate",
+            "specific_states_id",
+            PLUGIN_TASKRULES_WEBDIR . "/ajax/updateactionsdropdowns.php",
+            $params);
+
+
+        echo "&nbsp;<span id='specific_states_id'>";
+        if ($this->fields['states_id'] > 0) {
+            $condition = new PluginTaskrulesCondition();
+            $states_id = $condition->getStatuses(PluginTaskrulesCondition::getTypes());
+            Dropdown::showFromArray('states_id', $states_id, [
+                'value' => $this->fields['states_id'] ?? 0,
+            ]);
+        }
+        echo "</span>";
+        echo "<td>";
+
+        echo "</td>";
+        echo "</tr>";
+
+        echo "<tr class='tab_bg_2'>";
+        echo "<td>";
+        echo __('Location');
+        echo "</td>";
+        echo "<td>";
+        $locations[0] = __('Do not change', 'tasrules');
+        $locations[1] = __('Location of ticket requester', 'taskrules');
+        $locations[2] = __('Empty the field', 'taskrules');
+        $locations[3] = __('A specific location', 'taskrules');
+        $randlocation = Dropdown::showFromArray('location_action', $locations, [
+            'value' => $this->fields['location_action'],
+        ]);
+
+        $params = ['location_action' => '__VALUE__',
+            'locations_id' => $this->fields['locations_id'] ];
+        Ajax::updateItemOnSelectEvent("dropdown_location_action$randlocation",
+            "specific_locations_id",
+            PLUGIN_TASKRULES_WEBDIR . "/ajax/updateactionsdropdowns.php",
+            $params);
+
+
+        echo "&nbsp;<span id='specific_locations_id'>";
+        if ($this->fields['locations_id'] > 0) {
+            Location::Dropdown([
+                'name' => 'locations_id',
+                'value' => $this->fields['locations_id'],
+                'entity' => $_SESSION["glpiactive_entity"]
+            ]);
+        }
+
+        echo "</span>";
+        echo "</td>";
+        echo "</tr>";
+
+        echo "<tr class='tab_bg_2'>";
+        echo "<td>";
+        echo __('Alternate username');
+        echo "</td>";
+        echo "<td>";
+        $contacts[0] = __('Do not change', 'tasrules');
+        $contacts[1] = __('Empty the field', 'taskrules');
+        Dropdown::showFromArray('contact_action', $contacts, [
+            'value' => $this->fields['contact_action'],
+        ]);
+        echo "</td>";
+        echo "</tr>";
+
+        echo "<tr class='tab_bg_2'>";
+        echo "<td>";
+        echo __('User');
+        echo "</td>";
+        echo "<td>";
+        $users[0] = __('Do not change', 'tasrules');
+        $users[1] = __('Ticket requester', 'taskrules');
+        $users[2] = __('Empty the field', 'taskrules');
+        Dropdown::showFromArray('user_action', $users, [
+            'value' => $this->fields['user_action'],
+        ]);
+        echo "</td>";
+        echo "</tr>";
+
+        echo "<tr class='tab_bg_2'>";
+        echo "<td>";
+        echo __('Group');
+        echo "</td>";
+        echo "<td>";
+        $groups[0] = __('Do not change', 'tasrules');
+        $groups[1] = __('Group of the ticket requester', 'taskrules');
+        $groups[2] = __('Empty the field', 'taskrules');
+        Dropdown::showFromArray('group_action', $groups, [
+            'value' => $this->fields['group_action'],
+        ]);
+        echo "</td>";
+        echo "</tr>";
 
         echo "</table>";
         echo "</div>";
+    }
+
+    public static function showSwitchField($name, $value)
+    {
+        echo Html::hidden($name, ['id' => $name,
+            'value' => $value]);
+        $rand = mt_rand();
+        $id = $name.$rand;
+        $js = <<<JS
+                (function(){
+                    var toggleButton = $('.$id');
+                    toggleButton.on('click', function() {
+                        var el = $(this);
+                        var isOn = el.hasClass('fa-toggle-on');
+                        var input = document.getElementById('$id');
+                
+                        if (isOn) {
+                            el.removeClass('fa-toggle-on enabled')
+                              .addClass('fa-toggle-off disabled');
+                            input.value = '0';
+                        } else {
+                            el.removeClass('fa-toggle-off disabled')
+                              .addClass('fa-toggle-on enabled');
+                            input.value = '1';
+                        }
+                    });
+                })();
+                JS;
+
+        echo Html::scriptBlock($js);
+
+// Génère l’input caché pour stocker la valeur
+        echo "<input type=\"hidden\" id=\"$id\" name=\"$id\" value=\"" . ($value == 1 ? '1' : '0') . "\">";
+
+// Génère l’icône dans un bouton
+        $classes = $value == 1
+            ? "$id fa-fw fas fa-2x fa-toggle-on enabled"
+            : "$id fa-fw fas fa-2x fa-toggle-off disabled";
+
+        echo "<a class=\"button\"><i class=\"$classes\"></i></a>";
     }
 }

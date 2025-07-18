@@ -35,8 +35,9 @@ Html::header_nocache();
 Session::checkLoginUser();
 
 /* Retrieve id value from ajax call */
+$conditions = [];
 $id = $_POST['id'] + 1;
 $groupIndex = $_POST['groupIndex'];
 
 $cond = new PluginTaskrulesCondition();
-$cond->ShowCriteriaRow($id, $groupIndex);
+$cond->ShowCriteriaRow($conditions, $id, $groupIndex);

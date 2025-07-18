@@ -37,7 +37,7 @@ define("PLUGIN_TASKRULES_MAX_GLPI_VERSION", "10.0.99");
 
 define("PLUGIN_TASKRULES_DIR", Plugin::getPhpDir("taskrules"));
 define("PLUGIN_TASKRULES_NOTFULL_DIR", Plugin::getPhpDir("taskrules", false));
-
+define("PLUGIN_TASKRULES_WEBDIR", Plugin::getWebDir("taskrules"));
 /**
  * Init hooks of the plugin.
  * REQUIRED
