@@ -49,6 +49,7 @@ function plugin_init_taskrules()
     global $PLUGIN_HOOKS;
 
     $PLUGIN_HOOKS['csrf_compliant']['taskrules'] = true;
+    $PLUGIN_HOOKS['change_profile']['taskrules']   = ['PluginTaskrulesProfile', 'initProfile'];
 
     $plugin = new Plugin();
     if (
@@ -60,9 +61,9 @@ function plugin_init_taskrules()
         $PLUGIN_HOOKS['add_javascript']['taskrules'][] = 'js/accordion.js';
         $PLUGIN_HOOKS['add_css']['taskrules'][] = "css/accordion.css";
         /* Prepare hooks to intercept tasks events (add task and task update) */
-        $PLUGIN_HOOKS['pre_item_add']['taskrules'] = ['TicketTask' => 'taskrules_pre_additem_called'];
-        $PLUGIN_HOOKS['item_add']['taskrules'] = ['TicketTask' => 'taskrules_additem_called'];
-        $PLUGIN_HOOKS['item_update']['taskrules'] = ['TicketTask' => 'taskrules_updateitem_called'];
+        $PLUGIN_HOOKS['pre_item_add']['taskrules'] = ['TicketTask' => 'plugin_taskrules_pre_additem'];
+        $PLUGIN_HOOKS['item_add']['taskrules'] = ['TicketTask' => 'plugin_taskrules_additem'];
+        $PLUGIN_HOOKS['item_update']['taskrules'] = ['TicketTask' => 'plugin_taskrules_updateitem'];
 
         /* Add a new tab on the Task template page */
         Plugin::registerClass('PluginTaskrulesRule', ['addtabon' => ['TaskTemplate']]);

@@ -27,82 +27,6 @@
  --------------------------------------------------------------------------
  */
 
-const STATUS_INFORMATION   = 0;
-const STATUS_TODO          = 1;
-const STATUS_DONE          = 2;
-
-/**
- * Handle update item hook
- *
- * @param CommonDBTM $item Item instance
- *
- * @return void
- */
-function taskrules_updateitem_called(CommonDBTM $item)
-{
-    //do everything you want!
-    //remember that $item is passed by reference (it is an object)
-    //so changes you will do here will be used by the core.
-    if ($item::getType() === TicketTask::getType()) {
-        Toolbox::logInFile("EdmondDebug", "Plugin TaskRules : a task was updated, I'm in taskrules_updateitem_called()\n");
-        //Toolbox::logInFile("EdmondDebug",print_r($item,true));
-
-        switch ($item->fields['state']) {
-            case STATUS_INFORMATION:
-                Toolbox::logInFile("EdmondDebug", "Etat de la tâche : Information\n");
-                break;
-            case STATUS_TODO:
-                Toolbox::logInFile("EdmondDebug", "Etat de la tâche : To do\n");
-                break;
-            case STATUS_DONE:
-                Toolbox::logInFile("EdmondDebug", "Etat de la tâche : Done\n");
-                break;
-            default:
-                echo "The value is not 1, 2, or 3.";
-                break;
-        }
-    } else {
-        Toolbox::logInFile("EdmondDebug", "Plugin TaskRules : something was updated, I'm in taskrules_updateitem_called()\n");
-        Toolbox::logInFile("EdmondDebug", "Plugin TaskRules : something was updated, it's a " . $item::getType() . "\n");
-    }
-}
-
-function taskrules_pre_additem_called(CommonDBTM $item)
-{
-
-    $condition = true;
-    if ($condition) {
-        $item->input = []; /* This action triggers cancellation of the task creation */
-        Session::addMessageAfterRedirect('Condition non remplie, tâche non créée.', false, ERROR);
-        return;
-    }
-}
-
-/**
- * Handle add item hook
- *
- * @param CommonDBTM $item Item instance
- *
- * @return void
- */
-function taskrules_additem_called(CommonDBTM $item)
-{
-    //do everything you want!
-    //remember that $item is passed by reference (it is an object)
-    //so changes you will do here will be used by the core.
-    if ($item::getType() === TicketTask::getType()) {
-        Toolbox::logInFile("EdmondDebug", "Plugin TaskRules : a task was added, I'm in taskrules_additem_called()\n");
-        //Toolbox::logInFile("EdmondDebug",print_r($item,true));
-    } else {
-        Toolbox::logInFile("EdmondDebug", "Plugin TaskRules : something was added, I'm in taskrules_additem_called()\n");
-    }
-
-    // if ($item::getType() === Computer::getType()) {
-    //    //we're working with a computer
-    // } elseif ($item::getType() === Phone::getType()) {
-    //    //we're working with a phone
-    // }
-}
 
 /**
  * Plugin install process
@@ -138,8 +62,41 @@ function plugin_taskrules_uninstall()
         $DB->dropTable($table);
     }
 
-    PluginTaskrulesProfile::removeRightsFromSession();
-    PluginTaskrulesProfile::removeRightsFromDB();
+    $profileRight = new ProfileRight();
+    foreach (PluginTaskrulesProfile::getAllRights() as $right) {
+        $profileRight->deleteByCriteria(['name' => $right['field']]);
+    }
 
     return true;
+}
+
+
+function plugin_taskrules_pre_additem(CommonDBTM $item)
+{
+    PluginTaskrulesRule::preAddTask($item);
+}
+
+/**
+ * Handle add item hook
+ *
+ * @param CommonDBTM $item Item instance
+ *
+ * @return void
+ */
+function plugin_taskrules_additem(CommonDBTM $item)
+{
+    PluginTaskrulesRule::afterAddTask($item);
+}
+
+/**
+ * Handle update item hook
+ *
+ * @param CommonDBTM $item Item instance
+ *
+ * @return void
+ */
+function plugin_taskrules_updateitem(CommonDBTM $item)
+{
+    PluginTaskrulesRule::afterUpdateTask($item);
+
 }

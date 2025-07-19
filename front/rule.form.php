@@ -32,68 +32,46 @@ include("../../../inc/includes.php");
 
 global $DB;
 
+Session::checkRight("plugin_taskrules", READ);
+
 $rule = new PluginTaskrulesRule();
 $cond = new PluginTaskrulesCondition();
 
 if (isset($_POST["add"])) {
 
-    $input['filter'] = $_POST["filter"];
-    unset($_POST['filter']);
+    $types = PluginTaskrulesCondition::$types;
+    foreach ($types as $itemtype) {
+        $fieldname = PluginTaskrulesCondition::getFieldNameForItemtype($itemtype);
+        $criterianame = PluginTaskrulesCondition::getCriteriaNameForItemtype($itemtype);
+        $input[$fieldname] = serialize($_POST[$criterianame]);
+        unset($_POST[$criterianame]);
+    }
+
     $id = $rule->add($_POST);
     $input['taskrules_id'] = $id;
 
-    if (is_array($input['filter']) && count($input['filter']) > 0) {
-        foreach ($input['filter'] as $id => $name) {
-            $input['operator'] = $input['filter'][$id]['operator'];
-            $input['itemtype'] = $input['filter'][$id]['itemtype'];
-            if ($input['filter'][$id]['criteria'] == "Status") {
-                if ($input['filter'][$id]['last'] > 0) {
-                    $input['states_id'] = $input['filter'][$id]['last'];
-                }
-            }
-            if ($input['filter'][$id]['criteria'] == "Type") {
-                if ($input['filter'][$id]['last'] > 0) {
-                    $input['objecttypes_id'] = $input['filter'][$id]['last'];
-                }
-            }
-            $cond->add($input);
-        }
-    }
-
+    $cond->add($input);
 
     Html::back();
 } elseif (isset($_POST["update"])) {
 
-    $input['filter'] = $_POST["filter"];
-    if (is_array($input['filter']) && count($input['filter']) > 0) {
-        foreach ($input['filter'] as $id => $name) {
-            $input['operator'] = $input['filter'][$id]['operator'];
-            $input['itemtype'] = $input['filter'][$id]['itemtype'];
-            if ($input['filter'][$id]['criteria'] == "Status") {
-                if ($input['filter'][$id]['last'] > 0) {
-                    $input['states_id'] = $input['filter'][$id]['last'];
-                }
-            }
-            if ($input['filter'][$id]['criteria'] == "Type") {
-                if ($input['filter'][$id]['last'] > 0) {
-                    $input['objecttypes_id'] = $input['filter'][$id]['last'];
-                }
-            }
-            $input['taskrules_id'] = $_POST['id'];
-
-            if (!$cond->getFromDBByCrit(['taskrules_id' => $input['taskrules_id'],
-                'itemtype' => $input['itemtype'],
-                'objecttypes_id' => $input['objecttypes_id'] ?? 0,
-                'states_id' => $input['states_id'] ?? 0,])) {
-                $cond->add($input);
-            } else {
-                $input['id'] = $cond->fields['id'];
-                $cond->update($input);
-            }
-        }
+    $types = PluginTaskrulesCondition::$types;
+    foreach ($types as $itemtype) {
+        $fieldname = PluginTaskrulesCondition::getFieldNameForItemtype($itemtype);
+        $criterianame = PluginTaskrulesCondition::getCriteriaNameForItemtype($itemtype);
+        $input[$fieldname] = serialize($_POST[$criterianame]);
+        unset($_POST[$criterianame]);
     }
 
-    unset($_POST['filter']);
+    $input['taskrules_id'] = $_POST['id'];
+
+    if (!$cond->getFromDBByCrit(['taskrules_id' => $input['taskrules_id']])) {
+        $cond->add($input);
+    } else {
+        $input['id'] = $cond->fields['id'];
+        $cond->update($input);
+    }
+
     $rule->update($_POST);
     Html::back();
 } else {

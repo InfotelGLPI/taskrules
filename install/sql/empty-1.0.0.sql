@@ -24,13 +24,11 @@ DROP TABLE IF EXISTS `glpi_plugin_taskrules_conditions`;
 CREATE TABLE IF NOT EXISTS `glpi_plugin_taskrules_conditions` (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
   `taskrules_id` int UNSIGNED NOT NULL DEFAULT '0',
-  `operator` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `groupoperator` varchar(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `itemtype` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
-  `objecttypes_id` int UNSIGNED NOT NULL DEFAULT '0',
-  `states_id` int UNSIGNED NOT NULL DEFAULT '0',
+  `fields_computer` text DEFAULT NULL,
+  `fields_monitor` text DEFAULT NULL,
+  `fields_peripheral` text DEFAULT NULL,
+  `fields_printer` text DEFAULT NULL,
+  `fields_phone` text DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `taskrules_id` (`taskrules_id`),
-  KEY `objecttypes_id` (`objecttypes_id`),
-  KEY `states_id` (`states_id`)
+  KEY `taskrules_id` (`taskrules_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;

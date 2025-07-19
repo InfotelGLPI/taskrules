@@ -33,13 +33,13 @@ include("../../../inc/includes.php");
 header("Content-Type: text/html; charset=UTF-8");
 Html::header_nocache();
 
-//Session::checkRight("plugin_taskrules_taskrules", READ);
+Session::checkRight("plugin_taskrules", UPDATE);
 
 if (isset($_POST['location_action']) && $_POST['location_action'] == 3) {
     Location::Dropdown([
         'name' => 'locations_id',
         'value' => $_POST['locations_id'],
-        'entity' => $_SESSION["glpiactive_entity"]
+        'entity' => $_SESSION["glpiactive_entity"],
     ]);
 }
 

@@ -32,7 +32,7 @@ include('../../../inc/includes.php');
 header('Content-Type: text/html; charset=UTF-8');
 Html::header_nocache();
 
-Session::checkLoginUser();
+Session::checkRight("plugin_taskrules", READ);
 
 /* Retrieve item_types from ajax call */
 $item_types = $_POST['item_types']; // Example : [item_types] => Printer,NetworkEquipment,Computer

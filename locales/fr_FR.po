@@ -1,14 +1,14 @@
 # SOME DESCRIPTIVE TITLE.
 # Copyright (C) YEAR Infotel
-# This file is distributed under the same license as the GLPI - Mdm2glpi package.
+# This file is distributed under the same license as the GLPI - Taskrules package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: GLPI - Mdm2glpi 1.0.0\n"
+"Project-Id-Version: GLPI - Taskrules 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-15 14:51+0200\n"
-"PO-Revision-Date: 2025-07-15 14:51+0200\n"
+"POT-Creation-Date: 2025-07-19 16:28+0200\n"
+"PO-Revision-Date: 2025-07-19 16:29+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -16,100 +16,110 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: Poedit 3.0\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: ../setup.php:130
-msgid "Installed / not configured"
-msgstr "Installé / non configuré"
+#: setup.php:82 inc/rule.class.php:43
+msgid "Task rule"
+msgid_plural "Task rules"
+msgstr[0] "Règle de tâches"
+msgstr[1] "Règles de tâches"
 
-#: ../front/condition.form.php:50
+#: front/rule.form.php:78
 msgid "Taskrules"
 msgstr "Taskrules"
 
-#: ../inc/condition.class.php:83
-msgid "Parameters"
-msgstr "Paramètres"
+#: inc/rule.class.php:112
+msgid "Parameter"
+msgid_plural "Parameters"
+msgstr[0] "Paramètre"
+msgstr[1] "Paramètres"
 
-#: ../inc/condition.class.php:91
-msgid "Active : "
-msgstr "Actif : "
+#: inc/rule.class.php:118
+msgid "Condition"
+msgid_plural "Conditions"
+msgstr[0] "Condition"
+msgstr[1] "Conditions"
 
-#: ../inc/condition.class.php:94
-msgid "Prevent task creation on error :"
-msgstr "Empêcher la création de tâches en cas d'erreur :"
+#: inc/rule.class.php:124
+msgid "Trigger"
+msgid_plural "Triggers"
+msgstr[0] "Déclencheur"
+msgstr[1] "Déclencheurs"
 
-#: ../inc/condition.class.php:97
+#: inc/rule.class.php:130
+msgid "Action"
+msgid_plural "Actions"
+msgstr[0] "Action"
+msgstr[1] "Actions"
+
+#: inc/rule.class.php:164
+msgid "Active"
+msgstr "Actif"
+
+#: inc/rule.class.php:173
+msgid "Prevent task creation on error"
+msgstr "Empêcher la création de tâches en cas d'erreur"
+
+#: inc/rule.class.php:182
 msgid ""
 "Prevent the task from changing its status (from \"to do\" to \"done\") in "
-"case of an error :"
+"case of an error"
 msgstr ""
 "Empêcher le changement de statut (de \"à faire\" à \"fait\") de la tâche en "
-"cas d'erreur : "
+"cas d'erreur"
 
-#: ../inc/condition.class.php:118
-msgid "Condition(s)"
-msgstr "Condition(s)"
-
-#: ../inc/condition.class.php:172
-msgid "Trigger"
-msgstr "Déclencheur"
-
-#: ../inc/condition.class.php:180
+#: inc/rule.class.php:202
 msgid "Activate when a task is added to the ticket"
 msgstr "Déclencher à l'ajout de la tâche dans le ticket"
 
-#: ../inc/condition.class.php:186
+#: inc/rule.class.php:211
 msgid "Trigger upon updating the task status from \"to do\" to \"done\""
 msgstr ""
 "Déclencher à la mise à jour du statut de la tâche de \"à faire\" vers \"fait"
 "\""
 
-#: ../inc/condition.class.php:197
-msgid "Action(s)"
-msgstr "Action(s)"
+#: inc/rule.class.php:230
+msgid ""
+"Please note, only the statuses common to the objects selected in the "
+"conditions appear"
+msgstr ""
+"Attention, n'apparaissent que les statuts communs aux objets sélectionnés "
+"dans les conditions"
 
-#: ../inc/condition.class.php:333 ../inc/condition.class.php:377
-#: ../inc/condition.class.php:402
-msgid "Delete a rule"
-msgstr "Supprimer une règle"
+#: inc/rule.class.php:234
+msgid "Keep current status"
+msgstr "Conserver le statut affecté"
 
-#: ../inc/condition.class.php:352 ../inc/condition.class.php:419
-msgid "Object"
-msgstr "Objet"
+#: inc/rule.class.php:235
+msgid "Empty current status"
+msgstr "Vider le statut affecté"
 
-#: ../inc/condition.class.php:511
-msgid "AND"
-msgstr "ET"
+#: inc/rule.class.php:285 inc/rule.class.php:321 inc/rule.class.php:357
+#: inc/rule.class.php:370 inc/rule.class.php:384
+msgid "Do not change"
+msgstr "Ne pas modifier"
 
-#: ../inc/condition.class.php:512
-msgid "OR"
-msgstr "OU"
+#: inc/rule.class.php:286 inc/rule.class.php:323 inc/rule.class.php:358
+#: inc/rule.class.php:372 inc/rule.class.php:386
+msgid "Empty the field"
+msgstr "Vider le champ"
 
-#: ../inc/condition.class.php:513
-msgid "AND NOT"
-msgstr "ET PAS"
+#: inc/rule.class.php:287
+msgid "A specific state"
+msgstr "Un statut spécifique"
 
-#: ../inc/condition.class.php:514
-msgid "OR NOT"
-msgstr "OU PAS"
+#: inc/rule.class.php:322
+msgid "Location of ticket requester"
+msgstr "Affecter le lieu du demandeur du ticket"
 
-#: ../inc/condition.class.php:524 ../inc/condition.class.php:543
-#: ../inc/condition.class.php:579
-msgid "----------"
-msgstr "----------"
+#: inc/rule.class.php:324
+msgid "A specific location"
+msgstr "Un lieu spécifique"
 
-#: ../inc/condition.class.php:657
-msgid "Status"
-msgstr "Statut"
+#: inc/rule.class.php:371
+msgid "Ticket requester"
+msgstr "Affecter le demandeur du ticket"
 
-#: ../inc/condition.class.php:658
-msgid "Type"
-msgstr "Type"
-
-#~ msgid "of the type"
-#~ msgstr "de type"
-
-#~ msgid "table"
-#~ msgstr "table"
-
-#~ msgid "NOT"
-#~ msgstr "PAS"
+#: inc/rule.class.php:385
+msgid "Group of the ticket requester"
+msgstr "Affecter le groupe demandeur du ticket"

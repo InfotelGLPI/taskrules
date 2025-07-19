@@ -36,13 +36,29 @@ if (!defined('GLPI_ROOT')) {
  */
 class PluginTaskrulesRule extends CommonDBTM
 {
-    public static $rightname = 'plugin_taskrules_taskrules';
+    public static $rightname = 'plugin_taskrules';
 
-    public static $types     = ['Computer', 'Peripheral', 'Phone', 'Printer', 'Monitor', 'NetworkEquipment'];
+    public static function getTypeName($nb = 0)
+    {
+        return _n('Task rule', 'Task rules', $nb, 'taskrules');
+    }
 
     public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
     {
-        return _n('Task rule', 'Task rules', 2, 'taskrules');
+        switch ($item->getType()) {
+            case 'TaskTemplate':
+                if ($_SESSION['glpishow_count_on_tabs']) {
+                    $dbu = new DbUtils();
+                    return self::createTabEntry(
+                        self::getTypeName(),
+                        $dbu->countElementsInTable(
+                            $this->getTable(),
+                            ["tasktemplates_id" => $item->getID()]
+                        )
+                    );
+                }
+                return self::getTypeName();
+        }
     }
 
     public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
@@ -100,7 +116,7 @@ class PluginTaskrulesRule extends CommonDBTM
         /* "Condition(s)" section */
         /* ---------------------- */
         echo "<h3><a href='#'>" . _n("Condition", "Conditions", 2, "taskrules") . "</a></h3>";
-        $cond->showCriteriasForm($conditions);
+        $cond->showCriteriasForm($ID);
 
         /* ----------------- */
         /* "Trigger" section */
@@ -141,7 +157,7 @@ class PluginTaskrulesRule extends CommonDBTM
     {
 
         echo "<div>";
-        echo "<table class='tab_cadre' width='100%'>";
+        echo "<table class='' width='100%'>";
 
         echo "<tr class='tab_bg_2'>";
         echo "<td>";
@@ -179,7 +195,7 @@ class PluginTaskrulesRule extends CommonDBTM
     {
 
         echo "<div>";
-        echo "<table class='tab_cadre' width='100%'>";
+        echo "<table class='' width='100%'>";
 
         echo "<tr class='tab_bg_2'>";
         echo "<td>";
@@ -208,21 +224,11 @@ class PluginTaskrulesRule extends CommonDBTM
     {
 
         echo "<div>";
-        echo "<table class='tab_cadre' width='100%'>";
-        // echo '<div class="panel" style="display: flex;">';
-        /** ATTENTION : NE PAS OUBLIER */
-        /** POUR LES AFFECTATIONS AUX GROUPES, NE PAS INCLURE DANS LA LISTE DES GROUPES SELECTIONNABLES
-         * CEUX DONT LA CONFIGURATION "PEUT CONTENIR DES ELEMENTS" EST A "NON"
-         */
-        echo '<div class="center">';
-        echo "<div>" . __("(i) attention, n'apparaissent que les statuts communs aux objets sélectionnés dans les conditions", "taskrules") . "</div>";
+        echo "<table class='' width='100%'>";
 
-        /** Créer une liste déroulante des statuts avec les valeurs suivantes :
-         * Ne pas changer le statut (en dur)
-         * Vider le statut (en dur)
-         * Statut 1 (commun aux matériels listés dans les conditions)
-         * Statut 2 (commun aux matériels listés dans les conditions)
-         */
+        echo '<div class="center">';
+        echo "<div>" . __('Please note, only the statuses common to the objects selected in the conditions appear', "taskrules") . "</div>";
+
         $actionsStatuses = [
             Dropdown::EMPTY_VALUE => Dropdown::EMPTY_VALUE,
             'DoNotChange' => __("Keep current status", "taskrules"),
@@ -285,20 +291,22 @@ class PluginTaskrulesRule extends CommonDBTM
 
         $params = ['state_action' => '__VALUE__',
             'states_id' => $this->fields['states_id'] ];
-        Ajax::updateItemOnSelectEvent("dropdown_state_action$randstate",
+        Ajax::updateItemOnSelectEvent(
+            "dropdown_state_action$randstate",
             "specific_states_id",
             PLUGIN_TASKRULES_WEBDIR . "/ajax/updateactionsdropdowns.php",
-            $params);
+            $params
+        );
 
 
         echo "&nbsp;<span id='specific_states_id'>";
-        if ($this->fields['states_id'] > 0) {
-            $condition = new PluginTaskrulesCondition();
-            $states_id = $condition->getStatuses(PluginTaskrulesCondition::getTypes());
-            Dropdown::showFromArray('states_id', $states_id, [
-                'value' => $this->fields['states_id'] ?? 0,
-            ]);
-        }
+        //        if ($this->fields['states_id'] > 0) {
+        //            $condition = new PluginTaskrulesCondition();
+        //            $states_id = $condition->getStatuses(PluginTaskrulesCondition::getTypes());
+        //            Dropdown::showFromArray('states_id', $states_id, [
+        //                'value' => $this->fields['states_id'] ?? 0,
+        //            ]);
+        //        }
         echo "</span>";
         echo "<td>";
 
@@ -320,10 +328,12 @@ class PluginTaskrulesRule extends CommonDBTM
 
         $params = ['location_action' => '__VALUE__',
             'locations_id' => $this->fields['locations_id'] ];
-        Ajax::updateItemOnSelectEvent("dropdown_location_action$randlocation",
+        Ajax::updateItemOnSelectEvent(
+            "dropdown_location_action$randlocation",
             "specific_locations_id",
             PLUGIN_TASKRULES_WEBDIR . "/ajax/updateactionsdropdowns.php",
-            $params);
+            $params
+        );
 
 
         echo "&nbsp;<span id='specific_locations_id'>";
@@ -331,7 +341,7 @@ class PluginTaskrulesRule extends CommonDBTM
             Location::Dropdown([
                 'name' => 'locations_id',
                 'value' => $this->fields['locations_id'],
-                'entity' => $_SESSION["glpiactive_entity"]
+                'entity' => $_SESSION["glpiactive_entity"],
             ]);
         }
 
@@ -386,10 +396,9 @@ class PluginTaskrulesRule extends CommonDBTM
 
     public static function showSwitchField($name, $value)
     {
-        echo Html::hidden($name, ['id' => $name,
-            'value' => $value]);
+
         $rand = mt_rand();
-        $id = $name.$rand;
+        $id = $name . $rand;
         $js = <<<JS
                 (function(){
                     var toggleButton = $('.$id');
@@ -413,14 +422,92 @@ class PluginTaskrulesRule extends CommonDBTM
 
         echo Html::scriptBlock($js);
 
-// Génère l’input caché pour stocker la valeur
-        echo "<input type=\"hidden\" id=\"$id\" name=\"$id\" value=\"" . ($value == 1 ? '1' : '0') . "\">";
-
-// Génère l’icône dans un bouton
+        echo Html::hidden($name, ['id' => $id,
+            'value' => ($value == 1 ? '1' : '0')]);
+        // Génère l’icône dans un bouton
         $classes = $value == 1
             ? "$id fa-fw fas fa-2x fa-toggle-on enabled"
             : "$id fa-fw fas fa-2x fa-toggle-off disabled";
 
         echo "<a class=\"button\"><i class=\"$classes\"></i></a>";
+    }
+
+    public static function preAddTask($item) {
+        if ($item::getType() === TicketTask::getType()) {
+
+            if (isset($item->input['tasktemplates_id'])) {
+                $rule = new self();
+                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->input['tasktemplates_id']])) {
+                    $item_ticket = new Item_ticket();
+                    $items_linked = $item_ticket->find([
+                        'tickets_id' => $item->input['tickets_id'],
+                    ]);
+                    if (count($items_linked) > 0) {
+                        foreach ($items_linked as $item_linked) {
+                            Toolbox::logInfo($item_linked['itemtype']);
+                            Toolbox::logInfo($item_linked['items_id']);
+                        }
+                    }
+                }
+            }
+//        Session::addMessageAfterRedirect('Condition non remplie, tâche non créée.', false, ERROR);
+            return;
+        }
+    }
+
+    public static function afterAddTask($item) {
+        if ($item::getType() === TicketTask::getType()) {
+            if (isset($item->fields['tasktemplates_id'])) {
+                $rule = new self();
+                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
+                    $item_ticket = new Item_ticket();
+                    $items_linked = $item_ticket->find([
+                        'tickets_id' => $item->fields['tickets_id'],
+                    ]);
+                    if (count($items_linked) > 0) {
+                        foreach ($items_linked as $item_linked) {
+                            Toolbox::logInfo($item_linked['itemtype']);
+                            Toolbox::logInfo($item_linked['items_id']);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    public static function afterUpdateTask($item) {
+
+        if ($item::getType() === TicketTask::getType()) {
+
+            if (isset($item->fields['tasktemplates_id'])) {
+                $rule = new self();
+                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
+                    $item_ticket = new Item_ticket();
+                    $items_linked = $item_ticket->find([
+                        'tickets_id' => $item->fields['tickets_id'],
+                    ]);
+                    if (count($items_linked) > 0) {
+                        foreach ($items_linked as $item_linked) {
+                            Toolbox::logInfo($item_linked['itemtype']);
+                            Toolbox::logInfo($item_linked['items_id']);
+                        }
+                    }
+
+                    switch ($item->fields['state']) {
+                        case Planning::INFO:
+                            Toolbox::logInfo("Etat de la tâche : Information\n");
+                            break;
+                        case Planning::TODO:
+                            Toolbox::logInfo("Etat de la tâche : To do\n");
+                            break;
+                        case Planning::DONE:
+                            Toolbox::logInfo("Etat de la tâche : Done\n");
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
     }
 }
