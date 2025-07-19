@@ -282,7 +282,7 @@ class PluginTaskrulesRule extends CommonDBTM
         echo __('Status');
         echo "</td>";
         echo "<td>";
-        $states[0] = __('Do not change', 'tasrules');
+        $states[0] = __('Do not change', 'taskrules');
         $states[1] = __('Empty the field', 'taskrules');
         $states[2] = __('A specific state', 'taskrules');
         $randstate = Dropdown::showFromArray('state_action', $states, [
@@ -318,7 +318,7 @@ class PluginTaskrulesRule extends CommonDBTM
         echo __('Location');
         echo "</td>";
         echo "<td>";
-        $locations[0] = __('Do not change', 'tasrules');
+        $locations[0] = __('Do not change', 'taskrules');
         $locations[1] = __('Location of ticket requester', 'taskrules');
         $locations[2] = __('Empty the field', 'taskrules');
         $locations[3] = __('A specific location', 'taskrules');
@@ -354,7 +354,7 @@ class PluginTaskrulesRule extends CommonDBTM
         echo __('Alternate username');
         echo "</td>";
         echo "<td>";
-        $contacts[0] = __('Do not change', 'tasrules');
+        $contacts[0] = __('Do not change', 'taskrules');
         $contacts[1] = __('Empty the field', 'taskrules');
         Dropdown::showFromArray('contact_action', $contacts, [
             'value' => $this->fields['contact_action'],
@@ -367,7 +367,7 @@ class PluginTaskrulesRule extends CommonDBTM
         echo __('User');
         echo "</td>";
         echo "<td>";
-        $users[0] = __('Do not change', 'tasrules');
+        $users[0] = __('Do not change', 'taskrules');
         $users[1] = __('Ticket requester', 'taskrules');
         $users[2] = __('Empty the field', 'taskrules');
         Dropdown::showFromArray('user_action', $users, [
@@ -381,7 +381,7 @@ class PluginTaskrulesRule extends CommonDBTM
         echo __('Group');
         echo "</td>";
         echo "<td>";
-        $groups[0] = __('Do not change', 'tasrules');
+        $groups[0] = __('Do not change', 'taskrules');
         $groups[1] = __('Group of the ticket requester', 'taskrules');
         $groups[2] = __('Empty the field', 'taskrules');
         Dropdown::showFromArray('group_action', $groups, [
@@ -438,16 +438,15 @@ class PluginTaskrulesRule extends CommonDBTM
             if (isset($item->input['tasktemplates_id'])) {
                 $rule = new self();
                 if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->input['tasktemplates_id']])) {
+                    //TODO : check Trigger when task is added to ticket
                     $item_ticket = new Item_ticket();
                     $items_linked = $item_ticket->find([
                         'tickets_id' => $item->input['tickets_id'],
                     ]);
                     if (count($items_linked) > 0) {
-                        foreach ($items_linked as $item_linked) {
-                            Toolbox::logInfo($item_linked['itemtype']);
-                            Toolbox::logInfo($item_linked['items_id']);
-                        }
+                        self::checkCriteras($rule, $items_linked);
                     }
+                    //TODO : Prevent task creation on error
                 }
             }
 //        Session::addMessageAfterRedirect('Condition non remplie, tâche non créée.', false, ERROR);
@@ -460,15 +459,13 @@ class PluginTaskrulesRule extends CommonDBTM
             if (isset($item->fields['tasktemplates_id'])) {
                 $rule = new self();
                 if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
+                    //TODO : check Trigger when task is added to ticket
                     $item_ticket = new Item_ticket();
                     $items_linked = $item_ticket->find([
                         'tickets_id' => $item->fields['tickets_id'],
                     ]);
                     if (count($items_linked) > 0) {
-                        foreach ($items_linked as $item_linked) {
-                            Toolbox::logInfo($item_linked['itemtype']);
-                            Toolbox::logInfo($item_linked['items_id']);
-                        }
+                        self::checkCriteras($rule, $items_linked);
                     }
                 }
             }
@@ -480,31 +477,63 @@ class PluginTaskrulesRule extends CommonDBTM
         if ($item::getType() === TicketTask::getType()) {
 
             if (isset($item->fields['tasktemplates_id'])) {
-                $rule = new self();
-                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
-                    $item_ticket = new Item_ticket();
-                    $items_linked = $item_ticket->find([
-                        'tickets_id' => $item->fields['tickets_id'],
-                    ]);
-                    if (count($items_linked) > 0) {
-                        foreach ($items_linked as $item_linked) {
-                            Toolbox::logInfo($item_linked['itemtype']);
-                            Toolbox::logInfo($item_linked['items_id']);
+                if ($item->fields['state'] == Planning::DONE) {
+                    $rule = new self();
+                    if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
+                        //TODO : check Trigger on task status update from "to do" to "done"
+                        $item_ticket = new Item_ticket();
+                        $items_linked = $item_ticket->find([
+                            'tickets_id' => $item->fields['tickets_id'],
+                        ]);
+                        if (count($items_linked) > 0) {
+                            self::checkCriteras($rule, $items_linked);
                         }
+                        //TODO : Prevent the task from changing its status (from "to do" to "done") in case of an error
                     }
+                }
+            }
+        }
+    }
 
-                    switch ($item->fields['state']) {
-                        case Planning::INFO:
-                            Toolbox::logInfo("Etat de la tâche : Information\n");
-                            break;
-                        case Planning::TODO:
-                            Toolbox::logInfo("Etat de la tâche : To do\n");
-                            break;
-                        case Planning::DONE:
-                            Toolbox::logInfo("Etat de la tâche : Done\n");
-                            break;
-                        default:
-                            break;
+    public static function checkCriteras($rule, $items_linked) {
+
+        foreach ($items_linked as $item_linked) {
+
+            if (getItemForItemtype($item_linked['itemtype'])) {
+                $item = new $item_linked['itemtype']();
+                if ($item->getfromDB($item_linked['items_id'])) {
+                    $cond = new PluginTaskrulesCondition();
+                    if ($cond->getFromDBByCrit(["taskrules_id" => $rule->getID()])) {
+                        $fieldname = PluginTaskrulesCondition::getFieldNameForItemtype($item_linked['itemtype']);
+                        if (!empty($cond->fields[$fieldname])) {
+                            $criterias = unserialize($cond->fields[$fieldname]);
+                            //Add interpretation of the criteria
+                            if (isset($_SESSION["glpisearchcount"][$item_linked['itemtype']])) {
+                                unset($_SESSION["glpisearchcount"][$item_linked['itemtype']]);
+                            }
+                            if (isset($_SESSION["glpisearchcount2"][$item_linked['itemtype']])) {
+                                unset($_SESSION["glpisearchcount2"][$item_linked['itemtype']]);
+                            }
+                            $glpilist_limit             = $_SESSION['glpilist_limit'];
+                            $_SESSION['glpilist_limit'] = 999999999;
+                            $found_items = [];
+                            $searchCriteria =  ['criteria' => $criterias,
+                                'reset'    => 'reset'];
+                            $results = Search::getDatas($item_linked['itemtype'], $searchCriteria);
+                            $_SESSION['glpilist_limit'] = $glpilist_limit;
+                            foreach ($results['data']['items'] as $k => $val) {
+                                $found_items[$k] = $k;
+                            }
+                            if (in_array($item_linked['items_id'], $found_items)) {
+                                Toolbox::logInfo("Validated criteria : " .$item_linked['itemtype'] ." - ". $item_linked['items_id']);
+                            } else {
+                                Toolbox::logInfo("Not validated criteria : " .$item_linked['itemtype'] ." - ".  $item_linked['items_id']);
+                            }
+
+                            //List actions
+                            //Launch Actions
+                            //report Results or errors
+                        }
                     }
                 }
             }

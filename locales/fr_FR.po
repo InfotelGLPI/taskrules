@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: GLPI - Taskrules 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-19 16:28+0200\n"
-"PO-Revision-Date: 2025-07-19 16:29+0200\n"
+"PO-Revision-Date: 2025-07-19 16:57+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -58,7 +58,7 @@ msgstr "Actif"
 
 #: inc/rule.class.php:173
 msgid "Prevent task creation on error"
-msgstr "Empêcher la création de tâches en cas d'erreur"
+msgstr "Empêcher la création de la tâche en cas d'erreur"
 
 #: inc/rule.class.php:182
 msgid ""
