@@ -71,9 +71,9 @@ function plugin_init_taskrules()
             }
             $PLUGIN_HOOKS['add_css']['taskrules'][] = "css/taskrules.css";
             /* Prepare hooks to intercept tasks events (add task and task update) */
-            $PLUGIN_HOOKS['pre_item_add']['taskrules'] = ['TicketTask' => 'plugin_taskrules_pre_additem'];
+//            $PLUGIN_HOOKS['pre_item_add']['taskrules'] = ['TicketTask' => 'plugin_taskrules_pre_additem'];
             $PLUGIN_HOOKS['item_add']['taskrules'] = ['TicketTask' => 'plugin_taskrules_additem'];
-//            $PLUGIN_HOOKS['item_update']['taskrules'] = ['TicketTask' => 'plugin_taskrules_updateitem'];
+            $PLUGIN_HOOKS['item_update']['taskrules'] = ['TicketTask' => 'plugin_taskrules_updateitem'];
 
             $PLUGIN_HOOKS['post_item_form']['taskrules'] = 'plugin_taskrules_post_item_form';
             /* Add a new tab on the Task template page */

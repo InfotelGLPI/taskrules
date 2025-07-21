@@ -88,7 +88,6 @@ function plugin_taskrules_pre_additem(CommonDBTM $item)
 function plugin_taskrules_additem(CommonDBTM $item)
 {
     PluginTaskrulesRule::afterAddTask($item);
-
 }
 
 /**
@@ -100,8 +99,8 @@ function plugin_taskrules_additem(CommonDBTM $item)
  */
 function plugin_taskrules_updateitem(CommonDBTM $item)
 {
-    PluginTaskrulesRule::afterUpdateTask($item);
 
+    PluginTaskrulesRule::afterUpdateTask($item);
 }
 
 function plugin_taskrules_post_item_form($params)
@@ -109,27 +108,88 @@ function plugin_taskrules_post_item_form($params)
 
     if (Session::haveRight("plugin_taskrules", READ)
      && $params['item']::getType() === TicketTask::getType()) {
-        $tickettask = $params['item'];
-        if (isset($tickettask->fields['tickets_id'])) {
-            $tickettasks = new TicketTask();
-            $tasks_found = $tickettasks->find([
-                'tickets_id' => $tickettask->fields['tickets_id'],
-            ]);
-            if (count($tasks_found) > 0) {
-                foreach ($tasks_found as $task_found) {
-                    $task = new TicketTask();
-                    if ($task->getFromDB($task_found['id'])) {
-                        $rule = new PluginTaskrulesRule();
-                        if ($rule->getFromDBByCrit(['tasktemplates_id' => $task->fields['tasktemplates_id'], 'trigger_update' => 1])) {
 
-                            $item_ticket = new Item_ticket();
-                            $items_linked = $item_ticket->find([
-                                'tickets_id' => $tickettask->fields['tickets_id'],
-                            ]);
-                            if (count($items_linked) > 0) {
-                                $rule->launchResultsOnTicketTaskState($task_found['id']);
+        if (isset($_SESSION['plugin_taskrules']['show_updateresults'])
+        && $_SESSION['plugin_taskrules']['show_updateresults'] > 0) {
+            $tickettasks_id = $_SESSION['plugin_taskrules']['show_updateresults'];
+
+            unset($_SESSION['plugin_taskrules']['show_updateresults']);
+            echo Ajax::createIframeModalWindow(
+                "results$tickettasks_id",
+                PLUGIN_TASKRULES_WEBDIR . "/front/modalresults.php",
+                [
+                'title' => __('Results', 'taskrules'),
+                'reloadonclose' => false,
+                'display' => false,
+                ]
+            );
+
+            $id = (int)$tickettasks_id;
+            echo Html::scriptBlock(
+                "
+            let taskDiv$id = document.getElementById('TicketTask_$id');
+
+                    if (taskDiv$id) {
+                        
+                        let button = document.createElement('button');
+                        button.className = 'btn btn-secondary'; // classes Bootstrap ou les tiennes
+                        button.textContent = 'Nouveau bouton';
+                        button.style.marginTop = '10px';
+                        
+                        // Ajouter un événement au clic (facultatif)
+                        button.addEventListener('click', function () {
+                            plugin_taskrules_showresults($id);
+                        });
+                        
+                        button.click();
+                        }
+
+
+                    function plugin_taskrules_showresults(taskId) {
+                        $.ajax({
+                            type: 'POST',
+                            url: '" . PLUGIN_TASKRULES_WEBDIR . "/ajax/generateresult.php',
+                            data: {
+                                'tickettasks_id': taskId
+                            },
+                            success: function (html) {
+                                let modalBody = document.querySelector('#results' + taskId + ' div.modal-body');
+                                if (modalBody) {
+                                    modalBody.innerHTML = html;
+
+                                    $('#results' + taskId).modal('show');
+                                    $('#ajax_loader').hide();
+                                }
                             }
-                            //TODO : Prevent the task from changing its status (from "to do" to "done") in case of an error
+                        });
+                    }
+                    "
+            );
+        }
+        else {
+            $tickettask = $params['item'];
+            if (isset($tickettask->fields['tickets_id'])) {
+                $tickettasks = new TicketTask();
+                $tasks_found = $tickettasks->find([
+                    'tickets_id' => $tickettask->fields['tickets_id'],
+                ]);
+                if (count($tasks_found) > 0) {
+                    foreach ($tasks_found as $task_found) {
+                        $task = new TicketTask();
+                        if ($task->getFromDB($task_found['id'])) {
+                            $rule = new PluginTaskrulesRule();
+                            if ($rule->getFromDBByCrit(
+                                ['tasktemplates_id' => $task->fields['tasktemplates_id'], 'trigger_update' => 1]
+                            )) {
+                                $item_ticket = new Item_ticket();
+                                $items_linked = $item_ticket->find([
+                                    'tickets_id' => $tickettask->fields['tickets_id'],
+                                ]);
+                                if (count($items_linked) > 0) {
+                                    $rule->launchResultsOnTicketTaskState($task_found['id']);
+                                }
+                                //TODO : Prevent the task from changing its status (from "to do" to "done") in case of an error
+                            }
                         }
                     }
                 }

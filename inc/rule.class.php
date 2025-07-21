@@ -430,8 +430,8 @@ class PluginTaskrulesRule extends CommonDBTM
                             if (count($found_items) > 0) {
                                 foreach ($items_linked as $item_linked) {
                                     if (getItemForItemtype($item_linked['itemtype'])) {
-                                        $item = new $item_linked['itemtype']();
-                                        if ($item->getfromDB($item_linked['items_id'])) {
+                                        $itemTicket = new $item_linked['itemtype']();
+                                        if ($itemTicket->getfromDB($item_linked['items_id'])) {
                                             if (in_array($item_linked['items_id'], $found_items)) {
                                                 $results[] = PluginTaskrulesRule::launchActions(
                                                     $rule,
@@ -446,7 +446,8 @@ class PluginTaskrulesRule extends CommonDBTM
                             }
                         }
                         if (count($results) > 0) {
-                            PluginTaskrulesRule::showResults(0, $results, $item->fields['tickets_id'], $item->fields['id']);
+                            $_SESSION['plugin_taskrules']['show_updateresults'] = $item->fields['id'];
+//                            PluginTaskrulesRule::showResults(0, $results, $item->fields['tickets_id'], $item->fields['id']);
                         }
                     }
                 }
@@ -467,15 +468,15 @@ class PluginTaskrulesRule extends CommonDBTM
                                 'tickets_id' => $item->fields['tickets_id'],
                             ]);
                             $found_items = [];
-                            $results = [1 => 1];
+                            $results = [];
                             if (count($items_linked) > 0) {
                                 $found_items = PluginTaskrulesCondition::checkCriteras("update task", $rule, $item->fields['tickets_id'], $item->getID(), $items_linked);
                             }
                             if (count($found_items) > 0) {
                                 foreach ($items_linked as $item_linked) {
                                     if (getItemForItemtype($item_linked['itemtype'])) {
-                                        $item = new $item_linked['itemtype']();
-                                        if ($item->getfromDB($item_linked['items_id'])) {
+                                        $itemTicket = new $item_linked['itemtype']();
+                                        if ($itemTicket->getfromDB($item_linked['items_id'])) {
                                             if (in_array($item_linked['items_id'], $found_items)) {
                                                 $results[] = PluginTaskrulesRule::launchActions(
                                                     $rule,
@@ -489,7 +490,8 @@ class PluginTaskrulesRule extends CommonDBTM
                                 }
                             }
                             if (count($results) > 0) {
-                                PluginTaskrulesRule::showResults(0, $results, $item->fields['tickets_id'], $item->fields['id']);
+                                $_SESSION['plugin_taskrules']['show_updateresults'] = $item->fields['id'];
+//                                PluginTaskrulesRule::showResults(0, $results, $item->fields['tickets_id'], $item->fields['id']);
                             }
                             //TODO : Prevent the task from changing its status (from "to do" to "done") in case of an error
                         }
@@ -704,63 +706,41 @@ class PluginTaskrulesRule extends CommonDBTM
 
     public static function showResults($fromstatechange, $results, $tickets_id, $tickettasks_id)
     {
-//        Toolbox::logInfo($results);
+//        Toolbox::logInfo($fromstatechange);
 //        //report Results or errors
-//        $log = new PluginTaskrulesLog();
-//        foreach ($results as $k => $itemtype) {
-//            foreach ($itemtype as $action => $res) {
-//                if (is_array($res)) {
-//                    $inputr['action_field'] = $action;
-//                    $inputr['tickets_id'] = $res['tickets_id'];
-//                    $inputr['tickettasks_id'] = $res['tickettasks_id'];
-//                    $inputr['itemtype'] = $res['itemtype'];
-//                    $inputr['items_id'] = $res['items_id'];
-//                    $inputr['action'] = $res['action'];
-//                    $inputr['value'] = $res['value'];
-//                    $inputr['date'] = $_SESSION['glpi_currenttime'];
-//                    $log->add($inputr);
-//                }
-//            }
-//        }
-//
-//        $log = new PluginTaskrulesLog();
-//        $logs_found = $log->find([
-//            'tickets_id' => $tickets_id,
-//            'tickettasks_id' => $tickettasks_id,
-//        ]);
-//
-//        if (count($logs_found) > 0) {
-//            foreach ($logs_found as $log_found) {
-//                var_dump($log_found);
-//            }
-//        }
-//
-//        $log->deleteByCriteria([
-//            'tickets_id' => $tickets_id,
-//            'tickettasks_id' => $tickettasks_id,
-//        ]);
-
-
-        if ($fromstatechange == 0) {
-            $rand = mt_rand();
-            Html::scriptBlock('alert("toto");');
-            Ajax::createIframeModalWindow(
-                "results$rand",
-                PLUGIN_TASKRULES_WEBDIR . '/ajax/resultmodal.php',
-                ['title'         => __('Results', 'taskrules'),
-                    'display'       => true,
-                    //                                             'width'         => 200,
-                    //                                             'height'        => 600,
-                    'extraparams' => [
-                        'rand' => $rand
-                    ],
-                    'reloadonclose' => false,
-                    'autoopen'      => true]
-            );
+        $log = new PluginTaskrulesLog();
+        foreach ($results as $k => $itemtype) {
+            foreach ($itemtype as $action => $res) {
+                if (is_array($res)) {
+                    $inputr['action_field'] = $action;
+                    $inputr['tickets_id'] = $res['tickets_id'];
+                    $inputr['tickettasks_id'] = $res['tickettasks_id'];
+                    $inputr['itemtype'] = $res['itemtype'];
+                    $inputr['items_id'] = $res['items_id'];
+                    $inputr['action'] = $res['action'];
+                    $inputr['value'] = $res['value'];
+                    $inputr['date'] = $_SESSION['glpi_currenttime'];
+                    $log->add($inputr);
+                }
+            }
         }
 
+        $log = new PluginTaskrulesLog();
+        $logs_found = $log->find([
+            'tickets_id' => $tickets_id,
+            'tickettasks_id' => $tickettasks_id,
+        ]);
 
-        //        return $tickets_id;
+        if (count($logs_found) > 0) {
+            foreach ($logs_found as $log_found) {
+                var_dump($log_found);
+            }
+        }
+
+        $log->deleteByCriteria([
+            'tickets_id' => $tickets_id,
+            'tickettasks_id' => $tickettasks_id,
+        ]);
     }
 
     public function launchResultsOnTicketTaskState($tickettasks_id)
@@ -809,7 +789,7 @@ class PluginTaskrulesRule extends CommonDBTM
                                             if (button.classList.contains('state_1')) {
                                                 plugin_taskrules_showresults(taskId);
                                             }
-                                        }, 100); // Ajuste le délai si nécessaire
+                                        }, 50);
                                     });
     
                         

@@ -30,11 +30,10 @@ include('../../../inc/includes.php');
 
 Session::checkRight("plugin_taskrules", READ);
 
-Toolbox::logInfo($_POST);
 if (isset($_POST['tickettasks_id'])) {
     $tickettask = new TicketTask();
     if ($tickettask->getFromDB($_POST['tickettasks_id'])) {
-
+        unset($_SESSION['plugin_taskrules']['show_updateresults']);
         $rule = new PluginTaskrulesRule();
         if ($rule->getFromDBByCrit(["tasktemplates_id" => $tickettask->fields['tasktemplates_id'], "trigger_update" => 1])) {
             $item_ticket = new Item_ticket();
