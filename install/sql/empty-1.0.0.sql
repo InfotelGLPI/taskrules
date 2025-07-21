@@ -32,3 +32,19 @@ CREATE TABLE IF NOT EXISTS `glpi_plugin_taskrules_conditions` (
   PRIMARY KEY (`id`),
   KEY `taskrules_id` (`taskrules_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;
+
+DROP TABLE IF EXISTS `glpi_plugin_taskrules_logs`;
+CREATE TABLE IF NOT EXISTS `glpi_plugin_taskrules_logs` (
+    `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
+    `tickets_id` int UNSIGNED NOT NULL DEFAULT '0',
+    `tickettasks_id` int UNSIGNED NOT NULL DEFAULT '0',
+    `itemtype` varchar(100) NOT NULL,
+    `items_id` int unsigned NOT NULL DEFAULT '0',
+    `action_field` text DEFAULT NULL,
+    `action` int unsigned NOT NULL DEFAULT '0',
+    `value` text DEFAULT NULL,
+    `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (`id`),
+    KEY `tickets_id` (`tickets_id`),
+    KEY `tickettasks_id` (`tickettasks_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC;

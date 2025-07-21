@@ -1,3 +1,4 @@
 Add actions (hooks)
+Add entity criteria by default ?
 Define statuses
 reporting & erreurs (config)

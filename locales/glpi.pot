@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GLPI - Taskrules plugin 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-19 16:28+0200\n"
+"POT-Creation-Date: 2025-07-19 20:01+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -74,46 +74,38 @@ msgstr ""
 msgid "Trigger upon updating the task status from \"to do\" to \"done\""
 msgstr ""
 
-#: inc/rule.class.php:230
+#: inc/rule.class.php:234 inc/rule.class.php:270 inc/rule.class.php:306
+#: inc/rule.class.php:319 inc/rule.class.php:333
+msgid "Do not change"
+msgstr ""
+
+#: inc/rule.class.php:235 inc/rule.class.php:271 inc/rule.class.php:307
+#: inc/rule.class.php:320 inc/rule.class.php:334
+msgid "Empty the field on the linked item of ticket"
+msgstr ""
+
+#: inc/rule.class.php:236
+msgid "Affect a specific state on the linked item of ticket"
+msgstr ""
+
+#: inc/rule.class.php:260
 msgid ""
 "Please note, only the statuses common to the objects selected in the "
 "conditions appear"
 msgstr ""
 
-#: inc/rule.class.php:234
-msgid "Keep current status"
+#: inc/rule.class.php:272
+msgid "Affect location of ticket requester on the linked item of ticket"
 msgstr ""
 
-#: inc/rule.class.php:235
-msgid "Empty current status"
+#: inc/rule.class.php:273
+msgid "Affect a specific location on the linked item of ticket"
 msgstr ""
 
-#: inc/rule.class.php:285 inc/rule.class.php:321 inc/rule.class.php:357
-#: inc/rule.class.php:370 inc/rule.class.php:384
-msgid "Do not change"
+#: inc/rule.class.php:321
+msgid "Affect ticket requester on the linked item of ticket"
 msgstr ""
 
-#: inc/rule.class.php:286 inc/rule.class.php:323 inc/rule.class.php:358
-#: inc/rule.class.php:372 inc/rule.class.php:386
-msgid "Empty the field"
-msgstr ""
-
-#: inc/rule.class.php:287
-msgid "A specific state"
-msgstr ""
-
-#: inc/rule.class.php:322
-msgid "Location of ticket requester"
-msgstr ""
-
-#: inc/rule.class.php:324
-msgid "A specific location"
-msgstr ""
-
-#: inc/rule.class.php:371
-msgid "Ticket requester"
-msgstr ""
-
-#: inc/rule.class.php:385
-msgid "Group of the ticket requester"
+#: inc/rule.class.php:335
+msgid "Affect group of the ticket requester on the linked item of ticket"
 msgstr ""

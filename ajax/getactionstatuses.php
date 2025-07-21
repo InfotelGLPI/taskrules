@@ -35,7 +35,7 @@ Html::header_nocache();
 Session::checkRight("plugin_taskrules", READ);
 
 /* Retrieve item_types from ajax call */
-$item_types = $_POST['item_types']; // Example : [item_types] => Printer,NetworkEquipment,Computer
+$item_types = $_POST['item_types'];
 
 $cond = new PluginTaskrulesCondition();
 $arrValues = $cond->getStatuses($item_types);

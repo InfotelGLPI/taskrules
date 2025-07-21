@@ -28,6 +28,8 @@
  */
 
 
+use Glpi\Plugin\Hooks;
+
 define('PLUGIN_TASKRULES_VERSION', '1.0.0');
 
 // Minimal GLPI version, inclusive
@@ -58,15 +60,25 @@ function plugin_init_taskrules()
     ) {
 
         Plugin::registerClass("PluginTaskrulesProfile", ['addtabon' => "Profile"]);
-        $PLUGIN_HOOKS['add_javascript']['taskrules'][] = 'js/accordion.js';
-        $PLUGIN_HOOKS['add_css']['taskrules'][] = "css/accordion.css";
-        /* Prepare hooks to intercept tasks events (add task and task update) */
-        $PLUGIN_HOOKS['pre_item_add']['taskrules'] = ['TicketTask' => 'plugin_taskrules_pre_additem'];
-        $PLUGIN_HOOKS['item_add']['taskrules'] = ['TicketTask' => 'plugin_taskrules_additem'];
-        $PLUGIN_HOOKS['item_update']['taskrules'] = ['TicketTask' => 'plugin_taskrules_updateitem'];
 
-        /* Add a new tab on the Task template page */
-        Plugin::registerClass('PluginTaskrulesRule', ['addtabon' => ['TaskTemplate']]);
+        if (Session::haveRight("plugin_taskrules", READ)
+            || Session::haveRight("config", READ)) {
+
+            if (isset($_SERVER['REQUEST_URI'])
+                && strpos($_SERVER['REQUEST_URI'], 'tasktemplate.form.php') !== false) {
+                $PLUGIN_HOOKS['add_javascript']['taskrules'][] = 'js/accordion.js';
+                $PLUGIN_HOOKS['add_css']['taskrules'][] = "css/accordion.css";
+            }
+            $PLUGIN_HOOKS['add_css']['taskrules'][] = "css/taskrules.css";
+            /* Prepare hooks to intercept tasks events (add task and task update) */
+            $PLUGIN_HOOKS['pre_item_add']['taskrules'] = ['TicketTask' => 'plugin_taskrules_pre_additem'];
+            $PLUGIN_HOOKS['item_add']['taskrules'] = ['TicketTask' => 'plugin_taskrules_additem'];
+//            $PLUGIN_HOOKS['item_update']['taskrules'] = ['TicketTask' => 'plugin_taskrules_updateitem'];
+
+            $PLUGIN_HOOKS['post_item_form']['taskrules'] = 'plugin_taskrules_post_item_form';
+            /* Add a new tab on the Task template page */
+            Plugin::registerClass('PluginTaskrulesRule', ['addtabon' => ['TaskTemplate']]);
+        }
     }
 }
 

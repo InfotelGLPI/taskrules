@@ -56,7 +56,9 @@ function plugin_taskrules_uninstall()
 {
     global $DB;
 
-    $tables = ["glpi_plugin_taskrules_rules", "glpi_plugin_taskrules_conditions"];
+    $tables = ["glpi_plugin_taskrules_rules",
+        "glpi_plugin_taskrules_conditions",
+        "glpi_plugin_taskrules_logs"];
 
     foreach ($tables as $table) {
         $DB->dropTable($table);
@@ -73,7 +75,7 @@ function plugin_taskrules_uninstall()
 
 function plugin_taskrules_pre_additem(CommonDBTM $item)
 {
-    PluginTaskrulesRule::preAddTask($item);
+    //    PluginTaskrulesRule::preAddTask($item);
 }
 
 /**
@@ -86,6 +88,7 @@ function plugin_taskrules_pre_additem(CommonDBTM $item)
 function plugin_taskrules_additem(CommonDBTM $item)
 {
     PluginTaskrulesRule::afterAddTask($item);
+
 }
 
 /**
@@ -99,4 +102,38 @@ function plugin_taskrules_updateitem(CommonDBTM $item)
 {
     PluginTaskrulesRule::afterUpdateTask($item);
 
+}
+
+function plugin_taskrules_post_item_form($params)
+{
+
+    if (Session::haveRight("plugin_taskrules", READ)
+     && $params['item']::getType() === TicketTask::getType()) {
+        $tickettask = $params['item'];
+        if (isset($tickettask->fields['tickets_id'])) {
+            $tickettasks = new TicketTask();
+            $tasks_found = $tickettasks->find([
+                'tickets_id' => $tickettask->fields['tickets_id'],
+            ]);
+            if (count($tasks_found) > 0) {
+                foreach ($tasks_found as $task_found) {
+                    $task = new TicketTask();
+                    if ($task->getFromDB($task_found['id'])) {
+                        $rule = new PluginTaskrulesRule();
+                        if ($rule->getFromDBByCrit(['tasktemplates_id' => $task->fields['tasktemplates_id'], 'trigger_update' => 1])) {
+
+                            $item_ticket = new Item_ticket();
+                            $items_linked = $item_ticket->find([
+                                'tickets_id' => $tickettask->fields['tickets_id'],
+                            ]);
+                            if (count($items_linked) > 0) {
+                                $rule->launchResultsOnTicketTaskState($task_found['id']);
+                            }
+                            //TODO : Prevent the task from changing its status (from "to do" to "done") in case of an error
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

@@ -63,7 +63,6 @@ class PluginTaskrulesRule extends CommonDBTM
 
     public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
     {
-
         if ($item->getType() != 'TaskTemplate') {
             return;
         }
@@ -121,7 +120,7 @@ class PluginTaskrulesRule extends CommonDBTM
         /* ----------------- */
         /* "Trigger" section */
         /* ----------------- */
-        echo "<h3><a href='#'>" . _n("Trigger", "Triggers", 1, "taskrules") . "</a></h3>";
+        echo "<h3><a href='#'>" . _n("Trigger", "Triggers", 2, "taskrules") . "</a></h3>";
         $this->showTriggersForm();
 
         /* ------------------- */
@@ -155,7 +154,6 @@ class PluginTaskrulesRule extends CommonDBTM
 
     public function showParametersForm()
     {
-
         echo "<div>";
         echo "<table class='' width='100%'>";
 
@@ -179,7 +177,10 @@ class PluginTaskrulesRule extends CommonDBTM
 
         echo "<tr class='tab_bg_2'>";
         echo "<td>";
-        echo __("Prevent the task from changing its status (from \"to do\" to \"done\") in case of an error", "taskrules");
+        echo __(
+            "Prevent the task from changing its status (from \"to do\" to \"done\") in case of an error",
+            "taskrules"
+        );
         echo "</td>";
         echo "<td>";
         self::showSwitchField('preventchange', $this->fields['preventchange']);
@@ -193,7 +194,6 @@ class PluginTaskrulesRule extends CommonDBTM
 
     public function showTriggersForm()
     {
-
         echo "<div>";
         echo "<table class='' width='100%'>";
 
@@ -222,60 +222,8 @@ class PluginTaskrulesRule extends CommonDBTM
 
     public function showActionsForm()
     {
-
         echo "<div>";
         echo "<table class='' width='100%'>";
-
-        echo '<div class="center">';
-        echo "<div>" . __('Please note, only the statuses common to the objects selected in the conditions appear', "taskrules") . "</div>";
-
-        $actionsStatuses = [
-            Dropdown::EMPTY_VALUE => Dropdown::EMPTY_VALUE,
-            'DoNotChange' => __("Keep current status", "taskrules"),
-            'Empty' => __("Empty current status", "taskrules"),
-        ];
-
-        echo '<div class="col-auto">';
-        // /* Action statuses dropdown */
-        $cr = Dropdown::showFromArray("actionStatus", $actionsStatuses, [
-            'on_change' => "handleClick()",
-        ]);
-        $selectId = "dropdown_actionStatus$cr";
-        echo Html::scriptBlock("
-        var actionStatus = $selectId;
-        function handleClick() {
-            var bStatus = document.getElementsByName('boolUpdStatuses')[0];
-//            console.log('bStatus.value=' + bStatus.value);
-            if ( bStatus.value == 1 )
-                return;
-            const selectElement = document.getElementById('$selectId');
-            const selectedValue = selectElement.value;
-//            console.log('selectedValue=' + selectedValue);
-            /* Get the comma separated list of itemtypes in the Condition(s) section */
-            let values = '';
-            document.querySelectorAll('select[name*=\"itemtype\"]').forEach(function(select) {
-                values += select.value + ',';
-            });
-            values = values.slice(0, -1);
-            /* Ajax call to populate statuses belonging to itemtypes in the Condition(s) section */
-            $.ajax({
-                url: '" . plugin::getWebDir('taskrules') . "/ajax/getactionstatuses.php',
-                type: 'POST',
-                data: { item_types: values },
-                success: function(response) {
-                    $('#" . $selectId . "').html(response);
-                },
-                error: function (xhr, status, error) {
-                console.log(xhr);
-                console.log(status);
-                console.log(error);
-                }
-            });
-            bStatus.value = 1;
-        }
-        ");
-
-        echo "</div>";
 
         echo "<tr class='tab_bg_2'>";
         echo "<td>";
@@ -283,14 +231,16 @@ class PluginTaskrulesRule extends CommonDBTM
         echo "</td>";
         echo "<td>";
         $states[0] = __('Do not change', 'taskrules');
-        $states[1] = __('Empty the field', 'taskrules');
-        $states[2] = __('A specific state', 'taskrules');
+        $states[1] = __('Empty the field on the linked item of ticket', 'taskrules');
+        $states[2] = __('Affect a specific state on the linked item of ticket', 'taskrules');
         $randstate = Dropdown::showFromArray('state_action', $states, [
             'value' => $this->fields['state_action'] ?? 0,
         ]);
 
-        $params = ['state_action' => '__VALUE__',
-            'states_id' => $this->fields['states_id'] ];
+        $params = [
+            'state_action' => '__VALUE__',
+            'states_id' => $this->fields['states_id'],
+        ];
         Ajax::updateItemOnSelectEvent(
             "dropdown_state_action$randstate",
             "specific_states_id",
@@ -298,17 +248,20 @@ class PluginTaskrulesRule extends CommonDBTM
             $params
         );
 
-
         echo "&nbsp;<span id='specific_states_id'>";
-        //        if ($this->fields['states_id'] > 0) {
-        //            $condition = new PluginTaskrulesCondition();
-        //            $states_id = $condition->getStatuses(PluginTaskrulesCondition::getTypes());
-        //            Dropdown::showFromArray('states_id', $states_id, [
-        //                'value' => $this->fields['states_id'] ?? 0,
-        //            ]);
-        //        }
+        if ($this->fields['states_id'] > 0) {
+            $condition = new PluginTaskrulesCondition();
+            $states_id = $condition->getStatuses(PluginTaskrulesCondition::getTypes());
+            Dropdown::showFromArray('states_id', $states_id, [
+                'value' => $this->fields['states_id'] ?? 0,
+            ]);
+        }
         echo "</span>";
         echo "<td>";
+        echo "<div class='left'>" . __(
+            'Please note that only statuses common to all objects appear.',
+            "taskrules"
+        ) . "</div>";
 
         echo "</td>";
         echo "</tr>";
@@ -319,15 +272,17 @@ class PluginTaskrulesRule extends CommonDBTM
         echo "</td>";
         echo "<td>";
         $locations[0] = __('Do not change', 'taskrules');
-        $locations[1] = __('Location of ticket requester', 'taskrules');
-        $locations[2] = __('Empty the field', 'taskrules');
-        $locations[3] = __('A specific location', 'taskrules');
+        $locations[1] = __('Empty the field on the linked item of ticket', 'taskrules');
+        $locations[2] = __('Affect location of ticket requester on the linked item of ticket', 'taskrules');
+        $locations[3] = __('Affect a specific location on the linked item of ticket', 'taskrules');
         $randlocation = Dropdown::showFromArray('location_action', $locations, [
             'value' => $this->fields['location_action'],
         ]);
 
-        $params = ['location_action' => '__VALUE__',
-            'locations_id' => $this->fields['locations_id'] ];
+        $params = [
+            'location_action' => '__VALUE__',
+            'locations_id' => $this->fields['locations_id'],
+        ];
         Ajax::updateItemOnSelectEvent(
             "dropdown_location_action$randlocation",
             "specific_locations_id",
@@ -355,7 +310,7 @@ class PluginTaskrulesRule extends CommonDBTM
         echo "</td>";
         echo "<td>";
         $contacts[0] = __('Do not change', 'taskrules');
-        $contacts[1] = __('Empty the field', 'taskrules');
+        $contacts[1] = __('Empty the field on the linked item of ticket', 'taskrules');
         Dropdown::showFromArray('contact_action', $contacts, [
             'value' => $this->fields['contact_action'],
         ]);
@@ -368,8 +323,8 @@ class PluginTaskrulesRule extends CommonDBTM
         echo "</td>";
         echo "<td>";
         $users[0] = __('Do not change', 'taskrules');
-        $users[1] = __('Ticket requester', 'taskrules');
-        $users[2] = __('Empty the field', 'taskrules');
+        $users[1] = __('Empty the field on the linked item of ticket', 'taskrules');
+        $users[2] = __('Affect ticket requester on the linked item of ticket', 'taskrules');
         Dropdown::showFromArray('user_action', $users, [
             'value' => $this->fields['user_action'],
         ]);
@@ -382,8 +337,8 @@ class PluginTaskrulesRule extends CommonDBTM
         echo "</td>";
         echo "<td>";
         $groups[0] = __('Do not change', 'taskrules');
-        $groups[1] = __('Group of the ticket requester', 'taskrules');
-        $groups[2] = __('Empty the field', 'taskrules');
+        $groups[1] = __('Empty the field on the linked item of ticket', 'taskrules');
+        $groups[2] = __('Affect group of the ticket requester on the linked item of ticket', 'taskrules');
         Dropdown::showFromArray('group_action', $groups, [
             'value' => $this->fields['group_action'],
         ]);
@@ -396,7 +351,6 @@ class PluginTaskrulesRule extends CommonDBTM
 
     public static function showSwitchField($name, $value)
     {
-
         $rand = mt_rand();
         $id = $name . $rand;
         $js = <<<JS
@@ -422,8 +376,10 @@ class PluginTaskrulesRule extends CommonDBTM
 
         echo Html::scriptBlock($js);
 
-        echo Html::hidden($name, ['id' => $id,
-            'value' => ($value == 1 ? '1' : '0')]);
+        echo Html::hidden($name, [
+            'id' => $id,
+            'value' => ($value == 1 ? '1' : '0'),
+        ]);
         // Génère l’icône dans un bouton
         $classes = $value == 1
             ? "$id fa-fw fas fa-2x fa-toggle-on enabled"
@@ -431,112 +387,493 @@ class PluginTaskrulesRule extends CommonDBTM
 
         echo "<a class=\"button\"><i class=\"$classes\"></i></a>";
     }
+//
+//    public static function preAddTask($item)
+//    {
+//        if ($item::getType() === TicketTask::getType()) {
+//            if (isset($item->input['tasktemplates_id'])) {
+//                $rule = new self();
+//                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->input['tasktemplates_id']])) {
+//                    if ($rule->fields['trigger_creation'] == 1) {
+//                        $item_ticket = new Item_ticket();
+//                        $items_linked = $item_ticket->find([
+//                            'tickets_id' => $item->input['tickets_id'],
+//                        ]);
+//                        if (count($items_linked) > 0) {
+//                            PluginTaskrulesCondition::checkCriteras($rule, $item->input['tickets_id'], $item->getID(), $items_linked);
+//                        }
+//                        //TODO : Prevent task creation on error
+//                    }
+//                }
+//            }
+//            //        Session::addMessageAfterRedirect('Condition non remplie, tâche non créée.', false, ERROR);
+//            return;
+//        }
+//    }
 
-    public static function preAddTask($item) {
-        if ($item::getType() === TicketTask::getType()) {
-
-            if (isset($item->input['tasktemplates_id'])) {
-                $rule = new self();
-                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->input['tasktemplates_id']])) {
-                    //TODO : check Trigger when task is added to ticket
-                    $item_ticket = new Item_ticket();
-                    $items_linked = $item_ticket->find([
-                        'tickets_id' => $item->input['tickets_id'],
-                    ]);
-                    if (count($items_linked) > 0) {
-                        self::checkCriteras($rule, $items_linked);
-                    }
-                    //TODO : Prevent task creation on error
-                }
-            }
-//        Session::addMessageAfterRedirect('Condition non remplie, tâche non créée.', false, ERROR);
-            return;
-        }
-    }
-
-    public static function afterAddTask($item) {
+    public static function afterAddTask($item)
+    {
         if ($item::getType() === TicketTask::getType()) {
             if (isset($item->fields['tasktemplates_id'])) {
                 $rule = new self();
                 if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
-                    //TODO : check Trigger when task is added to ticket
-                    $item_ticket = new Item_ticket();
-                    $items_linked = $item_ticket->find([
-                        'tickets_id' => $item->fields['tickets_id'],
-                    ]);
-                    if (count($items_linked) > 0) {
-                        self::checkCriteras($rule, $items_linked);
-                    }
-                }
-            }
-        }
-    }
-
-    public static function afterUpdateTask($item) {
-
-        if ($item::getType() === TicketTask::getType()) {
-
-            if (isset($item->fields['tasktemplates_id'])) {
-                if ($item->fields['state'] == Planning::DONE) {
-                    $rule = new self();
-                    if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
-                        //TODO : check Trigger on task status update from "to do" to "done"
+                    if ($rule->fields['trigger_creation'] == 1) {
                         $item_ticket = new Item_ticket();
                         $items_linked = $item_ticket->find([
                             'tickets_id' => $item->fields['tickets_id'],
                         ]);
+                        $found_items = [];
+                        $results = [];
                         if (count($items_linked) > 0) {
-                            self::checkCriteras($rule, $items_linked);
+                            $found_items = PluginTaskrulesCondition::checkCriteras("add task", $rule, $item->fields['tickets_id'], $item->getID(), $items_linked);
+
+                            if (count($found_items) > 0) {
+                                foreach ($items_linked as $item_linked) {
+                                    if (getItemForItemtype($item_linked['itemtype'])) {
+                                        $item = new $item_linked['itemtype']();
+                                        if ($item->getfromDB($item_linked['items_id'])) {
+                                            if (in_array($item_linked['items_id'], $found_items)) {
+                                                $results[] = PluginTaskrulesRule::launchActions(
+                                                    $rule,
+                                                    $item->fields['tickets_id'],
+                                                    $item->fields['id'],
+                                                    $item_linked
+                                                );
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
-                        //TODO : Prevent the task from changing its status (from "to do" to "done") in case of an error
+                        if (count($results) > 0) {
+                            PluginTaskrulesRule::showResults(0, $results, $item->fields['tickets_id'], $item->fields['id']);
+                        }
                     }
                 }
             }
         }
     }
 
-    public static function checkCriteras($rule, $items_linked) {
-
-        foreach ($items_linked as $item_linked) {
-
-            if (getItemForItemtype($item_linked['itemtype'])) {
-                $item = new $item_linked['itemtype']();
-                if ($item->getfromDB($item_linked['items_id'])) {
-                    $cond = new PluginTaskrulesCondition();
-                    if ($cond->getFromDBByCrit(["taskrules_id" => $rule->getID()])) {
-                        $fieldname = PluginTaskrulesCondition::getFieldNameForItemtype($item_linked['itemtype']);
-                        if (!empty($cond->fields[$fieldname])) {
-                            $criterias = unserialize($cond->fields[$fieldname]);
-                            //Add interpretation of the criteria
-                            if (isset($_SESSION["glpisearchcount"][$item_linked['itemtype']])) {
-                                unset($_SESSION["glpisearchcount"][$item_linked['itemtype']]);
-                            }
-                            if (isset($_SESSION["glpisearchcount2"][$item_linked['itemtype']])) {
-                                unset($_SESSION["glpisearchcount2"][$item_linked['itemtype']]);
-                            }
-                            $glpilist_limit             = $_SESSION['glpilist_limit'];
-                            $_SESSION['glpilist_limit'] = 999999999;
+    public static function afterUpdateTask($item)
+    {
+        if ($item::getType() === TicketTask::getType()) {
+            if (isset($item->fields['tasktemplates_id'])) {
+                if ($item->fields['state'] == Planning::DONE) {
+                    $rule = new self();
+                    if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
+                        if ($rule->fields['trigger_update'] == 1) {
+                            $item_ticket = new Item_ticket();
+                            $items_linked = $item_ticket->find([
+                                'tickets_id' => $item->fields['tickets_id'],
+                            ]);
                             $found_items = [];
-                            $searchCriteria =  ['criteria' => $criterias,
-                                'reset'    => 'reset'];
-                            $results = Search::getDatas($item_linked['itemtype'], $searchCriteria);
-                            $_SESSION['glpilist_limit'] = $glpilist_limit;
-                            foreach ($results['data']['items'] as $k => $val) {
-                                $found_items[$k] = $k;
+                            $results = [1 => 1];
+                            if (count($items_linked) > 0) {
+                                $found_items = PluginTaskrulesCondition::checkCriteras("update task", $rule, $item->fields['tickets_id'], $item->getID(), $items_linked);
                             }
-                            if (in_array($item_linked['items_id'], $found_items)) {
-                                Toolbox::logInfo("Validated criteria : " .$item_linked['itemtype'] ." - ". $item_linked['items_id']);
-                            } else {
-                                Toolbox::logInfo("Not validated criteria : " .$item_linked['itemtype'] ." - ".  $item_linked['items_id']);
+                            if (count($found_items) > 0) {
+                                foreach ($items_linked as $item_linked) {
+                                    if (getItemForItemtype($item_linked['itemtype'])) {
+                                        $item = new $item_linked['itemtype']();
+                                        if ($item->getfromDB($item_linked['items_id'])) {
+                                            if (in_array($item_linked['items_id'], $found_items)) {
+                                                $results[] = PluginTaskrulesRule::launchActions(
+                                                    $rule,
+                                                    $item->fields['tickets_id'],
+                                                    $item->fields['id'],
+                                                    $item_linked
+                                                );
+                                            }
+                                        }
+                                    }
+                                }
                             }
-
-                            //List actions
-                            //Launch Actions
-                            //report Results or errors
+                            if (count($results) > 0) {
+                                PluginTaskrulesRule::showResults(0, $results, $item->fields['tickets_id'], $item->fields['id']);
+                            }
+                            //TODO : Prevent the task from changing its status (from "to do" to "done") in case of an error
                         }
                     }
                 }
             }
+        }
+    }
+
+
+    public static function launchActions($rule, $tickets_id, $tickettasks_id, $item_linked)
+    {
+        $tu = new Ticket_User();
+        $users_id = 0;
+        $groups_id = 0;
+        $existing_users = $tu->find(['tickets_id' => $tickets_id, 'type' => CommonITILActor::REQUESTER]);
+        if (count($existing_users) > 0 && count($existing_users) > 1) {
+            $result['error'] = "So many users";
+        }
+        if (count($existing_users) == 1) {
+            foreach ($existing_users as $existing_user) {
+                $users_id = $existing_user['users_id'];
+                $result['users_id'] = $users_id;
+            }
+        }
+        $tg = new Group_Ticket();
+        $existing_groups = $tg->find(['tickets_id' => $tickets_id]);
+        $user_tickets_groups = [];
+        if (count($existing_groups) > 0) {
+            foreach ($existing_groups as $existing_group) {
+                $users_in_group = Group_User::getGroupUsers($existing_group['groups_id']);
+                $users = [];
+                foreach ($users_in_group as $user_in_group) {
+                    $users[$user_in_group['id']] = $user_in_group['id'];
+                }
+                if ($users_id > 0 && in_array($users_id, $users)) {
+                    $user_tickets_groups[] = $existing_group['groups_id'];
+                }
+            }
+            if (count($user_tickets_groups) == 1) {
+                $groups_id = $user_tickets_groups[0];
+                $result['groups_id'] = $user_tickets_groups[0];
+            }
+        }
+        //Launch Actions
+
+        // $states[1] = __('Empty the field on the linked item of ticket', 'taskrules');
+        // $states[2] = __('Affect a specific state on the linked item of ticket', 'taskrules');
+        if ($rule->fields['state_action'] == 1) {
+            $input['states_id'] = 0;
+            $input['id'] = $item_linked['items_id'];
+            //                                    $item->update($input);
+
+            $result['state_action'] = [
+                'tickets_id' => $tickets_id,
+                'tickettasks_id' => $tickettasks_id,
+                'itemtype' => $item_linked['itemtype'],
+                'items_id' => $item_linked['items_id'],
+                'action' => 1,
+                'value' => 0,
+            ];
+        } elseif ($rule->fields['state_action'] == 2) {
+            if ($rule->fields['states_id'] > 0) {
+                $input['states_id'] = $rule->fields['states_id'];
+                $input['id'] = $item_linked['items_id'];
+                //                                        $item->update($input);
+                $result['state_action'] = [
+                    'tickets_id' => $tickets_id,
+                    'tickettasks_id' => $tickettasks_id,
+                    'itemtype' => $item_linked['itemtype'],
+                    'items_id' => $item_linked['items_id'],
+                    'action' => 2,
+                    'value' => $rule->fields['states_id'],
+                ];
+            }
+        }
+
+        // $locations[1] = __('Empty the field on the linked item of ticket', 'taskrules');
+        // $locations[2] = __('Affect location of ticket requester on the linked item of ticket', 'taskrules');
+        // $locations[3] = __('Affect a specific location on the linked item of ticket', 'taskrules');
+        if ($rule->fields['location_action'] == 1) {
+            $input['locations_id'] = 0;
+            $input['id'] = $item_linked['items_id'];
+            //                                    $item->update($input);
+            $result['location_action'] = [
+                'tickets_id' => $tickets_id,
+                'tickettasks_id' => $tickettasks_id,
+                'itemtype' => $item_linked['itemtype'],
+                'items_id' => $item_linked['items_id'],
+                'action' => 1,
+                'value' => 0,
+            ];
+        } elseif ($rule->fields['location_action'] == 2) {
+            if ($users_id > 0) {
+                $user = new User();
+                if ($user->getFromDB($users_id)) {
+                    if ($user->fields['locations_id'] > 0) {
+                        $input['locations_id'] = $user->fields['locations_id'];
+                        $input['id'] = $item_linked['items_id'];
+                        //                                    $item->update($input);
+                        $result['location_action'] = [
+                            'tickets_id' => $tickets_id,
+                            'tickettasks_id' => $tickettasks_id,
+                            'itemtype' => $item_linked['itemtype'],
+                            'items_id' => $item_linked['items_id'],
+                            'action' => 2,
+                            'value' => $user->fields['locations_id'],
+                        ];
+                    }
+                }
+            }
+        } elseif ($rule->fields['location_action'] == 3) {
+            if ($rule->fields['locations_id'] > 0) {
+                $input['locations_id'] = $rule->fields['locations_id'];
+                $input['id'] = $item_linked['items_id'];
+                //                                        $item->update($input);
+                $result['location_action'] = [
+                    'tickets_id' => $tickets_id,
+                    'tickettasks_id' => $tickettasks_id,
+                    'itemtype' => $item_linked['itemtype'],
+                    'items_id' => $item_linked['items_id'],
+                    'action' => 3,
+                    'value' => $rule->fields['locations_id'],
+                ];
+            }
+        }
+
+        // $contacts[1] = __('Empty the field on the linked item of ticket', 'taskrules');
+        if ($rule->fields['contact_action'] == 1) {
+            $input['contact'] = '';
+            $input['id'] = $item_linked['items_id'];
+            //                                    $item->update($input);
+            $result['contact_action'] = [
+                'tickets_id' => $tickets_id,
+                'tickettasks_id' => $tickettasks_id,
+                'itemtype' => $item_linked['itemtype'],
+                'items_id' => $item_linked['items_id'],
+                'action' => 1,
+                'value' => 'null',
+            ];
+        }
+
+        // $users[1] = __('Empty the field on the linked item of ticket', 'taskrules');
+        // $users[2] = __('Affect ticket requester on the linked item of ticket', 'taskrules');
+        if ($rule->fields['user_action'] == 1) {
+            $input['users_id'] = 0;
+            $input['id'] = $item_linked['items_id'];
+            //                                    $item->update($input);
+            $result['user_action'] = [
+                'tickets_id' => $tickets_id,
+                'tickettasks_id' => $tickettasks_id,
+                'itemtype' => $item_linked['itemtype'],
+                'items_id' => $item_linked['items_id'],
+                'action' => 1,
+                'value' => 0,
+            ];
+        } elseif ($rule->fields['user_action'] == 2) {
+            if ($users_id > 0) {
+                $user = new User();
+                if ($user->getFromDB($users_id)) {
+                    $input['users_id'] = $users_id;
+                    $input['id'] = $item_linked['items_id'];
+                    //                                    $item->update($input);
+                    $result['user_action'] = [
+                        'tickets_id' => $tickets_id,
+                        'tickettasks_id' => $tickettasks_id,
+                        'itemtype' => $item_linked['itemtype'],
+                        'items_id' => $item_linked['items_id'],
+                        'action' => 2,
+                        'value' => $users_id,
+                    ];
+                }
+            }
+        }
+
+        // $groups[1] = __('Empty the field on the linked item of ticket', 'taskrules');
+        // $groups[2] = __('Affect group of the ticket requester on the linked item of ticket', 'taskrules');
+        if ($rule->fields['group_action'] == 1) {
+            $input['groups_id'] = 0;
+            $input['id'] = $item_linked['items_id'];
+            //                                    $item->update($input);
+            $result['group_action'] = [
+                'tickets_id' => $tickets_id,
+                'tickettasks_id' => $tickettasks_id,
+                'itemtype' => $item_linked['itemtype'],
+                'items_id' => $item_linked['items_id'],
+                'action' => 1,
+                'value' => 0,
+            ];
+        } elseif ($rule->fields['group_action'] == 2) {
+            if ($groups_id > 0) {
+                $group = new Group();
+                if ($group->getFromDB($groups_id)) {
+                    $input['groups_id'] = $groups_id;
+                    $input['id'] = $item_linked['items_id'];
+                    //                                    $item->update($input);
+                    $result['user_action'] = [
+                        'tickets_id' => $tickets_id,
+                        'tickettasks_id' => $tickettasks_id,
+                        'itemtype' => $item_linked['itemtype'],
+                        'items_id' => $item_linked['items_id'],
+                        'action' => 2,
+                        'value' => $groups_id,
+                    ];
+                }
+            }
+        }
+
+        return $result;
+    }
+
+
+    public static function showResults($fromstatechange, $results, $tickets_id, $tickettasks_id)
+    {
+//        Toolbox::logInfo($results);
+//        //report Results or errors
+//        $log = new PluginTaskrulesLog();
+//        foreach ($results as $k => $itemtype) {
+//            foreach ($itemtype as $action => $res) {
+//                if (is_array($res)) {
+//                    $inputr['action_field'] = $action;
+//                    $inputr['tickets_id'] = $res['tickets_id'];
+//                    $inputr['tickettasks_id'] = $res['tickettasks_id'];
+//                    $inputr['itemtype'] = $res['itemtype'];
+//                    $inputr['items_id'] = $res['items_id'];
+//                    $inputr['action'] = $res['action'];
+//                    $inputr['value'] = $res['value'];
+//                    $inputr['date'] = $_SESSION['glpi_currenttime'];
+//                    $log->add($inputr);
+//                }
+//            }
+//        }
+//
+//        $log = new PluginTaskrulesLog();
+//        $logs_found = $log->find([
+//            'tickets_id' => $tickets_id,
+//            'tickettasks_id' => $tickettasks_id,
+//        ]);
+//
+//        if (count($logs_found) > 0) {
+//            foreach ($logs_found as $log_found) {
+//                var_dump($log_found);
+//            }
+//        }
+//
+//        $log->deleteByCriteria([
+//            'tickets_id' => $tickets_id,
+//            'tickettasks_id' => $tickettasks_id,
+//        ]);
+
+
+        if ($fromstatechange == 0) {
+            $rand = mt_rand();
+            Html::scriptBlock('alert("toto");');
+            Ajax::createIframeModalWindow(
+                "results$rand",
+                PLUGIN_TASKRULES_WEBDIR . '/ajax/resultmodal.php',
+                ['title'         => __('Results', 'taskrules'),
+                    'display'       => true,
+                    //                                             'width'         => 200,
+                    //                                             'height'        => 600,
+                    'extraparams' => [
+                        'rand' => $rand
+                    ],
+                    'reloadonclose' => false,
+                    'autoopen'      => true]
+            );
+        }
+
+
+        //        return $tickets_id;
+    }
+
+    public function launchResultsOnTicketTaskState($tickettasks_id)
+    {
+        $task = new TicketTask();
+
+        if ($task->getFromDB($tickettasks_id)) {
+                echo Ajax::createIframeModalWindow(
+                    "results$tickettasks_id",
+                    PLUGIN_TASKRULES_WEBDIR . "/front/modalresults.php",
+                    [
+                        'title' => __('Results', 'taskrules'),
+                        'reloadonclose' => false,
+                        'display' => false,
+                    ]
+                );
+
+                $id = (int) $tickettasks_id;
+                echo Html::scriptBlock(
+                    "let taskDiv$id = document.querySelector('#TicketTask_$id .todo-list-state');
+
+                    if (taskDiv$id) {
+                        let span = taskDiv$id.querySelector('.state');
+                    
+                        if (span) {
+                            let button = document.createElement('button');
+                            button.className = span.className;
+                            button.title = span.title;
+                            button.style.border = 'none';
+                            button.innerHTML = '';
+                    
+                            let onclickAttr = span.getAttribute('onclick');
+
+                            if (onclickAttr && onclickAttr.match) {
+                                let match = onclickAttr.match(/change_task_state\((\d+),\s*this\)/);
+                                if (match) {
+                                    let taskId = match[1];
+                        
+                                    button.addEventListener('click', function () {
+                                        $('#ajax_loader').show();
+                                        // Appelle le changement d'état
+                                        change_task_state(taskId, button);
+                                    
+                                        // Petite temporisation pour laisser le DOM se mettre à jour (si async)
+                                        setTimeout(() => {
+                                            if (button.classList.contains('state_1')) {
+                                                plugin_taskrules_showresults(taskId);
+                                            }
+                                        }, 100); // Ajuste le délai si nécessaire
+                                    });
+    
+                        
+                                    span.replaceWith(button);
+                                }
+                            }
+                        }
+                    }
+                    
+
+                    function plugin_taskrules_showresults(taskId) {
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '" . PLUGIN_TASKRULES_WEBDIR . "/ajax/generateresult.php',
+                            data: {
+                                'tickettasks_id': taskId
+                            },
+                            success: function (html) {
+                                let modalBody = document.querySelector('#results' + taskId + ' div.modal-body');
+                                if (modalBody) {
+                                    modalBody.innerHTML = html;
+
+                                    $('#results' + taskId).modal('show');
+                                    $('#ajax_loader').hide();
+                                }
+                            }
+                        });
+                    }"
+                );
+        }
+    }
+
+    public function launchResultsOnAddTicketTask($tickettasks_id)
+    {
+        $task = new TicketTask();
+
+        if ($task->getFromDB($tickettasks_id)) {
+            echo Ajax::createIframeModalWindow(
+                "addresults$tickettasks_id",
+                PLUGIN_TASKRULES_WEBDIR . "/front/addmodalresults.php",
+                [
+                    'title' => __('Results', 'taskrules'),
+                    'reloadonclose' => false,
+                    'display' => true,
+                ]
+            );
+            echo Html::scriptBlock(
+                "$.ajax({
+                            type: 'POST',
+                            url: '" . PLUGIN_TASKRULES_WEBDIR . "/ajax/generateresult.php',
+                            data: {
+                                'tickettasks_id': $tickettasks_id
+                            },
+                            success: function (html) {
+                                let modalBody = document.querySelector('#addresults$tickettasks_id div.modal-body');
+                                if (modalBody) {
+                                    modalBody.innerHTML = html;
+                                    $('#addresults$tickettasks_id').modal('show');
+                                }
+                            }
+                        });
+                        "
+            );
         }
     }
 }

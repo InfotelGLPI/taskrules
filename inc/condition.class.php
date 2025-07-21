@@ -737,6 +737,49 @@ JAVASCRIPT;
         return false;
     }
 
+    public static function checkCriteras($from, $rule, $tickets_id, $tickettasks_id, $items_linked)
+    {
+        Toolbox::logInfo($from);
+        $found_items = [];
+        foreach ($items_linked as $item_linked) {
+            if (getItemForItemtype($item_linked['itemtype'])) {
+                $item = new $item_linked['itemtype']();
+                if ($item->getfromDB($item_linked['items_id'])) {
+                    $cond = new PluginTaskrulesCondition();
+                    if ($cond->getFromDBByCrit(["taskrules_id" => $rule->getID()])) {
+                        $fieldname = PluginTaskrulesCondition::getFieldNameForItemtype($item_linked['itemtype']);
+                        if (!empty($cond->fields[$fieldname])) {
+                            $criterias = unserialize($cond->fields[$fieldname]);
+
+                            $criterias[999] = ['link' =>'AND', 'field' => 2, 'searchtype' => 'equals', 'value' => $item_linked['items_id']];
+
+                            //Add interpretation of the criteria
+                            if (isset($_SESSION["glpisearchcount"][$item_linked['itemtype']])) {
+                                unset($_SESSION["glpisearchcount"][$item_linked['itemtype']]);
+                            }
+                            if (isset($_SESSION["glpisearchcount2"][$item_linked['itemtype']])) {
+                                unset($_SESSION["glpisearchcount2"][$item_linked['itemtype']]);
+                            }
+                            $glpilist_limit = $_SESSION['glpilist_limit'];
+                            $_SESSION['glpilist_limit'] = 999999999;
+                            $searchCriteria = [
+                                'criteria' => $criterias,
+                                'reset' => 'reset',
+                            ];
+
+                            $results = Search::getDatas($item_linked['itemtype'], $searchCriteria);
+                            $_SESSION['glpilist_limit'] = $glpilist_limit;
+                            foreach ($results['data']['items'] as $k => $val) {
+                                $found_items[$k] = $k;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return $found_items;
+    }
+
     public static function getStatuses($itemtypes)
     {
         global $DB;
@@ -753,7 +796,7 @@ JAVASCRIPT;
             /** Retrieve object types data from the database */
             $iterateur = $DB->request(['FIELDS' => ['glpi_states' => ['id', 'name']],
                 'FROM' => 'glpi_states',
-                'WHERE' => ['OR' => $itemtypecriteria]]);
+                'WHERE' => ['AND' => $itemtypecriteria]]);
 
             foreach ($iterateur as $data) {
                 $values[$data['id']] = $data['name'];
@@ -761,6 +804,7 @@ JAVASCRIPT;
 
             asort($values);
         }
+
         return $values;
     }
 
