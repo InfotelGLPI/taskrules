@@ -109,22 +109,26 @@ function plugin_taskrules_post_item_form($params)
     if (Session::haveRight("plugin_taskrules", READ)
      && $params['item']::getType() === TicketTask::getType()) {
 
-        if (isset($_SESSION['plugin_taskrules']['show_updateresults'])
-        && $_SESSION['plugin_taskrules']['show_updateresults'] > 0) {
-            $tickettasks_id = $_SESSION['plugin_taskrules']['show_updateresults'];
+        if (isset($_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'])
+            && is_int($_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'])
+        && $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'] > 0) {
+            $tickettasks_id = $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'];
 
             unset($_SESSION['plugin_taskrules']['show_updateresults']);
             echo Ajax::createIframeModalWindow(
                 "results$tickettasks_id",
                 PLUGIN_TASKRULES_WEBDIR . "/front/modalresults.php",
                 [
-                'title' => __('Results', 'taskrules'),
-                'reloadonclose' => false,
-                'display' => false,
+                    'title' => __('Results of changes of linked items', 'taskrules'),
+                    'reloadonclose' => false,
+                    'display' => false,
+                    'width' => 1140,
+                    'height' => 500,
+                    'dialog_class'  => 'modal-xl',
                 ]
             );
 
-            $id = (int)$tickettasks_id;
+            $id = (int) $tickettasks_id;
             echo Html::scriptBlock(
                 "
             let taskDiv$id = document.getElementById('TicketTask_$id');
@@ -132,8 +136,8 @@ function plugin_taskrules_post_item_form($params)
                     if (taskDiv$id) {
                         
                         let button = document.createElement('button');
-                        button.className = 'btn btn-secondary'; // classes Bootstrap ou les tiennes
-                        button.textContent = 'Nouveau bouton';
+                        button.className = ''; // classes Bootstrap ou les tiennes
+                        button.textContent = '';
                         button.style.marginTop = '10px';
                         
                         // Ajouter un événement au clic (facultatif)
@@ -142,8 +146,7 @@ function plugin_taskrules_post_item_form($params)
                         });
                         
                         button.click();
-                        }
-
+                    }
 
                     function plugin_taskrules_showresults(taskId) {
                         $.ajax({
@@ -165,8 +168,7 @@ function plugin_taskrules_post_item_form($params)
                     }
                     "
             );
-        }
-        else {
+        } else {
             $tickettask = $params['item'];
             if (isset($tickettask->fields['tickets_id'])) {
                 $tickettasks = new TicketTask();

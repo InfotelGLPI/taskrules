@@ -739,7 +739,7 @@ JAVASCRIPT;
 
     public static function checkCriteras($from, $rule, $tickets_id, $tickettasks_id, $items_linked)
     {
-        Toolbox::logInfo($from);
+//        Toolbox::logInfo($from);
         $found_items = [];
         foreach ($items_linked as $item_linked) {
             if (getItemForItemtype($item_linked['itemtype'])) {

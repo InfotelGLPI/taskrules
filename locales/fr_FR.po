@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GLPI - Taskrules 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-19 20:01+0200\n"
-"PO-Revision-Date: 2025-07-19 20:03+0200\n"
+"POT-Creation-Date: 2025-07-22 13:42+0200\n"
+"PO-Revision-Date: 2025-07-22 13:44+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -18,7 +18,11 @@ msgstr ""
 "X-Generator: Poedit 3.0\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: setup.php:82 inc/rule.class.php:43
+#: hook.php:122
+msgid "Results of changes of linked items"
+msgstr "Résultats des modifications des objets liés"
+
+#: setup.php:94 inc/rule.class.php:43
 msgid "Task rule"
 msgid_plural "Task rules"
 msgstr[0] "Règle de tâches"
@@ -28,39 +32,93 @@ msgstr[1] "Règles de tâches"
 msgid "Taskrules"
 msgstr "Taskrules"
 
-#: inc/rule.class.php:112
+#: inc/action.class.php:60 inc/action.class.php:69 inc/action.class.php:79
+#: inc/action.class.php:87 inc/action.class.php:96 inc/rule.class.php:233
+#: inc/rule.class.php:274 inc/rule.class.php:311 inc/rule.class.php:324
+#: inc/rule.class.php:338
+msgid "Do not change"
+msgstr "Ne pas modifier"
+
+#: inc/action.class.php:61 inc/action.class.php:70 inc/action.class.php:80
+#: inc/action.class.php:88 inc/action.class.php:97 inc/rule.class.php:234
+#: inc/rule.class.php:275 inc/rule.class.php:312 inc/rule.class.php:325
+#: inc/rule.class.php:339
+msgid "Empty the field on the linked item of ticket"
+msgstr "Vider le champ sur les objets liés au ticket"
+
+#: inc/action.class.php:62 inc/rule.class.php:235
+msgid "Affect a specific state on the linked item of ticket"
+msgstr "Affecter un statut spécifique sur les objets liés au ticket"
+
+#: inc/action.class.php:71 inc/rule.class.php:276
+msgid "Affect location of ticket requester on the linked item of ticket"
+msgstr "Affecter le lieu du demandeur du ticket sur les objets liés au ticket"
+
+#: inc/action.class.php:72 inc/rule.class.php:277
+msgid "Affect a specific location on the linked item of ticket"
+msgstr "Affecter un lieu spécifique sur les objets liés au ticket"
+
+#: inc/action.class.php:89 inc/rule.class.php:326
+msgid "Affect ticket requester on the linked item of ticket"
+msgstr ""
+"Affecter le demandeur du ticket comme utilisateur sur les objets liés au "
+"ticket"
+
+#: inc/action.class.php:98 inc/rule.class.php:340
+msgid "Affect group of the ticket requester on the linked item of ticket"
+msgstr ""
+"Affecter le groupe demandeur du ticket comme groupe sur les objets liés au "
+"ticket"
+
+#: inc/action.class.php:111
+msgid "Multiple requesters"
+msgstr "Demandeurs multiples"
+
+#: inc/action.class.php:146
+msgid "Multiple group requesters"
+msgstr "Groupes de demandeurs multiples"
+
+#: inc/log.class.php:83
+msgid "Items not updated (not match with rule)"
+msgstr "Éléments non mis à jour (ne correspondent pas à la règle)"
+
+#: inc/log.class.php:114
+msgid "Items updated"
+msgstr "Éléments mis à jour"
+
+#: inc/rule.class.php:111
 msgid "Parameter"
 msgid_plural "Parameters"
 msgstr[0] "Paramètre"
 msgstr[1] "Paramètres"
 
-#: inc/rule.class.php:118
+#: inc/rule.class.php:117
 msgid "Condition"
 msgid_plural "Conditions"
 msgstr[0] "Condition"
 msgstr[1] "Conditions"
 
-#: inc/rule.class.php:124
+#: inc/rule.class.php:123
 msgid "Trigger"
 msgid_plural "Triggers"
 msgstr[0] "Déclencheur"
 msgstr[1] "Déclencheurs"
 
-#: inc/rule.class.php:130
+#: inc/rule.class.php:129
 msgid "Action"
 msgid_plural "Actions"
 msgstr[0] "Action"
 msgstr[1] "Actions"
 
-#: inc/rule.class.php:164
+#: inc/rule.class.php:162
 msgid "Active"
 msgstr "Actif"
 
-#: inc/rule.class.php:173
+#: inc/rule.class.php:171
 msgid "Prevent task creation on error"
 msgstr "Empêcher la création de la tâche en cas d'erreur"
 
-#: inc/rule.class.php:182
+#: inc/rule.class.php:181
 msgid ""
 "Prevent the task from changing its status (from \"to do\" to \"done\") in "
 "case of an error"
@@ -78,47 +136,10 @@ msgstr ""
 "Déclencher à la mise à jour du statut de la tâche de \"à faire\" vers \"fait"
 "\""
 
-#: inc/rule.class.php:234 inc/rule.class.php:270 inc/rule.class.php:306
-#: inc/rule.class.php:319 inc/rule.class.php:333
-msgid "Do not change"
-msgstr "Ne pas modifier"
-
-#: inc/rule.class.php:235 inc/rule.class.php:271 inc/rule.class.php:307
-#: inc/rule.class.php:320 inc/rule.class.php:334
-msgid "Empty the field on the linked item of ticket"
-msgstr "Vider le champ sur les objets liés au ticket"
-
-#: inc/rule.class.php:236
-msgid "Affect a specific state on the linked item of ticket"
-msgstr "Affecter un statut spécifique sur les objets liés au ticket"
-
-#: inc/rule.class.php:260
-msgid ""
-"Please note, only the statuses common to the objects selected in the "
-"conditions appear"
+#: inc/rule.class.php:262
+msgid "Please note that only statuses common to all objects appear."
 msgstr ""
-"Attention, n'apparaissent que les statuts communs aux objets sélectionnés "
-"dans les conditions"
-
-#: inc/rule.class.php:272
-msgid "Affect location of ticket requester on the linked item of ticket"
-msgstr "Affecter le lieu du demandeur du ticket sur les objets liés au ticket"
-
-#: inc/rule.class.php:273
-msgid "Affect a specific location on the linked item of ticket"
-msgstr "Affecter un lieu spécifique sur les objets liés au ticket"
-
-#: inc/rule.class.php:321
-msgid "Affect ticket requester on the linked item of ticket"
-msgstr ""
-"Affecter le demandeur du ticket comme utilisateur sur les objets liés au "
-"ticket"
-
-#: inc/rule.class.php:335
-msgid "Affect group of the ticket requester on the linked item of ticket"
-msgstr ""
-"Affecter le groupe demandeur du ticket comme groupe sur les objets liés au "
-"ticket"
+"Veuillez noter que seuls les statuts communs à tous les objets apparaissent."
 
 #~ msgid "Keep current status"
 #~ msgstr "Conserver le statut affecté"
@@ -137,9 +158,6 @@ msgstr ""
 
 #~ msgid "A specific location"
 #~ msgstr "Un lieu spécifique"
-
-#~ msgid "Ticket requester"
-#~ msgstr "Affecter le demandeur du ticket"
 
 #~ msgid "Group of the ticket requester"
 #~ msgstr "Affecter le groupe demandeur du ticket"

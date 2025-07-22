@@ -50,12 +50,14 @@ if (isset($_POST['tickettasks_id'])) {
                             $item = new $item_linked['itemtype']();
                             if ($item->getfromDB($item_linked['items_id'])) {
                                 if (in_array($item_linked['items_id'], $found_items)) {
-                                    $results[] = PluginTaskrulesRule::launchActions(
+                                    $results[] = PluginTaskrulesAction::launchActions(
                                         $rule,
                                         $tickettask->fields['tickets_id'],
                                         $_POST['tickettasks_id'],
                                         $item_linked
                                     );
+                                } else {
+                                    $results['errors']['not_found'][] = ['itemtype' => $item_linked['itemtype'], 'items_id' => $item_linked['items_id']];
                                 }
                             }
                         }
@@ -63,7 +65,7 @@ if (isset($_POST['tickettasks_id'])) {
                 }
             }
             if (count($results) > 0) {
-                PluginTaskrulesRule::showResults(1, $results, $tickettask->fields['tickets_id'], $_POST['tickettasks_id']);
+                PluginTaskrulesLog::showResults($rule, $results, $tickettask->fields['tickets_id'], $_POST['tickettasks_id']);
             }
             //TODO : Prevent the task from changing its status (from "to do" to "done") in case of an error
         }
