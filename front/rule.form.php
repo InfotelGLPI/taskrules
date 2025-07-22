@@ -46,7 +46,7 @@ if (isset($_POST["add"])) {
         if (isset($_POST[$criterianame])) {
             $input[$fieldname] = serialize($_POST[$criterianame]);
         } else {
-            $input[$fieldname] = serialize();
+            $input[$fieldname] = serialize([]);
         }
 
         unset($_POST[$criterianame]);
@@ -67,7 +67,7 @@ if (isset($_POST["add"])) {
         if (isset($_POST[$criterianame])) {
             $input[$fieldname] = serialize($_POST[$criterianame]);
         } else {
-            $input[$fieldname] = serialize();
+            $input[$fieldname] = serialize([]);
         }
         unset($_POST[$criterianame]);
     }
@@ -84,7 +84,7 @@ if (isset($_POST["add"])) {
     $rule->update($_POST);
     Html::back();
 } else {
-    Html::header(__('Taskrules', 'taskrules'), $_SERVER['PHP_SELF'], 'config', 'taskrules', );
+    Html::header(_n('Task rule', 'Task rules',2, 'taskrules'), $_SERVER['PHP_SELF'], 'config', 'taskrules', );
 
     $rule->showForm();
 

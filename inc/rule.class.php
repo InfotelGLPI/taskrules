@@ -353,8 +353,7 @@ class PluginTaskrulesRule extends CommonDBTM
     {
         $rand = mt_rand();
         $id = $name . $rand;
-        $js = <<<JS
-                (function(){
+        $js = "(function(){
                     var toggleButton = $('.$id');
                     toggleButton.on('click', function() {
                         var el = $(this);
@@ -371,8 +370,7 @@ class PluginTaskrulesRule extends CommonDBTM
                             input.value = '1';
                         }
                     });
-                })();
-                JS;
+                })();";
 
         echo Html::scriptBlock($js);
 
@@ -423,7 +421,8 @@ class PluginTaskrulesRule extends CommonDBTM
                 }
             }
             if ($ko == 1) {
-                Session::addMessageAfterRedirect(__('Items not match with rule, task not created', 'taskrules'), false, ERROR);
+                $errormsg = __('Items not match with rule, task not created', 'taskrules');
+                Session::addMessageAfterRedirect($errormsg, false, ERROR);
                 $item->input = [];
                 return false;
             }
@@ -511,7 +510,8 @@ class PluginTaskrulesRule extends CommonDBTM
                 }
             }
             if ($ko == 1) {
-                Session::addMessageAfterRedirect(__('Items not match with rule, task not updated', 'taskrules'), false, ERROR);
+                $errormsg = __('Items not match with rule, task not updated', 'taskrules');
+                Session::addMessageAfterRedirect($errormsg, false, ERROR);
                 $item->fields = [];
                 return false;
             }
