@@ -106,6 +106,7 @@ class PluginTaskrulesLog extends CommonDBTM
                 echo "</table><br>";
             }
         }
+        unset($results['errors']);
 
         if (count($results) > 0) {
             echo "<table class='tab_cadre_fixe'>";

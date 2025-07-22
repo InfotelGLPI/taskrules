@@ -688,7 +688,7 @@ JAVASCRIPT;
             'parents_num' => $parents_num,
         ];
         $params['prefix_crit'] = "{$prefix}[$num][$criterianame]";
-        $params[$criterianame] = $criteria[$criterianame];
+        $params[$criterianame] = $criteria[$criterianame] ?? [];
 
         echo "<div class='col-auto'>";
         self::showGenericSearch($request['itemtype'], $params);

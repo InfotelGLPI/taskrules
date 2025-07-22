@@ -62,6 +62,13 @@ if (isset($_POST['tickettasks_id'])) {
                             }
                         }
                     }
+                } else {
+                    foreach ($items_linked as $item_linked) {
+                        $results['errors']['not_found'][] = [
+                            'itemtype' => $item_linked['itemtype'],
+                            'items_id' => $item_linked['items_id']
+                        ];
+                    }
                 }
             }
             if (count($results) > 0) {

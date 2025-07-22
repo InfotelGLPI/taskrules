@@ -291,7 +291,8 @@ class PluginTaskrulesRule extends CommonDBTM
         );
 
         echo "&nbsp;<span id='specific_locations_id'>";
-        if ($this->fields['locations_id'] > 0) {
+        if ($this->fields['locations_id'] > 0
+            && $this->fields['location_action'] == 3) {
             Location::Dropdown([
                 'name' => 'locations_id',
                 'value' => $this->fields['locations_id'],
