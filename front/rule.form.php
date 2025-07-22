@@ -43,7 +43,12 @@ if (isset($_POST["add"])) {
     foreach ($types as $itemtype) {
         $fieldname = PluginTaskrulesCondition::getFieldNameForItemtype($itemtype);
         $criterianame = PluginTaskrulesCondition::getCriteriaNameForItemtype($itemtype);
-        $input[$fieldname] = serialize($_POST[$criterianame]);
+        if (isset($_POST[$criterianame])) {
+            $input[$fieldname] = serialize($_POST[$criterianame]);
+        } else {
+            $input[$fieldname] = serialize();
+        }
+
         unset($_POST[$criterianame]);
     }
 
@@ -59,7 +64,11 @@ if (isset($_POST["add"])) {
     foreach ($types as $itemtype) {
         $fieldname = PluginTaskrulesCondition::getFieldNameForItemtype($itemtype);
         $criterianame = PluginTaskrulesCondition::getCriteriaNameForItemtype($itemtype);
-        $input[$fieldname] = serialize($_POST[$criterianame]);
+        if (isset($_POST[$criterianame])) {
+            $input[$fieldname] = serialize($_POST[$criterianame]);
+        } else {
+            $input[$fieldname] = serialize();
+        }
         unset($_POST[$criterianame]);
     }
 

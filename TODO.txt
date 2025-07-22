@@ -1,3 +1,1 @@
-Add actions (hooks)
-
-reporting & erreurs (config)
+erreurs (config)

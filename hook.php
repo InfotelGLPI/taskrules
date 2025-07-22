@@ -75,7 +75,17 @@ function plugin_taskrules_uninstall()
 
 function plugin_taskrules_pre_additem(CommonDBTM $item)
 {
-    //    PluginTaskrulesRule::preAddTask($item);
+    PluginTaskrulesRule::preAddTask($item);
+}
+
+function plugin_taskrules_pre_updateitem(CommonDBTM $item)
+{
+    PluginTaskrulesRule::preUpdateTask($item);
+}
+
+function plugin_taskrules_post_prepareadditem(CommonDBTM $item)
+{
+    $item->input['state'] = Planning::DONE;
 }
 
 /**
@@ -165,8 +175,7 @@ function plugin_taskrules_post_item_form($params)
                                 }
                             }
                         });
-                    }
-                    "
+                    }"
             );
         } else {
             $tickettask = $params['item'];
@@ -190,7 +199,6 @@ function plugin_taskrules_post_item_form($params)
                                 if (count($items_linked) > 0) {
                                     $rule->launchResultsOnTicketTaskState($task_found['id']);
                                 }
-                                //TODO : Prevent the task from changing its status (from "to do" to "done") in case of an error
                             }
                         }
                     }

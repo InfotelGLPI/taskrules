@@ -387,29 +387,48 @@ class PluginTaskrulesRule extends CommonDBTM
 
         echo "<a class=\"button\"><i class=\"$classes\"></i></a>";
     }
-    //
-    //    public static function preAddTask($item)
-    //    {
-    //        if ($item::getType() === TicketTask::getType()) {
-    //            if (isset($item->input['tasktemplates_id'])) {
-    //                $rule = new self();
-    //                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->input['tasktemplates_id']])) {
-    //                    if ($rule->fields['trigger_creation'] == 1) {
-    //                        $item_ticket = new Item_ticket();
-    //                        $items_linked = $item_ticket->find([
-    //                            'tickets_id' => $item->input['tickets_id'],
-    //                        ]);
-    //                        if (count($items_linked) > 0) {
-    //                            PluginTaskrulesCondition::checkCriteras($rule, $item->input['tickets_id'], $item->getID(), $items_linked);
-    //                        }
-    //                        //TODO : Prevent task creation on error
-    //                    }
-    //                }
-    //            }
-    //            //        Session::addMessageAfterRedirect('Condition non remplie, tâche non créée.', false, ERROR);
-    //            return;
-    //        }
-    //    }
+
+    public static function preAddTask($item)
+    {
+        $ko = 0;
+        if ($item::getType() === TicketTask::getType()) {
+            if (isset($item->input['tasktemplates_id'])) {
+                $rule = new self();
+                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->input['tasktemplates_id']])) {
+                    if ($rule->fields['preventcreation'] == 1) {
+                        $item_ticket = new Item_ticket();
+                        $items_linked = $item_ticket->find([
+                            'tickets_id' => $item->input['tickets_id'],
+                        ]);
+                        if (count($items_linked) > 0) {
+                            $found_items = PluginTaskrulesCondition::checkCriteras("pre add task", $rule, $item->input['tickets_id'], $item->getID(), $items_linked);
+                        }
+                        if (count($found_items) > 0) {
+                            foreach ($items_linked as $item_linked) {
+                                if (getItemForItemtype($item_linked['itemtype'])) {
+                                    $item = new $item_linked['itemtype']();
+                                    if ($item->getfromDB($item_linked['items_id'])) {
+                                        if (in_array($item_linked['items_id'], $found_items)) {
+                                            $ko = 0;
+                                        } else {
+                                            $ko = 1;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            $ko = 1;
+                        }
+                    }
+                }
+            }
+            if ($ko == 1) {
+                Session::addMessageAfterRedirect(__('Items not match with rule, task not created', 'taskrules'), false, ERROR);
+                $item->input = [];
+                return false;
+            }
+        }
+    }
 
     public static function afterAddTask($item)
     {
@@ -457,6 +476,48 @@ class PluginTaskrulesRule extends CommonDBTM
         }
     }
 
+    public static function preUpdateTask($item)
+    {
+        $ko = 0;
+        if ($item::getType() === TicketTask::getType()) {
+            if (isset($item->fields['tasktemplates_id'])) {
+                $rule = new self();
+                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
+                    if ($rule->fields['preventchange'] == 1) {
+                        $item_ticket = new Item_ticket();
+                        $items_linked = $item_ticket->find([
+                            'tickets_id' => $item->input['tickets_id'],
+                        ]);
+                        if (count($items_linked) > 0) {
+                            $found_items = PluginTaskrulesCondition::checkCriteras("pre update task", $rule, $item->fields['tickets_id'], $item->getID(), $items_linked);
+                        }
+                        if (count($found_items) > 0) {
+                            foreach ($items_linked as $item_linked) {
+                                if (getItemForItemtype($item_linked['itemtype'])) {
+                                    $item = new $item_linked['itemtype']();
+                                    if ($item->getfromDB($item_linked['items_id'])) {
+                                        if (in_array($item_linked['items_id'], $found_items)) {
+                                            $ko = 0;
+                                        } else {
+                                            $ko = 1;
+                                        }
+                                    }
+                                }
+                            }
+                        } else {
+                            $ko = 1;
+                        }
+                    }
+                }
+            }
+            if ($ko == 1) {
+                Session::addMessageAfterRedirect(__('Items not match with rule, task not updated', 'taskrules'), false, ERROR);
+                $item->fields = [];
+                return false;
+            }
+        }
+    }
+
     public static function afterUpdateTask($item)
     {
         if ($item::getType() === TicketTask::getType()) {
@@ -497,7 +558,6 @@ class PluginTaskrulesRule extends CommonDBTM
                                 $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'] = $item->fields['id'];
                                 //                                PluginTaskrulesLog::showResults($rule, $results, $item->fields['tickets_id'], $item->fields['id']);
                             }
-                            //TODO : Prevent the task from changing its status (from "to do" to "done") in case of an error
                         }
                     }
                 }
@@ -544,24 +604,41 @@ class PluginTaskrulesRule extends CommonDBTM
                                 if (match) {
                                     let taskId = match[1];
                         
-                                    button.addEventListener('click', function () {
-                                        $('#ajax_loader').show();
-                                        change_task_state(taskId, button);
-                                        setTimeout(() => {
-                                            if (button.classList.contains('state_1')) {
-                                                plugin_taskrules_showresults(taskId);
+                                    $.ajax({
+                                        type: 'POST',
+                                        url: '" . PLUGIN_TASKRULES_WEBDIR . "/ajax/checkcriterias.php',
+                                        dataType: 'html',
+                                        data: {
+                                            'tickettasks_id': taskId
+                                        },
+                                        success: function(response){
+                                            if (response == 1) {
+                                               button.addEventListener('click', function () {
+                                                    change_task_state(taskId, button);
+                                                    setTimeout(() => {
+                                                        if (button.classList.contains('state_1')) {
+                                                            plugin_taskrules_showresults(taskId);
+                                                        }
+                                                    }, 50);
+                                                });
+                                            } else {
+                                               button.addEventListener('click', function () {
+                                                  plugin_taskrules_showresults(taskId);
+                                               });
                                             }
-                                        }, 50);
+                                        },
+                                        error: function(xhr, status, error) {
+                                          console.log(xhr);
+                                          console.log(status);
+                                          console.log(error);
+                                        }
                                     });
-    
-                        
                                     span.replaceWith(button);
                                 }
                             }
                         }
                     }
                     
-
                     function plugin_taskrules_showresults(taskId) {
 
                         $.ajax({

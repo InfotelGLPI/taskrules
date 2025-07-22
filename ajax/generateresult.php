@@ -74,7 +74,6 @@ if (isset($_POST['tickettasks_id'])) {
             if (count($results) > 0) {
                 PluginTaskrulesLog::showResults($rule, $results, $tickettask->fields['tickets_id'], $_POST['tickettasks_id']);
             }
-            //TODO : Prevent the task from changing its status (from "to do" to "done") in case of an error
         }
     }
 } else {
