@@ -72,6 +72,11 @@ class PluginTaskrulesLog extends CommonDBTM
 
 //        $logs_found = $_SESSION['plugin_taskrules']['show_updateresults']['results'];
 
+        if (isset($_SESSION['plugin_taskrules']['results'])) {
+            $results = $_SESSION['plugin_taskrules']['results'];
+        }
+
+        unset($_SESSION['plugin_taskrules']['results']);
         if (isset($results['errors']['not_found'])
             && count($results['errors']['not_found']) > 0) {
             $not_found = $results['errors']['not_found'];

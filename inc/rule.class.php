@@ -467,6 +467,7 @@ class PluginTaskrulesRule extends CommonDBTM
                         }
                         if (count($results) > 0) {
                             $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'] = $item->fields['id'];
+                            $_SESSION['plugin_taskrules']['results'] = $results;
                             //                            PluginTaskrulesLog::showResults($rule, $results, $item->fields['tickets_id'], $item->fields['id']);
                         }
                     }
@@ -556,6 +557,7 @@ class PluginTaskrulesRule extends CommonDBTM
                             }
                             if (count($results) > 0) {
                                 $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'] = $item->fields['id'];
+                                $_SESSION['plugin_taskrules']['results'] = $results;
                                 //                                PluginTaskrulesLog::showResults($rule, $results, $item->fields['tickets_id'], $item->fields['id']);
                             }
                         }
