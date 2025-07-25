@@ -794,12 +794,12 @@ JAVASCRIPT;
             }
 
             /** Retrieve object types data from the database */
-            $iterateur = $DB->request(['FIELDS' => ['glpi_states' => ['id', 'name']],
+            $iterateur = $DB->request(['FIELDS' => ['glpi_states' => ['id', 'completename']],
                 'FROM' => 'glpi_states',
                 'WHERE' => ['AND' => $itemtypecriteria]]);
 
             foreach ($iterateur as $data) {
-                $values[$data['id']] = $data['name'];
+                $values[$data['id']] = $data['completename'];
             }
 
             asort($values);
