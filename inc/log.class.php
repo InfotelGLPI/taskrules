@@ -31,8 +31,6 @@ if (!defined('GLPI_ROOT')) {
     die("Sorry. You can't access directly to this file");
 }
 
-use Glpi\Toolbox\Sanitizer;
-use Glpi\Toolbox\URL;
 
 /**
  * Class PluginTaskrulesLog
@@ -45,33 +43,9 @@ class PluginTaskrulesLog extends CommonDBTM
 
     public static function showResults($rule, $results, $tickets_id, $tickettasks_id)
     {
-        //        //report Results or errors
-//        $log = new PluginTaskrulesLog();
-//        foreach ($results as $k => $itemtype) {
-//            foreach ($itemtype as $action => $res) {
-//                if (is_array($res)) {
-//                    $inputr['action_field'] = $action;
-//                    $inputr['tickets_id'] = $res['tickets_id'];
-//                    $inputr['tickettasks_id'] = $res['tickettasks_id'];
-//                    $inputr['itemtype'] = $res['itemtype'];
-//                    $inputr['items_id'] = $res['items_id'];
-//                    $inputr['action'] = $res['action'];
-//                    $inputr['value'] = $res['value'];
-//                    $inputr['date'] = $_SESSION['glpi_currenttime'];
-//                    $log->add($inputr);
-//                }
-//            }
-//        }
-//
-//        $log = new PluginTaskrulesLog();
-//        $logs_found = $log->find([
-//            'tickets_id' => $tickets_id,
-//            'tickettasks_id' => $tickettasks_id,
-//        ]);
-//
 
-//        $logs_found = $_SESSION['plugin_taskrules']['show_updateresults']['results'];
-
+        $errors = [];
+        $not_found = [];
         if (isset($_SESSION['plugin_taskrules']['results'])) {
             $results = $_SESSION['plugin_taskrules']['results'];
         }
@@ -87,10 +61,10 @@ class PluginTaskrulesLog extends CommonDBTM
                 echo "<div class='alert alert-danger'>";
                 echo __('Items not updated (not match with rule)', 'taskrules');
                 echo "</div>";
-//
-//                echo "<td colspan='3' style='background: antiquewhite;'>";
-//                echo __('Items not updated (not match with rule)', 'taskrules');
-//                echo "</td>";
+                //
+                //                echo "<td colspan='3' style='background: antiquewhite;'>";
+                //                echo __('Items not updated (not match with rule)', 'taskrules');
+                //                echo "</td>";
                 echo "</tr>";
                 foreach ($not_found as $n_found) {
                     echo "<tr class='tab_bg_2'>";
@@ -114,16 +88,16 @@ class PluginTaskrulesLog extends CommonDBTM
         unset($results['errors']);
 
         if (count($results) > 0) {
+
             echo "<table class='tab_cadre_fixe'>";
-//            echo "<tr class='tab_bg_2'>";
+            //            echo "<tr class='tab_bg_2'>";
             echo "<div class='alert alert-success'>";
             echo __('Items updated', 'taskrules');
             echo "</div>";
-//            echo "</tr>";
+            //            echo "</tr>";
             echo "<tr class='tab_bg_2'>";
             echo "<td>";
 
-            $errors = [];
             foreach ($results as $k => $itemtype) {
                 if (isset($itemtype['errors'])) {
                     if (count($itemtype['errors']) > 0
@@ -200,7 +174,7 @@ class PluginTaskrulesLog extends CommonDBTM
                                                 foreach ($errors as $name => $error) {
                                                     if ($name == 'user') {
                                                         echo "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
-                                                        echo "<span style='color:red'>".$error."</span>";
+                                                        echo "<span style='color:red'>" . $error . "</span>";
                                                         $ko = 1;
                                                     }
                                                 }
@@ -216,12 +190,12 @@ class PluginTaskrulesLog extends CommonDBTM
                                                 foreach ($errors as $name => $error) {
                                                     if ($name == 'group') {
                                                         echo "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
-                                                        echo "<span style='color:red'>".$error."</span>";
+                                                        echo "<span style='color:red'>" . $error . "</span>";
                                                         $kp = 1;
                                                     }
                                                     if ($name == 'user') {
                                                         echo "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
-                                                        echo "<span style='color:red'>".$error."</span>";
+                                                        echo "<span style='color:red'>" . $error . "</span>";
                                                         $ko = 1;
                                                     }
                                                 }
@@ -249,10 +223,168 @@ class PluginTaskrulesLog extends CommonDBTM
             echo "</table>";
         }
         unset($_SESSION['plugin_taskrules']['show_updateresults']['results']);
-//
-//        $log->deleteByCriteria([
-//            'tickets_id' => $tickets_id,
-//            'tickettasks_id' => $tickettasks_id,
-//        ]);
+
+        $log = new PluginTaskrulesLog();
+
+//        $errors = [];
+//        if (count($results) > 0) {
+//            foreach ($results as $k => $itemtype) {
+//                if (isset($itemtype['errors'])) {
+//                    Toolbox::logInfo($itemtype['errors']);
+//                    if (isset($itemtype['errors']['user'])) {
+//                        $errors['user_action'] = $itemtype['errors']['user'];
+//                        $errors['group_action'] = $itemtype['errors']['user'];
+//                    }
+//                    if (isset($itemtype['errors']['group'])) {
+//                        $errors['group_action'] = $itemtype['errors']['group'];
+//                    }
+//                }
+//            }
+//        }
+//        foreach ($not_found as $action => $res) {
+//            $inputr['action_field'] = $action;
+//            $inputr['tickets_id'] = $tickets_id;
+//            $inputr['tickettasks_id'] = $tickettasks_id;
+//            $inputr['itemtype'] = $res['itemtype'];
+//            $inputr['items_id'] = $res['items_id'];
+//            $inputr['action'] = '0';
+//            $inputr['value'] = 'not found';
+//            $inputr['users_id'] = $_SESSION['glpiID'];
+//            $inputr['date'] = $_SESSION['glpi_currenttime'];
+//            $log->add($inputr);
+//        }
+
+        //        //report Results or errors
+
+        foreach ($not_found as $action => $res) {
+            $inputr['action_field'] = 'found item';
+            $inputr['tickets_id'] = $tickets_id;
+            $inputr['tickettasks_id'] = $tickettasks_id;
+            $inputr['itemtype'] = $res['itemtype'];
+            $inputr['items_id'] = $res['items_id'];
+            $inputr['action'] = '0';
+            $inputr['value'] = 'not found';
+            $inputr['users_id'] = $_SESSION['glpiID'];
+            $inputr['date'] = $_SESSION['glpi_currenttime'];
+            $log->add($inputr);
+        }
+        //
+        //        $log = new PluginTaskrulesLog();
+        //        $logs_found = $log->find([
+        //            'tickets_id' => $tickets_id,
+        //            'tickettasks_id' => $tickettasks_id,
+        //        ]);
+        //
+
+        //        $logs_found = $_SESSION['plugin_taskrules']['show_updateresults']['results'];
+        //        $log->deleteByCriteria([
+        //            'tickets_id' => $tickets_id,
+        //            'tickettasks_id' => $tickettasks_id,
+        //        ]);
     }
+
+    /**
+     * @return array
+     */
+    public function rawSearchOptions()
+    {
+        $tab = [];
+
+        $tab[] = [
+            'id' => 'common',
+            'name' => self::getTypeName(2),
+        ];
+
+        $tab[] = [
+            'id' => '1',
+            'table' => $this->getTable(),
+            'field' => 'action_field',
+            'name' => __('action_field'),
+//            'datatype' => 'itemlink',
+//            'itemlink_type' => $this->getType(),
+        ];
+
+        $tab[] = [
+            'id' => '2',
+            'table' => $this->getTable(),
+            'field' => 'tickets_id',
+            'name' => __('Ticket'),
+            'datatype' => 'itemlink',
+            'itemlink_type' => 'Ticket',
+        ];
+
+        $tab[] = [
+            'id' => '3',
+            'table' => $this->getTable(),
+            'field' => 'tickettasks_id',
+            'name' => __('Task'),
+            'datatype' => 'itemlink',
+            'itemlink_type' => 'TicketTask',
+        ];
+
+        $tab[] = [
+            'id' => '4',
+            'table'              => 'glpi_users',
+            'field'              => 'name',
+            'linkfield'          => 'users_id',
+            'name' => __('User'),
+            'datatype' => 'dropdown',
+        ];
+
+        $tab[] = [
+            'id' => '5',
+            'table' => $this->getTable(),
+            'field' => 'itemtype',
+            'name' => __('Item type'),
+//            'datatype' => 'itemlink',
+//            'itemlink_type' => $this->getType(),
+        ];
+
+        $tab[] = [
+            'id' => '6',
+            'table' => $this->getTable(),
+            'field' => 'items_id',
+            'name' => __('items_id'),
+//            'datatype' => 'itemlink',
+//            'itemlink_type' => $this->getType(),
+        ];
+
+        $tab[] = [
+            'id' => '7',
+            'table' => $this->getTable(),
+            'field' => 'action',
+            'name' => __('Action'),
+//            'datatype' => 'itemlink',
+//            'itemlink_type' => $this->getType(),
+        ];
+
+        $tab[] = [
+            'id' => '8',
+            'table' => $this->getTable(),
+            'field' => 'value',
+            'name' => __('Value'),
+//            'datatype' => 'itemlink',
+//            'itemlink_type' => $this->getType(),
+        ];
+
+        $tab[] = [
+            'id' => '30',
+            'table' => $this->getTable(),
+            'field' => 'id',
+            'name' => __('ID'),
+            'datatype' => 'number',
+        ];
+
+        $tab[] = [
+            'id' => '121',
+            'table' => $this->getTable(),
+            'field' => 'date',
+            'name' => __('Date'),
+            'datatype' => 'datetime',
+            'massiveaction' => false,
+        ];
+
+        return $tab;
+    }
+
 }

@@ -560,6 +560,7 @@ class PluginTaskrulesRule extends CommonDBTM
                                 $_SESSION['plugin_taskrules']['results'] = $results;
                                 //                                PluginTaskrulesLog::showResults($rule, $results, $item->fields['tickets_id'], $item->fields['id']);
                             }
+                            Html::redirect(Ticket::getFormURLWithID($item->fields['tickets_id']));
                         }
                     }
                 }
@@ -593,17 +594,18 @@ class PluginTaskrulesRule extends CommonDBTM
                         let span = taskDiv$id.querySelector('.state');
                     
                         if (span) {
-                            let button = document.createElement('button');
-                            button.className = span.className;
-                            button.title = span.title;
-                            button.style.border = 'none';
-                            button.innerHTML = '';
+                            let button$id = document.createElement('button');
+                            button$id.className = span.className;
+                            button$id.title = span.title;
+                            button$id.style.border = 'none';
+                            button$id.innerHTML = '';
                     
                             let onclickAttr = span.getAttribute('onclick');
 
                             if (onclickAttr && onclickAttr.match) {
                                 let match = onclickAttr.match(/change_task_state\((\d+),\s*this\)/);
                                 if (match) {
+
                                     let taskId = match[1];
                         
                                     $.ajax({
@@ -615,16 +617,17 @@ class PluginTaskrulesRule extends CommonDBTM
                                         },
                                         success: function(response){
                                             if (response == 1) {
-                                               button.addEventListener('click', function () {
-                                                    change_task_state(taskId, button);
+                                               button$id.addEventListener('click', function () {
+                                               console.log(taskId);
+                                                    change_task_state(taskId, button$id);
                                                     setTimeout(() => {
-                                                        if (button.classList.contains('state_1')) {
+                                                        if (button$id.classList.contains('state_1')) {
                                                             plugin_taskrules_showresults(taskId);
                                                         }
                                                     }, 50);
                                                 });
                                             } else {
-                                               button.addEventListener('click', function () {
+                                               button$id.addEventListener('click', function () {
                                                   plugin_taskrules_showresults(taskId);
                                                });
                                             }
@@ -635,7 +638,7 @@ class PluginTaskrulesRule extends CommonDBTM
                                           console.log(error);
                                         }
                                     });
-                                    span.replaceWith(button);
+                                    span.replaceWith(button$id);
                                 }
                             }
                         }

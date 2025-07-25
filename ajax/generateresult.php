@@ -74,6 +74,7 @@ if (isset($_POST['tickettasks_id'])) {
             if (count($results) > 0) {
                 PluginTaskrulesLog::showResults($rule, $results, $tickettask->fields['tickets_id'], $_POST['tickettasks_id']);
             }
+            Html::redirect(Ticket::getFormURLWithID($tickettask->fields['tickets_id']));
         }
     }
 } else {

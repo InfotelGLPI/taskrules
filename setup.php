@@ -82,6 +82,9 @@ function plugin_init_taskrules()
             Plugin::registerClass('PluginTaskrulesRule', ['addtabon' => ['TaskTemplate']]);
         }
     }
+    if (Session::haveRight("config", UPDATE)) {
+        $PLUGIN_HOOKS['config_page']['taskrules'] = 'front/config.form.php';
+    }
 }
 
 /**

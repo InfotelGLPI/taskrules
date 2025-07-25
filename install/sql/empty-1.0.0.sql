@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS `glpi_plugin_taskrules_logs` (
     `items_id` int unsigned NOT NULL DEFAULT '0',
     `action_field` text DEFAULT NULL,
     `action` int unsigned NOT NULL DEFAULT '0',
+    `users_id` int unsigned NOT NULL DEFAULT '0',
     `value` text DEFAULT NULL,
     `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (`id`),

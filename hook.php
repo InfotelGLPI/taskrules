@@ -145,17 +145,16 @@ function plugin_taskrules_post_item_form($params)
 
                     if (taskDiv$id) {
                         
-                        let button = document.createElement('button');
-                        button.className = ''; // classes Bootstrap ou les tiennes
-                        button.textContent = '';
-                        button.style.marginTop = '10px';
+                        let button$id = document.createElement('button');
+                        button$id.className = ''; // classes Bootstrap ou les tiennes
+                        button$id.textContent = '';
+                        button$id.style.marginTop = '10px';
                         
-                        // Ajouter un événement au clic (facultatif)
-                        button.addEventListener('click', function () {
+                        button$id.addEventListener('click', function () {
                             plugin_taskrules_showresults($id);
                         });
                         
-                        button.click();
+                        button$id.click();
                     }
 
                     function plugin_taskrules_showresults(taskId) {
