@@ -394,7 +394,7 @@ class PluginTaskrulesRule extends CommonDBTM
                 $rule = new self();
                 if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->input['tasktemplates_id']])) {
                     if ($rule->fields['preventcreation'] == 1) {
-                        $item_ticket = new Item_ticket();
+                        $item_ticket = new Item_Ticket();
                         $items_linked = $item_ticket->find([
                             'tickets_id' => $item->input['tickets_id'],
                         ]);
@@ -436,7 +436,7 @@ class PluginTaskrulesRule extends CommonDBTM
                 $rule = new self();
                 if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
                     if ($rule->fields['trigger_creation'] == 1) {
-                        $item_ticket = new Item_ticket();
+                        $item_ticket = new Item_Ticket();
                         $items_linked = $item_ticket->find([
                             'tickets_id' => $item->fields['tickets_id'],
                         ]);
@@ -484,7 +484,7 @@ class PluginTaskrulesRule extends CommonDBTM
                 $rule = new self();
                 if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
                     if ($rule->fields['preventchange'] == 1) {
-                        $item_ticket = new Item_ticket();
+                        $item_ticket = new Item_Ticket();
                         $items_linked = $item_ticket->find([
                             'tickets_id' => $item->input['tickets_id'],
                         ]);
@@ -527,7 +527,7 @@ class PluginTaskrulesRule extends CommonDBTM
                     $rule = new self();
                     if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
                         if ($rule->fields['trigger_update'] == 1) {
-                            $item_ticket = new Item_ticket();
+                            $item_ticket = new Item_Ticket();
                             $items_linked = $item_ticket->find([
                                 'tickets_id' => $item->fields['tickets_id'],
                             ]);

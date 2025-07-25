@@ -36,7 +36,7 @@ if (isset($_POST['tickettasks_id'])) {
         unset($_SESSION['plugin_taskrules']['show_updateresults']);
         $rule = new PluginTaskrulesRule();
         if ($rule->getFromDBByCrit(["tasktemplates_id" => $tickettask->fields['tasktemplates_id'], "trigger_update" => 1])) {
-            $item_ticket = new Item_ticket();
+            $item_ticket = new Item_Ticket();
             $items_linked = $item_ticket->find([
                 'tickets_id' => $tickettask->fields['tickets_id'],
             ]);

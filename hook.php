@@ -85,7 +85,7 @@ function plugin_taskrules_pre_updateitem(CommonDBTM $item)
 
 function plugin_taskrules_post_prepareadditem(CommonDBTM $item)
 {
-    $item->input['state'] = Planning::DONE;
+//    $item->input['state'] = Planning::DONE;
 }
 
 /**
@@ -191,7 +191,7 @@ function plugin_taskrules_post_item_form($params)
                             if ($rule->getFromDBByCrit(
                                 ['tasktemplates_id' => $task->fields['tasktemplates_id'], 'trigger_update' => 1]
                             )) {
-                                $item_ticket = new Item_ticket();
+                                $item_ticket = new Item_Ticket();
                                 $items_linked = $item_ticket->find([
                                     'tickets_id' => $tickettask->fields['tickets_id'],
                                 ]);
