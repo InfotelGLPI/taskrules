@@ -108,7 +108,7 @@ class PluginTaskrulesAction extends CommonDBTM
         $groups_id = 0;
         $existing_users = $tu->find(['tickets_id' => $tickets_id, 'type' => CommonITILActor::REQUESTER]);
         if (count($existing_users) > 0 && count($existing_users) > 1) {
-            $results['errors']['user'] = __('Multiple requesters', 'taskrules');
+            $results['errors']['user_action'] = __('Multiple requesters', 'taskrules');
         }
         if (count($existing_users) == 1) {
             foreach ($existing_users as $existing_user) {
@@ -116,35 +116,28 @@ class PluginTaskrulesAction extends CommonDBTM
                 $results['users_id'] = $users_id;
             }
         }
-        $tg = new Group_Ticket();
-        $existing_groups = $tg->find(['tickets_id' => $tickets_id, 'type' => CommonITILActor::REQUESTER]);
-        $user_tickets_groups = [];
-        if (count($existing_groups) > 0) {
 
-            foreach ($existing_groups as $existing_group) {
-                $group = new Group();
-                if ($group->getFromDB($existing_group['groups_id'])) {
-                    if (!$group->fields['is_itemgroup'] == 1) {
-                        continue;
-                    }
-                }
-                $users_in_group = Group_User::getGroupUsers($existing_group['groups_id']);
-                $users = [];
-                foreach ($users_in_group as $user_in_group) {
-                    $users[$user_in_group['id']] = $user_in_group['id'];
-                }
+        $groups_of_user = Group_User::getUserGroups($users_id);
+        $groups = [];
+        foreach ($groups_of_user as $group_of_user) {
 
-                if ($users_id > 0 && in_array($users_id, $users)) {
-                    $user_tickets_groups[] = $existing_group['groups_id'];
+            $group = new Group();
+            if ($group->getFromDB($group_of_user['id'])) {
+                if (!$group->fields['is_itemgroup'] == 1) {
+                    continue;
                 }
             }
 
-            if (count($user_tickets_groups) == 1) {
-                $groups_id = $user_tickets_groups[0];
+            $groups[$group_of_user['id']] = $group_of_user['id'];
+        }
+
+        if (count($groups) == 1) {
+            foreach ($groups as $group) {
+                $groups_id = $group;
+                $results['groups_id'] = $groups_id;
             }
-            if (count($user_tickets_groups) > 0 && count($user_tickets_groups) > 1) {
-                $results['errors']['group'] = __('Multiple group requesters', 'taskrules');
-            }
+        } else {
+            $results['errors']['group_action'] = __('Requester have multiple groups', 'taskrules');
         }
         //Launch Actions
         $item = new $item_linked['itemtype']();
@@ -153,7 +146,7 @@ class PluginTaskrulesAction extends CommonDBTM
         if ($rule->fields['state_action'] == 1) {
             $input['states_id'] = 0;
             $input['id'] = $item_linked['items_id'];
-            $item->update($input);
+             $item->update($input);
 
             $results[$item_linked['itemtype']][$item_linked['items_id']]['state_action'] = [
                 'tickets_id' => $tickets_id,
@@ -165,7 +158,7 @@ class PluginTaskrulesAction extends CommonDBTM
             if ($rule->fields['states_id'] > 0) {
                 $input['states_id'] = $rule->fields['states_id'];
                 $input['id'] = $item_linked['items_id'];
-                $item->update($input);
+                // $item->update($input);
                 $results[$item_linked['itemtype']][$item_linked['items_id']]['state_action'] = [
                     'tickets_id' => $tickets_id,
                     'tickettasks_id' => $tickettasks_id,
@@ -181,7 +174,7 @@ class PluginTaskrulesAction extends CommonDBTM
         if ($rule->fields['location_action'] == 1) {
             $input['locations_id'] = 0;
             $input['id'] = $item_linked['items_id'];
-            $item->update($input);
+             $item->update($input);
             $results[$item_linked['itemtype']][$item_linked['items_id']]['location_action'] = [
                 'tickets_id' => $tickets_id,
                 'tickettasks_id' => $tickettasks_id,
@@ -195,7 +188,7 @@ class PluginTaskrulesAction extends CommonDBTM
                     if ($user->fields['locations_id'] > 0) {
                         $input['locations_id'] = $user->fields['locations_id'];
                         $input['id'] = $item_linked['items_id'];
-                        $item->update($input);
+                         $item->update($input);
                         $results[$item_linked['itemtype']][$item_linked['items_id']]['location_action'] = [
                             'tickets_id' => $tickets_id,
                             'tickettasks_id' => $tickettasks_id,
@@ -209,7 +202,7 @@ class PluginTaskrulesAction extends CommonDBTM
             if ($rule->fields['locations_id'] > 0) {
                 $input['locations_id'] = $rule->fields['locations_id'];
                 $input['id'] = $item_linked['items_id'];
-                $item->update($input);
+                 $item->update($input);
                 $results[$item_linked['itemtype']][$item_linked['items_id']]['location_action'] = [
                     'tickets_id' => $tickets_id,
                     'tickettasks_id' => $tickettasks_id,
@@ -223,7 +216,7 @@ class PluginTaskrulesAction extends CommonDBTM
         if ($rule->fields['contact_action'] == 1) {
             $input['contact'] = '';
             $input['id'] = $item_linked['items_id'];
-            $item->update($input);
+             $item->update($input);
             $results[$item_linked['itemtype']][$item_linked['items_id']]['contact_action'] = [
                 'tickets_id' => $tickets_id,
                 'tickettasks_id' => $tickettasks_id,
@@ -237,7 +230,7 @@ class PluginTaskrulesAction extends CommonDBTM
         if ($rule->fields['user_action'] == 1) {
             $input['users_id'] = 0;
             $input['id'] = $item_linked['items_id'];
-            $item->update($input);
+             $item->update($input);
             $results[$item_linked['itemtype']][$item_linked['items_id']]['user_action'] = [
                 'tickets_id' => $tickets_id,
                 'tickettasks_id' => $tickettasks_id,
@@ -250,7 +243,7 @@ class PluginTaskrulesAction extends CommonDBTM
                 if ($user->getFromDB($users_id)) {
                     $input['users_id'] = $users_id;
                     $input['id'] = $item_linked['items_id'];
-                    $item->update($input);
+                     $item->update($input);
                     $results[$item_linked['itemtype']][$item_linked['items_id']]['user_action'] = [
                         'tickets_id' => $tickets_id,
                         'tickettasks_id' => $tickettasks_id,
@@ -269,11 +262,11 @@ class PluginTaskrulesAction extends CommonDBTM
         }
 
         // $groups[1] = __('Empty the field on the linked item of ticket', 'taskrules');
-        // $groups[2] = __('Affect group of the ticket requester on the linked item of ticket', 'taskrules');
+        // $groups[2] = __('Affect group of the requester on the linked item of ticket', 'taskrules');
         if ($rule->fields['group_action'] == 1) {
             $input['groups_id'] = 0;
             $input['id'] = $item_linked['items_id'];
-            $item->update($input);
+             $item->update($input);
             $results[$item_linked['itemtype']][$item_linked['items_id']]['group_action'] = [
                 'tickets_id' => $tickets_id,
                 'tickettasks_id' => $tickettasks_id,
@@ -286,7 +279,7 @@ class PluginTaskrulesAction extends CommonDBTM
                 if ($group->getFromDB($groups_id)) {
                     $input['groups_id'] = $groups_id;
                     $input['id'] = $item_linked['items_id'];
-                    $item->update($input);
+                     $item->update($input);
                     $results[$item_linked['itemtype']][$item_linked['items_id']]['group_action'] = [
                         'tickets_id' => $tickets_id,
                         'tickettasks_id' => $tickettasks_id,

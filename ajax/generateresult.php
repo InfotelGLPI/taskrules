@@ -43,7 +43,7 @@ if (isset($_POST['tickettasks_id'])) {
             $found_items = [];
             $results = [];
             if (count($items_linked) > 0) {
-                $found_items = PluginTaskrulesCondition::checkCriteras("updatestate", $rule, $tickettask->fields['tickets_id'], $tickettask->getID(), $items_linked);
+                $found_items = PluginTaskrulesCondition::checkCriteras("launchresults", $rule, $tickettask->fields['tickets_id'], $tickettask->getID(), $items_linked);
                 if (count($found_items) > 0) {
                     foreach ($items_linked as $item_linked) {
                         if (getItemForItemtype($item_linked['itemtype'])) {

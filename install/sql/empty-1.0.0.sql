@@ -2,6 +2,7 @@ DROP TABLE IF EXISTS `glpi_plugin_taskrules_rules`;
 CREATE TABLE IF NOT EXISTS `glpi_plugin_taskrules_rules` (
   `id` int UNSIGNED NOT NULL AUTO_INCREMENT,
   `tasktemplates_id` int UNSIGNED NOT NULL DEFAULT '0',
+  `used_itemtypes` VARCHAR(255) NOT NULL,
   `active` tinyint NOT NULL DEFAULT '0',
   `preventcreation` tinyint NOT NULL DEFAULT '0',
   `preventchange` tinyint NOT NULL DEFAULT '0',

@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GLPI - Taskrules 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-22 19:15+0200\n"
-"PO-Revision-Date: 2025-07-22 19:16+0200\n"
+"POT-Creation-Date: 2025-08-30 17:35+0200\n"
+"PO-Revision-Date: 2025-08-30 17:37+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -18,49 +18,58 @@ msgstr ""
 "X-Generator: Poedit 3.0\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: hook.php:132 inc/rule.class.php:577
+#: hook.php:132 inc/rule.class.php:621
 msgid "Results of changes of linked items"
 msgstr "Résultats des modifications des objets liés"
 
-#: setup.php:96 front/rule.form.php:87 inc/rule.class.php:43
+#: setup.php:99 front/config.form.php:35 front/config.form.php:40
+#: front/log.php:35 front/rule.form.php:87 inc/rule.class.php:43
 msgid "Task rule"
 msgid_plural "Task rules"
 msgstr[0] "Règle de tâches"
 msgstr[1] "Règles de tâches"
 
+#: front/config.form.php:45
+msgid "See logs"
+msgstr "Voir les logs"
+
+#: front/config.form.php:48
+msgid "Drop logs"
+msgstr "Supprimer les logs"
+
 #: inc/action.class.php:60 inc/action.class.php:69 inc/action.class.php:79
-#: inc/action.class.php:87 inc/action.class.php:96 inc/rule.class.php:233
-#: inc/rule.class.php:274 inc/rule.class.php:312 inc/rule.class.php:325
-#: inc/rule.class.php:339
+#: inc/action.class.php:87 inc/action.class.php:96 inc/rule.class.php:272
+#: inc/rule.class.php:313 inc/rule.class.php:351 inc/rule.class.php:364
+#: inc/rule.class.php:378
 msgid "Do not change"
 msgstr "Ne pas modifier"
 
 #: inc/action.class.php:61 inc/action.class.php:70 inc/action.class.php:80
-#: inc/action.class.php:88 inc/action.class.php:97 inc/rule.class.php:234
-#: inc/rule.class.php:275 inc/rule.class.php:313 inc/rule.class.php:326
-#: inc/rule.class.php:340
+#: inc/action.class.php:88 inc/action.class.php:97 inc/rule.class.php:273
+#: inc/rule.class.php:314 inc/rule.class.php:352 inc/rule.class.php:365
+#: inc/rule.class.php:379
 msgid "Empty the field on the linked item of ticket"
 msgstr "Vider le champ sur les objets liés au ticket"
 
-#: inc/action.class.php:62 inc/rule.class.php:235
+#: inc/action.class.php:62 inc/rule.class.php:274
 msgid "Affect a specific state on the linked item of ticket"
 msgstr "Affecter un statut spécifique sur les objets liés au ticket"
 
-#: inc/action.class.php:71 inc/rule.class.php:276
+#: inc/action.class.php:71 inc/rule.class.php:315
 msgid "Affect location of ticket requester on the linked item of ticket"
 msgstr "Affecter le lieu du demandeur du ticket sur les objets liés au ticket"
 
-#: inc/action.class.php:72 inc/rule.class.php:277
+#: inc/action.class.php:72 inc/rule.class.php:316
 msgid "Affect a specific location on the linked item of ticket"
 msgstr "Affecter un lieu spécifique sur les objets liés au ticket"
 
-#: inc/action.class.php:89 inc/rule.class.php:327
+#: inc/action.class.php:89 inc/rule.class.php:366
 msgid "Affect ticket requester on the linked item of ticket"
 msgstr ""
 "Affecter le demandeur du ticket comme utilisateur sur les objets liés au "
 "ticket"
 
-#: inc/action.class.php:98 inc/rule.class.php:341
+#: inc/action.class.php:98
 msgid "Affect group of the ticket requester on the linked item of ticket"
 msgstr ""
 "Affecter le groupe demandeur du ticket comme groupe sur les objets liés au "
@@ -70,15 +79,15 @@ msgstr ""
 msgid "Multiple requesters"
 msgstr "Demandeurs multiples"
 
-#: inc/action.class.php:146
-msgid "Multiple group requesters"
-msgstr "Groupes de demandeurs multiples"
+#: inc/action.class.php:140
+msgid "Requester have multiple groups"
+msgstr "Le demandeur a plusieurs groupes"
 
-#: inc/log.class.php:83
+#: inc/log.class.php:62
 msgid "Items not updated (not match with rule)"
 msgstr "Éléments non mis à jour (ne correspondent pas à la règle)"
 
-#: inc/log.class.php:115
+#: inc/log.class.php:95
 msgid "Items updated"
 msgstr "Éléments mis à jour"
 
@@ -122,28 +131,43 @@ msgstr ""
 "Empêcher le changement de statut (de \"à faire\" à \"fait\") de la tâche en "
 "cas d'erreur"
 
-#: inc/rule.class.php:202
+#: inc/rule.class.php:192
+msgid "Used itemtypes"
+msgstr "Types d'objet utilisés"
+
+#: inc/rule.class.php:231
 msgid "Activate when a task is added to the ticket"
 msgstr "Déclencher à l'ajout de la tâche dans le ticket"
 
-#: inc/rule.class.php:211
+#: inc/rule.class.php:240
 msgid "Trigger upon updating the task status from \"to do\" to \"done\""
 msgstr ""
 "Déclencher à la mise à jour du statut de la tâche de \"à faire\" vers \"fait"
 "\""
 
-#: inc/rule.class.php:262
-msgid "Please note that only statuses common to all objects appear."
+#: inc/rule.class.php:301
+msgid ""
+"Please note that only statuses common to all objects appear if multiple "
+"itemtypes are used."
 msgstr ""
-"Veuillez noter que seuls les statuts communs à tous les objets apparaissent."
+"Veuillez noter que seuls les statuts communs à tous les objets apparaissent "
+"si plusieurs types sont utilisés."
 
-#: inc/rule.class.php:424
+#: inc/rule.class.php:380
+msgid "Affect group of the requester on the linked item of ticket"
+msgstr ""
+"Affecter le groupe du demandeur comme groupe sur les objets liés au ticket"
+
+#: inc/rule.class.php:463
 msgid "Items not match with rule, task not created"
 msgstr "Les éléments ne correspondent pas à la règle, tâche non créée"
 
-#: inc/rule.class.php:513
+#: inc/rule.class.php:555
 msgid "Items not match with rule, task not updated"
 msgstr "Les éléments ne correspondent pas à la règle, tâche non mise à jour"
+
+#~ msgid "Multiple group requesters"
+#~ msgstr "Groupes de demandeurs multiples"
 
 #~ msgid "Taskrules"
 #~ msgstr "Taskrules"

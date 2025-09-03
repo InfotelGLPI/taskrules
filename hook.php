@@ -141,7 +141,7 @@ function plugin_taskrules_post_item_form($params)
             $id = (int) $tickettasks_id;
             echo Html::scriptBlock(
                 "
-            let taskDiv$id = document.getElementById('TicketTask_$id');
+                    let taskDiv$id = document.getElementById('TicketTask_$id');
 
                     if (taskDiv$id) {
                         

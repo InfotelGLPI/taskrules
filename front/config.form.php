@@ -45,7 +45,7 @@ if (Plugin::isPluginActive("taskrules")) {
     echo "<a href='" . PLUGIN_TASKRULES_WEBDIR . "/front/log.php'>" . __('See logs', 'taskrules') . "</a>";
     echo "</td>";
     echo "<td>";
-    echo __('Drop logs', 'taskrules');
+    echo "<a href='" . PLUGIN_TASKRULES_WEBDIR . "/front/log.form.php'>" . __('Drop logs', 'taskrules') . "</a>";
     echo "</td>";
     echo "</tr>";
     echo "</table>";

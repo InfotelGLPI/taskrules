@@ -63,6 +63,14 @@ class PluginTaskrulesCondition extends CommonDBTM
         $_SESSION['glpifold_search'] = 0;
 
         $types = self::$types;
+        $rule = new PluginTaskrulesRule();
+        if ($rule->getFromDB($id)) {
+            $used_itemtypes = json_decode($rule->fields['used_itemtypes']);
+            if (is_array($used_itemtypes) && count($used_itemtypes) > 0) {
+                $types = $used_itemtypes;
+            }
+        }
+
         foreach ($types as $itemtype) {
             $item = new $itemtype();
             echo "<tr class='tab_bg_2'>";
@@ -739,14 +747,22 @@ JAVASCRIPT;
 
     public static function checkCriteras($from, $rule, $tickets_id, $tickettasks_id, $items_linked)
     {
+
 //        Toolbox::logInfo($from);
         $found_items = [];
         foreach ($items_linked as $item_linked) {
             if (getItemForItemtype($item_linked['itemtype'])) {
                 $item = new $item_linked['itemtype']();
                 if ($item->getfromDB($item_linked['items_id'])) {
+
+                    $used_itemtypes = json_decode($rule->fields['used_itemtypes']);
+                    if (is_array($used_itemtypes) && count($used_itemtypes) > 0) {
+                        $types = $used_itemtypes;
+                    }
+
                     $cond = new PluginTaskrulesCondition();
-                    if ($cond->getFromDBByCrit(["taskrules_id" => $rule->getID()])) {
+                    if ($cond->getFromDBByCrit(["taskrules_id" => $rule->getID()])
+                        && in_array($item_linked['itemtype'], $types)) {
                         $fieldname = PluginTaskrulesCondition::getFieldNameForItemtype($item_linked['itemtype']);
                         if (!empty($cond->fields[$fieldname])) {
                             $criterias = unserialize($cond->fields[$fieldname]);
@@ -768,6 +784,7 @@ JAVASCRIPT;
                             ];
 
                             $results = Search::getDatas($item_linked['itemtype'], $searchCriteria);
+//                            Toolbox::logInfo($results['data']['items']);
                             $_SESSION['glpilist_limit'] = $glpilist_limit;
                             foreach ($results['data']['items'] as $k => $val) {
                                 $found_items[$k] = $k;

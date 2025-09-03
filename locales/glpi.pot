@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GLPI - Taskrules plugin 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-22 19:15+0200\n"
+"POT-Creation-Date: 2025-08-30 17:35+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,47 +18,56 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: hook.php:132 inc/rule.class.php:577
+#: hook.php:132 inc/rule.class.php:621
 msgid "Results of changes of linked items"
 msgstr ""
 
-#: setup.php:96 front/rule.form.php:87 inc/rule.class.php:43
+#: setup.php:99 front/config.form.php:35 front/config.form.php:40
+#: front/log.php:35 front/rule.form.php:87 inc/rule.class.php:43
 msgid "Task rule"
 msgid_plural "Task rules"
 msgstr[0] ""
 msgstr[1] ""
 
+#: front/config.form.php:45
+msgid "See logs"
+msgstr ""
+
+#: front/config.form.php:48
+msgid "Drop logs"
+msgstr ""
+
 #: inc/action.class.php:60 inc/action.class.php:69 inc/action.class.php:79
-#: inc/action.class.php:87 inc/action.class.php:96 inc/rule.class.php:233
-#: inc/rule.class.php:274 inc/rule.class.php:312 inc/rule.class.php:325
-#: inc/rule.class.php:339
+#: inc/action.class.php:87 inc/action.class.php:96 inc/rule.class.php:272
+#: inc/rule.class.php:313 inc/rule.class.php:351 inc/rule.class.php:364
+#: inc/rule.class.php:378
 msgid "Do not change"
 msgstr ""
 
 #: inc/action.class.php:61 inc/action.class.php:70 inc/action.class.php:80
-#: inc/action.class.php:88 inc/action.class.php:97 inc/rule.class.php:234
-#: inc/rule.class.php:275 inc/rule.class.php:313 inc/rule.class.php:326
-#: inc/rule.class.php:340
+#: inc/action.class.php:88 inc/action.class.php:97 inc/rule.class.php:273
+#: inc/rule.class.php:314 inc/rule.class.php:352 inc/rule.class.php:365
+#: inc/rule.class.php:379
 msgid "Empty the field on the linked item of ticket"
 msgstr ""
 
-#: inc/action.class.php:62 inc/rule.class.php:235
+#: inc/action.class.php:62 inc/rule.class.php:274
 msgid "Affect a specific state on the linked item of ticket"
 msgstr ""
 
-#: inc/action.class.php:71 inc/rule.class.php:276
+#: inc/action.class.php:71 inc/rule.class.php:315
 msgid "Affect location of ticket requester on the linked item of ticket"
 msgstr ""
 
-#: inc/action.class.php:72 inc/rule.class.php:277
+#: inc/action.class.php:72 inc/rule.class.php:316
 msgid "Affect a specific location on the linked item of ticket"
 msgstr ""
 
-#: inc/action.class.php:89 inc/rule.class.php:327
+#: inc/action.class.php:89 inc/rule.class.php:366
 msgid "Affect ticket requester on the linked item of ticket"
 msgstr ""
 
-#: inc/action.class.php:98 inc/rule.class.php:341
+#: inc/action.class.php:98
 msgid "Affect group of the ticket requester on the linked item of ticket"
 msgstr ""
 
@@ -66,15 +75,15 @@ msgstr ""
 msgid "Multiple requesters"
 msgstr ""
 
-#: inc/action.class.php:146
-msgid "Multiple group requesters"
+#: inc/action.class.php:140
+msgid "Requester have multiple groups"
 msgstr ""
 
-#: inc/log.class.php:83
+#: inc/log.class.php:62
 msgid "Items not updated (not match with rule)"
 msgstr ""
 
-#: inc/log.class.php:115
+#: inc/log.class.php:95
 msgid "Items updated"
 msgstr ""
 
@@ -116,22 +125,32 @@ msgid ""
 "case of an error"
 msgstr ""
 
-#: inc/rule.class.php:202
+#: inc/rule.class.php:192
+msgid "Used itemtypes"
+msgstr ""
+
+#: inc/rule.class.php:231
 msgid "Activate when a task is added to the ticket"
 msgstr ""
 
-#: inc/rule.class.php:211
+#: inc/rule.class.php:240
 msgid "Trigger upon updating the task status from \"to do\" to \"done\""
 msgstr ""
 
-#: inc/rule.class.php:262
-msgid "Please note that only statuses common to all objects appear."
+#: inc/rule.class.php:301
+msgid ""
+"Please note that only statuses common to all objects appear if multiple "
+"itemtypes are used."
 msgstr ""
 
-#: inc/rule.class.php:424
+#: inc/rule.class.php:380
+msgid "Affect group of the requester on the linked item of ticket"
+msgstr ""
+
+#: inc/rule.class.php:463
 msgid "Items not match with rule, task not created"
 msgstr ""
 
-#: inc/rule.class.php:513
+#: inc/rule.class.php:555
 msgid "Items not match with rule, task not updated"
 msgstr ""

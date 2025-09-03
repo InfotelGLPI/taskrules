@@ -109,6 +109,9 @@ class PluginTaskrulesLog extends CommonDBTM
                 $errors = array_unique($errors);
             }
 
+            $log_errors = [];
+            $i = 0;
+            $j = 0;
             foreach ($results as $k => $itemtype) {
                 unset($itemtype['users_id']);
                 unset($itemtype['groups_id']);
@@ -118,8 +121,10 @@ class PluginTaskrulesLog extends CommonDBTM
                         unset($itemtype['not_found']);
                         echo "<table class='tab_cadre_fixe'>";
                         foreach ($itemtype as $type => $type_results) {
+                            $i++;
                             if (is_array($type_results)) {
                                 foreach ($type_results as $items_id => $items_id_results) {
+
                                     echo "<tr class='tab_bg_2'>";
                                     echo "<th width='20%'>";
                                     $obj = getItemForItemtype($type);
@@ -134,6 +139,7 @@ class PluginTaskrulesLog extends CommonDBTM
                                     echo "</tr>";
 
                                     foreach ($items_id_results as $action => $res) {
+                                        $j++;
                                         echo "<tr class='tab_bg_2'>";
                                         echo "<td>";
                                         echo PluginTaskrulesAction::getActionName($action);
@@ -172,10 +178,15 @@ class PluginTaskrulesLog extends CommonDBTM
                                             $ko = 0;
                                             if ($errors) {
                                                 foreach ($errors as $name => $error) {
-                                                    if ($name == 'user') {
+                                                    if ($name == 'user_action') {
                                                         echo "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
-                                                        echo "<span style='color:red'>" . $error . "</span>";
+                                                        echo "<span style='color:red'>" . $error . "</span><br>";
                                                         $ko = 1;
+                                                        $log_errors[$i][$j] = ['itemtype' => $type,
+                                                            'items_id' => $items_id,
+                                                            'action_field' => $name,
+                                                            'action' => 2,
+                                                            'value' => $error];
                                                     }
                                                 }
                                             }
@@ -188,15 +199,25 @@ class PluginTaskrulesLog extends CommonDBTM
                                             $kp = 0;
                                             if ($errors) {
                                                 foreach ($errors as $name => $error) {
-                                                    if ($name == 'group') {
+                                                    if ($name == 'group_action') {
                                                         echo "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
-                                                        echo "<span style='color:red'>" . $error . "</span>";
+                                                        echo "<span style='color:red'>" . $error . "</span><br>";
                                                         $kp = 1;
+                                                        $log_errors[$i][$j] = ['itemtype' => $type,
+                                                            'items_id' => $items_id,
+                                                            'action_field' => $name,
+                                                            'action' => 2,
+                                                            'value' => $error];
                                                     }
-                                                    if ($name == 'user') {
+                                                    if ($name == 'user_action') {
                                                         echo "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
-                                                        echo "<span style='color:red'>" . $error . "</span>";
+                                                        echo "<span style='color:red'>" . $error . "</span><br>";
                                                         $ko = 1;
+                                                        $log_errors[$i][$j] = ['itemtype' => $type,
+                                                            'items_id' => $items_id,
+                                                            'action_field' => $name,
+                                                            'action' => 2,
+                                                            'value' => $error];
                                                     }
                                                 }
                                             }
@@ -226,47 +247,49 @@ class PluginTaskrulesLog extends CommonDBTM
 
         $log = new PluginTaskrulesLog();
 
-//        $errors = [];
-//        if (count($results) > 0) {
-//            foreach ($results as $k => $itemtype) {
-//                if (isset($itemtype['errors'])) {
-//                    Toolbox::logInfo($itemtype['errors']);
-//                    if (isset($itemtype['errors']['user'])) {
-//                        $errors['user_action'] = $itemtype['errors']['user'];
-//                        $errors['group_action'] = $itemtype['errors']['user'];
-//                    }
-//                    if (isset($itemtype['errors']['group'])) {
-//                        $errors['group_action'] = $itemtype['errors']['group'];
-//                    }
-//                }
-//            }
-//        }
-//        foreach ($not_found as $action => $res) {
-//            $inputr['action_field'] = $action;
-//            $inputr['tickets_id'] = $tickets_id;
-//            $inputr['tickettasks_id'] = $tickettasks_id;
-//            $inputr['itemtype'] = $res['itemtype'];
-//            $inputr['items_id'] = $res['items_id'];
-//            $inputr['action'] = '0';
-//            $inputr['value'] = 'not found';
-//            $inputr['users_id'] = $_SESSION['glpiID'];
-//            $inputr['date'] = $_SESSION['glpi_currenttime'];
-//            $log->add($inputr);
-//        }
+        //        $errors = [];
+        //        if (count($results) > 0) {
+        //            foreach ($results as $k => $itemtype) {
+        //                if (isset($itemtype['errors'])) {
+        //                    Toolbox::logInfo($itemtype['errors']);
+        //                    if (isset($itemtype['errors']['user'])) {
+        //                        $errors['user_action'] = $itemtype['errors']['user'];
+        //                        $errors['group_action'] = $itemtype['errors']['user'];
+        //                    }
+        //                    if (isset($itemtype['errors']['group'])) {
+        //                        $errors['group_action'] = $itemtype['errors']['group'];
+        //                    }
+        //                }
+        //            }
+        //        }
+        //        foreach ($not_found as $action => $res) {
+        //            $inputr['action_field'] = $action;
+        //            $inputr['tickets_id'] = $tickets_id;
+        //            $inputr['tickettasks_id'] = $tickettasks_id;
+        //            $inputr['itemtype'] = $res['itemtype'];
+        //            $inputr['items_id'] = $res['items_id'];
+        //            $inputr['action'] = '0';
+        //            $inputr['value'] = 'not found';
+        //            $inputr['users_id'] = $_SESSION['glpiID'];
+        //            $inputr['date'] = $_SESSION['glpi_currenttime'];
+        //            $log->add($inputr);
+        //        }
 
         //        //report Results or errors
 
-        foreach ($not_found as $action => $res) {
-            $inputr['action_field'] = 'found item';
-            $inputr['tickets_id'] = $tickets_id;
-            $inputr['tickettasks_id'] = $tickettasks_id;
-            $inputr['itemtype'] = $res['itemtype'];
-            $inputr['items_id'] = $res['items_id'];
-            $inputr['action'] = '0';
-            $inputr['value'] = 'not found';
-            $inputr['users_id'] = $_SESSION['glpiID'];
-            $inputr['date'] = $_SESSION['glpi_currenttime'];
-            $log->add($inputr);
+        foreach ($log_errors as $k => $logs) {
+            foreach ($logs as $k => $res) {
+                $inputr['action_field'] = $res['action_field'];
+                $inputr['tickets_id'] = $tickets_id;
+                $inputr['tickettasks_id'] = $tickettasks_id;
+                $inputr['itemtype'] = $res['itemtype'];
+                $inputr['items_id'] = $res['items_id'];
+                $inputr['action'] = $res['action'];
+                $inputr['value'] = $res['value'];
+                $inputr['users_id'] = $_SESSION['glpiID'];
+                $inputr['date'] = $_SESSION['glpi_currenttime'];
+                $log->add($inputr);
+            }
         }
         //
         //        $log = new PluginTaskrulesLog();
@@ -300,8 +323,8 @@ class PluginTaskrulesLog extends CommonDBTM
             'table' => $this->getTable(),
             'field' => 'action_field',
             'name' => __('action_field'),
-//            'datatype' => 'itemlink',
-//            'itemlink_type' => $this->getType(),
+            //            'datatype' => 'itemlink',
+            //            'itemlink_type' => $this->getType(),
         ];
 
         $tab[] = [
@@ -334,19 +357,19 @@ class PluginTaskrulesLog extends CommonDBTM
         $tab[] = [
             'id' => '5',
             'table' => $this->getTable(),
-            'field' => 'itemtype',
-            'name' => __('Item type'),
-//            'datatype' => 'itemlink',
-//            'itemlink_type' => $this->getType(),
+            'field'              => 'itemtype',
+            'name'               => _n('Type', 'Types', 1),
+            'massiveaction'      => false,
+            'datatype'           => 'itemtypename',
         ];
 
         $tab[] = [
             'id' => '6',
             'table' => $this->getTable(),
             'field' => 'items_id',
-            'name' => __('items_id'),
-//            'datatype' => 'itemlink',
-//            'itemlink_type' => $this->getType(),
+            'name' => __('Item'),
+//                        'datatype' => 'specific',
+            //            'itemlink_type' => $this->getType(),
         ];
 
         $tab[] = [
@@ -354,8 +377,8 @@ class PluginTaskrulesLog extends CommonDBTM
             'table' => $this->getTable(),
             'field' => 'action',
             'name' => __('Action'),
-//            'datatype' => 'itemlink',
-//            'itemlink_type' => $this->getType(),
+            'datatype' => 'specific',
+            //            'itemlink_type' => $this->getType(),
         ];
 
         $tab[] = [
@@ -363,8 +386,8 @@ class PluginTaskrulesLog extends CommonDBTM
             'table' => $this->getTable(),
             'field' => 'value',
             'name' => __('Value'),
-//            'datatype' => 'itemlink',
-//            'itemlink_type' => $this->getType(),
+            //            'datatype' => 'itemlink',
+            //            'itemlink_type' => $this->getType(),
         ];
 
         $tab[] = [
@@ -387,4 +410,86 @@ class PluginTaskrulesLog extends CommonDBTM
         return $tab;
     }
 
+    /**
+     * @param string $field
+     * @param array|string $values
+     * @param array $options
+     *
+     * @return string
+     */
+    public static function getSpecificValueToDisplay($field, $values, array $options = [])
+    {
+        global $PLUGIN_HOOKS;
+
+        if (!is_array($values)) {
+            $values = [$field => $values];
+        }
+
+        switch ($field) {
+
+            case 'action_field':
+                return PluginTaskrulesAction::getActionName($values[$field]);
+
+            case 'action':
+                $log = new self();
+                if (isset($options["raw_data"]["id"])) {
+                    $log->getFromDB($options["raw_data"]["id"]);
+                }
+                if (isset($log->fields['action_field'])) {
+                    if ($log->fields['action_field'] == 'state_action') {
+                        return PluginTaskrulesAction::getStatusActionName($values[$field]);
+                    } elseif ($log->fields['action_field'] == 'location_action') {
+                        return PluginTaskrulesAction::getLocationActionName($values[$field]);
+                    } elseif ($log->fields['action_field'] == 'contact_action') {
+                        return PluginTaskrulesAction::getContactActionName($values[$field]);
+                    } elseif ($log->fields['action_field'] == 'user_action') {
+                        return PluginTaskrulesAction::getUserActionName($values[$field]);
+                    } elseif ($log->fields['action_field'] == 'group_action') {
+                        return PluginTaskrulesAction::getGroupActionName($values[$field]);
+                    }
+                }
+
+                return ;
+
+                //            case 'value':
+                //                $log = new self();
+                //                if (isset($options["raw_data"]["id"])) {
+                //                    $log->getFromDB($options["raw_data"]["id"]);
+                //                }
+                //                if (isset($log->fields['action_field'])) {
+                //                    if ($log->fields['action_field'] == 'state_action') {
+                //                        return Dropdown::getDropdownName('glpi_states', $values[$field]);
+                //                    } elseif ($log->fields['action_field'] == 'location_action') {
+                //                        return Dropdown::getDropdownName('glpi_locations', $values[$field]);
+                //                    } else {
+                //                        return $values[$field];
+                //                    }
+                //                }
+                //
+                //                return ;
+
+        }
+        return parent::getSpecificValueToDisplay($field, $values, $options);
+    }
+
+    public static function getSpecificValueToSelect($field, $name = '', $values = '', array $options = [])
+    {
+        if (!is_array($values)) {
+            $values = [$field => $values];
+        }
+        switch ($field) {
+            //            case 'itilcategories_id':
+            //                $opt = ['name' => $name,
+            //                    'value' => $values[$field],
+            //                    'display' => false];
+            //                return ITILCategory::dropdown($opt);
+            //            case 'type':
+            //                $options['value'] = $values[$field];
+            //                return Ticket::dropdownType($name, $options);
+            //            case 'object_to_create':
+            //                return Dropdown::showFromArray($name, self::getObjectTypes(), $options);
+            //                break;
+        }
+        return parent::getSpecificValueToSelect($field, $name, $values, $options);
+    }
 }

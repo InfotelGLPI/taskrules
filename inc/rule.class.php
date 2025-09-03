@@ -127,7 +127,7 @@ class PluginTaskrulesRule extends CommonDBTM
         /* "Action(s)" section */
         /* ------------------- */
         echo "<h3><a href='#'>" . _n("Action", "Actions", 2, "taskrules") . "</a></h3>";
-        $this->showActionsForm();
+        $this->showActionsForm($ID);
 
         echo "</div>";
         echo "<script>accordion_taskrules();</script>";
@@ -187,6 +187,35 @@ class PluginTaskrulesRule extends CommonDBTM
         echo "</td>";
         echo "</tr>";
 
+        echo "<tr class='tab_bg_2'>";
+
+        echo "<td>" . __('Used itemtypes', 'taskrules') . "</td>";
+        echo "<td>";
+
+        $types = PluginTaskrulesCondition::$types;
+
+        if (!empty($types)) {
+            foreach ($types as $itemtype) {
+                $item = new $itemtype();
+                $possible_values[$itemtype] = $item->getTypeName();
+            }
+        }
+
+        if ($this->fields['used_itemtypes'] == null) {
+            $values = [];
+        } else {
+            $values = json_decode($this->fields['used_itemtypes']);
+        }
+        Dropdown::showFromArray(
+            "used_itemtypes",
+            $possible_values,
+            [
+                'values' => $values,
+                'multiple' => 'multiples'
+            ]
+        );
+        echo "</td>";
+        echo "</tr>";
         echo "</table>";
         echo "</div>";
     }
@@ -220,8 +249,18 @@ class PluginTaskrulesRule extends CommonDBTM
         echo "</div>";
     }
 
-    public function showActionsForm()
+    public function showActionsForm($id)
     {
+
+        $types = PluginTaskrulesCondition::$types;
+        $rule = new PluginTaskrulesRule();
+        if ($rule->getFromDB($id)) {
+            $used_itemtypes = json_decode($rule->fields['used_itemtypes']);
+            if (is_array($used_itemtypes) && count($used_itemtypes) > 0) {
+                $types = $used_itemtypes;
+            }
+        }
+
         echo "<div>";
         echo "<table class='' width='100%'>";
 
@@ -251,7 +290,7 @@ class PluginTaskrulesRule extends CommonDBTM
         echo "&nbsp;<span id='specific_states_id'>";
         if ($this->fields['states_id'] > 0) {
             $condition = new PluginTaskrulesCondition();
-            $states_id = $condition->getStatuses(PluginTaskrulesCondition::getTypes());
+            $states_id = $condition->getStatuses($types);
             Dropdown::showFromArray('states_id', $states_id, [
                 'value' => $this->fields['states_id'] ?? 0,
             ]);
@@ -259,7 +298,7 @@ class PluginTaskrulesRule extends CommonDBTM
         echo "</span>";
         echo "<td>";
         echo "<div class='left'>" . __(
-            'Please note that only statuses common to all objects appear.',
+            'Please note that only statuses common to all objects appear if multiple itemtypes are used.',
             "taskrules"
         ) . "</div>";
 
@@ -338,7 +377,7 @@ class PluginTaskrulesRule extends CommonDBTM
         echo "<td>";
         $groups[0] = __('Do not change', 'taskrules');
         $groups[1] = __('Empty the field on the linked item of ticket', 'taskrules');
-        $groups[2] = __('Affect group of the ticket requester on the linked item of ticket', 'taskrules');
+        $groups[2] = __('Affect group of the requester on the linked item of ticket', 'taskrules');
         Dropdown::showFromArray('group_action', $groups, [
             'value' => $this->fields['group_action'],
         ]);
@@ -480,7 +519,8 @@ class PluginTaskrulesRule extends CommonDBTM
     {
         $ko = 0;
         if ($item::getType() === TicketTask::getType()) {
-            if (isset($item->fields['tasktemplates_id'])) {
+
+            if (isset($item->fields['tasktemplates_id']) && $item->input['state'] == Planning::DONE) {
                 $rule = new self();
                 if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
                     if ($rule->fields['preventchange'] == 1) {
@@ -491,6 +531,7 @@ class PluginTaskrulesRule extends CommonDBTM
                         if (count($items_linked) > 0) {
                             $found_items = PluginTaskrulesCondition::checkCriteras("pre update task", $rule, $item->fields['tickets_id'], $item->getID(), $items_linked);
                         }
+
                         if (count($found_items) > 0) {
                             foreach ($items_linked as $item_linked) {
                                 if (getItemForItemtype($item_linked['itemtype'])) {
@@ -513,7 +554,7 @@ class PluginTaskrulesRule extends CommonDBTM
             if ($ko == 1) {
                 $errormsg = __('Items not match with rule, task not updated', 'taskrules');
                 Session::addMessageAfterRedirect($errormsg, false, ERROR);
-                $item->fields = [];
+                unset($item->input['state']);
                 return false;
             }
         }
@@ -592,78 +633,108 @@ class PluginTaskrulesRule extends CommonDBTM
 
                     if (taskDiv$id) {
                         let span = taskDiv$id.querySelector('.state');
-                    
+span.style.display = 'none';
                         if (span) {
-                            let button$id = document.createElement('button');
-                            button$id.className = span.className;
-                            button$id.title = span.title;
-                            button$id.style.border = 'none';
-                            button$id.innerHTML = '';
-                    
-                            let onclickAttr = span.getAttribute('onclick');
-
-                            if (onclickAttr && onclickAttr.match) {
-                                let match = onclickAttr.match(/change_task_state\((\d+),\s*this\)/);
-                                if (match) {
-
-                                    let taskId = match[1];
-                        
-                                    $.ajax({
-                                        type: 'POST',
-                                        url: '" . PLUGIN_TASKRULES_WEBDIR . "/ajax/checkcriterias.php',
-                                        dataType: 'html',
-                                        data: {
-                                            'tickettasks_id': taskId
-                                        },
-                                        success: function(response){
-                                            if (response == 1) {
-                                               button$id.addEventListener('click', function () {
-                                               console.log(taskId);
-                                                    change_task_state(taskId, button$id);
-                                                    setTimeout(() => {
-                                                        if (button$id.classList.contains('state_1')) {
-                                                            plugin_taskrules_showresults(taskId);
-                                                        }
-                                                    }, 50);
-                                                });
-                                            } else {
-                                               button$id.addEventListener('click', function () {
-                                                  plugin_taskrules_showresults(taskId);
-                                               });
-                                            }
-                                        },
-                                        error: function(xhr, status, error) {
-                                          console.log(xhr);
-                                          console.log(status);
-                                          console.log(error);
-                                        }
-                                    });
-                                    span.replaceWith(button$id);
-                                }
-                            }
+//                            let button$id = document.createElement('button');
+//                            button$id.className = span.className;
+//                            button$id.title = span.title;
+//                            button$id.style.border = 'none';
+//                            button$id.innerHTML = '';
+//
+//                            let onclickAttr = span.getAttribute('onclick');
+//
+//                            if (onclickAttr && onclickAttr.match) {
+//                                let match = onclickAttr.match(/change_task_state\((\d+),\s*this\)/);
+//                                if (match) {
+//
+//                                    let taskId = match[1];
+//
+//                                    $.ajax({
+//                                        type: 'POST',
+//                                        url: '" . PLUGIN_TASKRULES_WEBDIR . "/ajax/checkcriterias.php',
+//                                        dataType: 'html',
+//                                        data: {
+//                                            'tickettasks_id': taskId
+//                                        },
+//                                        success: function(response){
+//                                            if (response == 1) {
+//                                               button$id.addEventListener('click', function () {
+//                                               console.log(taskId);
+//                                                    change_task_state(taskId, button$id);
+//                                                    setTimeout(() => {
+//                                                        if (button$id.classList.contains('state_1')) {
+//                                                            plugin_taskrules_showresults(taskId);
+//                                                        }
+//                                                    }, 50);
+//                                                });
+//                                            } else {
+//                                               button$id.addEventListener('click', function () {
+//                                                  plugin_taskrules_showresults(taskId);
+//                                               });
+//                                            }
+//                                        },
+//                                        error: function(xhr, status, error) {
+//                                          console.log(xhr);
+//                                          console.log(status);
+//                                          console.log(error);
+//                                        }
+//                                    });
+//                                    span.replaceWith(button$id);
+//                                }
+//                            }
                         }
                     }
-                    
-                    function plugin_taskrules_showresults(taskId) {
 
-                        $.ajax({
-                            type: 'POST',
-                            url: '" . PLUGIN_TASKRULES_WEBDIR . "/ajax/generateresult.php',
-                            data: {
-                                'tickettasks_id': taskId
-                            },
-                            success: function (html) {
-                                let modalBody = document.querySelector('#results' + taskId + ' div.modal-body');
-                                if (modalBody) {
-                                    modalBody.innerHTML = html;
-
-                                    $('#results' + taskId).modal('show');
-                                    $('#ajax_loader').hide();
-                                }
-                            }
-                        });
-                    }"
+//                    function plugin_taskrules_showresults(taskId) {
+//
+//                        $.ajax({
+//                            type: 'POST',
+//                            url: '" . PLUGIN_TASKRULES_WEBDIR . "/ajax/generateresult.php',
+//                            data: {
+//                                'tickettasks_id': taskId
+//                            },
+//                            success: function (html) {
+//                                let modalBody = document.querySelector('#results' + taskId + ' div.modal-body');
+//                                if (modalBody) {
+//                                    modalBody.innerHTML = html;
+//
+//                                    $('#results' + taskId).modal('show');
+//                                    $('#ajax_loader').hide();
+//                                }
+//                            }
+//                        });
+//                    }
+                    "
             );
         }
+    }
+
+
+    function prepareInputForAdd($input)
+    {
+        if (!empty($input['used_itemtypes'])) {
+            $input['used_itemtypes'] = json_encode(array_values($input['used_itemtypes']));
+        } else {
+            $input['used_itemtypes'] = json_encode([]);
+        }
+
+        return parent::prepareInputForAdd($input); // TODO: Change the autogenerated stub
+    }
+
+    /**
+     * @param $input
+     *
+     * @return bool
+     */
+    function prepareInputForUpdate($input)
+    {
+
+        if (!empty($input['used_itemtypes'])) {
+            $input['used_itemtypes'] = json_encode(array_values($input['used_itemtypes']));
+        } else {
+            $input['used_itemtypes'] = json_encode([]);
+        }
+
+        return $input;
     }
 }
