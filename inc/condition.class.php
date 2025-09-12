@@ -754,7 +754,7 @@ JAVASCRIPT;
             if (getItemForItemtype($item_linked['itemtype'])) {
                 $item = new $item_linked['itemtype']();
                 if ($item->getfromDB($item_linked['items_id'])) {
-
+                    $types = self::$types;
                     $used_itemtypes = json_decode($rule->fields['used_itemtypes']);
                     if (is_array($used_itemtypes) && count($used_itemtypes) > 0) {
                         $types = $used_itemtypes;

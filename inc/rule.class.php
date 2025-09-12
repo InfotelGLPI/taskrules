@@ -633,8 +633,24 @@ class PluginTaskrulesRule extends CommonDBTM
 
                     if (taskDiv$id) {
                         let span = taskDiv$id.querySelector('.state');
-span.style.display = 'none';
+
                         if (span) {
+                        let span = document.querySelector('span.state.state_1[onclick]');
+
+                        if (span) {
+                            // Si la classe est bien state_1
+                            if (span.classList.contains('state_1')) {
+                                span.innerHTML = '<i class=\"itilstatus waiting ti ti-alert-square-filled\" style=\"font-size:2em\"></i>';
+                                 span.classList.remove('state', 'state_1');
+                            } else if (span.classList.contains('state_2')) {
+                                span.innerHTML = '<i class=\"itilstatus new ti ti-square-check-filled\" style=\"font-size:2em\"></i>';
+                                span.classList.remove('state', 'state_2');
+                            } else if (span.classList.contains('state_0')) {
+                                span.innerHTML = '<i class=\"itilstatus planned ti ti-info-square-filled\" style=\"font-size:2em\"></i>';
+                                span.classList.remove('state', 'state_0');
+                            }
+                            span.removeAttribute('onclick');
+                        }
 //                            let button$id = document.createElement('button');
 //                            button$id.className = span.className;
 //                            button$id.title = span.title;

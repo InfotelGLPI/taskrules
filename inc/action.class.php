@@ -146,7 +146,7 @@ class PluginTaskrulesAction extends CommonDBTM
         if ($rule->fields['state_action'] == 1) {
             $input['states_id'] = 0;
             $input['id'] = $item_linked['items_id'];
-             $item->update($input);
+            $item->update($input);
 
             $results[$item_linked['itemtype']][$item_linked['items_id']]['state_action'] = [
                 'tickets_id' => $tickets_id,
@@ -158,7 +158,7 @@ class PluginTaskrulesAction extends CommonDBTM
             if ($rule->fields['states_id'] > 0) {
                 $input['states_id'] = $rule->fields['states_id'];
                 $input['id'] = $item_linked['items_id'];
-                // $item->update($input);
+                $item->update($input);
                 $results[$item_linked['itemtype']][$item_linked['items_id']]['state_action'] = [
                     'tickets_id' => $tickets_id,
                     'tickettasks_id' => $tickettasks_id,
@@ -174,7 +174,7 @@ class PluginTaskrulesAction extends CommonDBTM
         if ($rule->fields['location_action'] == 1) {
             $input['locations_id'] = 0;
             $input['id'] = $item_linked['items_id'];
-             $item->update($input);
+            $item->update($input);
             $results[$item_linked['itemtype']][$item_linked['items_id']]['location_action'] = [
                 'tickets_id' => $tickets_id,
                 'tickettasks_id' => $tickettasks_id,
@@ -188,7 +188,7 @@ class PluginTaskrulesAction extends CommonDBTM
                     if ($user->fields['locations_id'] > 0) {
                         $input['locations_id'] = $user->fields['locations_id'];
                         $input['id'] = $item_linked['items_id'];
-                         $item->update($input);
+                        $item->update($input);
                         $results[$item_linked['itemtype']][$item_linked['items_id']]['location_action'] = [
                             'tickets_id' => $tickets_id,
                             'tickettasks_id' => $tickettasks_id,
@@ -202,7 +202,7 @@ class PluginTaskrulesAction extends CommonDBTM
             if ($rule->fields['locations_id'] > 0) {
                 $input['locations_id'] = $rule->fields['locations_id'];
                 $input['id'] = $item_linked['items_id'];
-                 $item->update($input);
+                $item->update($input);
                 $results[$item_linked['itemtype']][$item_linked['items_id']]['location_action'] = [
                     'tickets_id' => $tickets_id,
                     'tickettasks_id' => $tickettasks_id,
@@ -216,7 +216,7 @@ class PluginTaskrulesAction extends CommonDBTM
         if ($rule->fields['contact_action'] == 1) {
             $input['contact'] = '';
             $input['id'] = $item_linked['items_id'];
-             $item->update($input);
+            $item->update($input);
             $results[$item_linked['itemtype']][$item_linked['items_id']]['contact_action'] = [
                 'tickets_id' => $tickets_id,
                 'tickettasks_id' => $tickettasks_id,
@@ -230,7 +230,7 @@ class PluginTaskrulesAction extends CommonDBTM
         if ($rule->fields['user_action'] == 1) {
             $input['users_id'] = 0;
             $input['id'] = $item_linked['items_id'];
-             $item->update($input);
+            $item->update($input);
             $results[$item_linked['itemtype']][$item_linked['items_id']]['user_action'] = [
                 'tickets_id' => $tickets_id,
                 'tickettasks_id' => $tickettasks_id,
@@ -243,7 +243,7 @@ class PluginTaskrulesAction extends CommonDBTM
                 if ($user->getFromDB($users_id)) {
                     $input['users_id'] = $users_id;
                     $input['id'] = $item_linked['items_id'];
-                     $item->update($input);
+                    $item->update($input);
                     $results[$item_linked['itemtype']][$item_linked['items_id']]['user_action'] = [
                         'tickets_id' => $tickets_id,
                         'tickettasks_id' => $tickettasks_id,
@@ -266,7 +266,7 @@ class PluginTaskrulesAction extends CommonDBTM
         if ($rule->fields['group_action'] == 1) {
             $input['groups_id'] = 0;
             $input['id'] = $item_linked['items_id'];
-             $item->update($input);
+            $item->update($input);
             $results[$item_linked['itemtype']][$item_linked['items_id']]['group_action'] = [
                 'tickets_id' => $tickets_id,
                 'tickettasks_id' => $tickettasks_id,
@@ -279,7 +279,7 @@ class PluginTaskrulesAction extends CommonDBTM
                 if ($group->getFromDB($groups_id)) {
                     $input['groups_id'] = $groups_id;
                     $input['id'] = $item_linked['items_id'];
-                     $item->update($input);
+                    $item->update($input);
                     $results[$item_linked['itemtype']][$item_linked['items_id']]['group_action'] = [
                         'tickets_id' => $tickets_id,
                         'tickettasks_id' => $tickettasks_id,
