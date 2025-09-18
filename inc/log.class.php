@@ -135,6 +135,7 @@ class PluginTaskrulesLog extends CommonDBTM
                                     echo $obj->getLink();
                                     echo "</th>";
                                     echo "<th>";
+                                    echo $obj->fields['serial'];
                                     echo "</th>";
                                     echo "</tr>";
 

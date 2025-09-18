@@ -651,6 +651,23 @@ class PluginTaskrulesRule extends CommonDBTM
                             }
                             span.removeAttribute('onclick');
                         }
+                        
+                        let span2 = document.querySelector('span.state.state_2[onclick]');
+
+                        if (span2) {
+                            // Si la classe est bien state_1
+                            if (span2.classList.contains('state_1')) {
+                                span2.innerHTML = '<i class=\"itilstatus waiting ti ti-alert-square-filled\" style=\"font-size:2em\"></i>';
+                                 span2.classList.remove('state', 'state_1');
+                            } else if (span2.classList.contains('state_2')) {
+                                span2.innerHTML = '<i class=\"itilstatus new ti ti-square-check-filled\" style=\"font-size:2em\"></i>';
+                                span2.classList.remove('state', 'state_2');
+                            } else if (span2.classList.contains('state_0')) {
+                                span2.innerHTML = '<i class=\"itilstatus planned ti ti-info-square-filled\" style=\"font-size:2em\"></i>';
+                                span2.classList.remove('state', 'state_0');
+                            }
+                            span.removeAttribute('onclick');
+                        }
 //                            let button$id = document.createElement('button');
 //                            button$id.className = span.className;
 //                            button$id.title = span.title;
@@ -701,25 +718,25 @@ class PluginTaskrulesRule extends CommonDBTM
                         }
                     }
 
-//                    function plugin_taskrules_showresults(taskId) {
-//
-//                        $.ajax({
-//                            type: 'POST',
-//                            url: '" . PLUGIN_TASKRULES_WEBDIR . "/ajax/generateresult.php',
-//                            data: {
-//                                'tickettasks_id': taskId
-//                            },
-//                            success: function (html) {
-//                                let modalBody = document.querySelector('#results' + taskId + ' div.modal-body');
-//                                if (modalBody) {
-//                                    modalBody.innerHTML = html;
-//
-//                                    $('#results' + taskId).modal('show');
-//                                    $('#ajax_loader').hide();
-//                                }
-//                            }
-//                        });
-//                    }
+                    function plugin_taskrules_showresults(taskId) {
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '" . PLUGIN_TASKRULES_WEBDIR . "/ajax/generateresult.php',
+                            data: {
+                                'tickettasks_id': taskId
+                            },
+                            success: function (html) {
+                                let modalBody = document.querySelector('#results' + taskId + ' div.modal-body');
+                                if (modalBody) {
+                                    modalBody.innerHTML = html;
+
+                                    $('#results' + taskId).modal('show');
+                                    $('#ajax_loader').hide();
+                                }
+                            }
+                        });
+                    }
                     "
             );
         }
