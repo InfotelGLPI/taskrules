@@ -43,9 +43,19 @@ if (isset($_POST['location_action']) && $_POST['location_action'] == 3) {
     ]);
 }
 
+$types = PluginTaskrulesCondition::getTypes();
+
+$rule = new PluginTaskrulesRule();
+if ($rule->getFromDB($_POST['id'])) {
+    $used_itemtypes = json_decode($rule->fields['used_itemtypes']);
+    if (is_array($used_itemtypes) && count($used_itemtypes) > 0) {
+        $types = $used_itemtypes;
+    }
+}
+
 if (isset($_POST['state_action']) && $_POST['state_action'] == 2) {
     $condition = new PluginTaskrulesCondition();
-    $states_id = $condition->getStatuses(PluginTaskrulesCondition::getTypes());
+    $states_id = $condition->getStatuses($types);
     Dropdown::showFromArray('states_id', $states_id, [
         'value' => $_POST['states_id'] ?? 0,
     ]);

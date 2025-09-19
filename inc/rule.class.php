@@ -279,6 +279,7 @@ class PluginTaskrulesRule extends CommonDBTM
         $params = [
             'state_action' => '__VALUE__',
             'states_id' => $this->fields['states_id'],
+            'id' => $id,
         ];
         Ajax::updateItemOnSelectEvent(
             "dropdown_state_action$randstate",
@@ -321,6 +322,7 @@ class PluginTaskrulesRule extends CommonDBTM
         $params = [
             'location_action' => '__VALUE__',
             'locations_id' => $this->fields['locations_id'],
+            'id' => $id
         ];
         Ajax::updateItemOnSelectEvent(
             "dropdown_location_action$randlocation",

@@ -79,7 +79,9 @@ class PluginTaskrulesLog extends CommonDBTM
                     $obj->getFromDB($n_found['items_id']);
                     echo $obj->getLink();
                     echo "</td>";
-
+                    echo "<td>";
+                    echo $obj->fields['serial'];
+                    echo "</td>";
                     echo "</tr>";
                 }
                 echo "</table><br>";

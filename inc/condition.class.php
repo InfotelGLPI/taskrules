@@ -769,6 +769,17 @@ JAVASCRIPT;
 
                             $criterias[999] = ['link' =>'AND', 'field' => 2, 'searchtype' => 'equals', 'value' => $item_linked['items_id']];
 
+
+                            $criterianame = self::getCriteriaNameForItemtype($item_linked['itemtype']);
+
+                            foreach ($criterias as &$subArray) {
+                                if (isset($subArray[$criterianame])) {
+                                    $subArray['criteria'] = $subArray[$criterianame];
+                                    unset($subArray[$criterianame]);
+                                }
+                            }
+                            unset($subArray);
+
                             //Add interpretation of the criteria
                             if (isset($_SESSION["glpisearchcount"][$item_linked['itemtype']])) {
                                 unset($_SESSION["glpisearchcount"][$item_linked['itemtype']]);
@@ -784,6 +795,7 @@ JAVASCRIPT;
                             ];
 
                             $results = Search::getDatas($item_linked['itemtype'], $searchCriteria);
+//                            Toolbox::logInfo($results['sql']['search']);
 //                            Toolbox::logInfo($results['data']['items']);
                             $_SESSION['glpilist_limit'] = $glpilist_limit;
                             foreach ($results['data']['items'] as $k => $val) {
