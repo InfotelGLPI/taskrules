@@ -47,7 +47,7 @@ class PluginTaskrulesAction extends CommonDBTM
             case 'location_action':
                 return __('Location');
             case 'contact_action':
-                return __('Contact');
+                return __('Alternate username');
             case 'user_action':
                 return __('User');
             case 'group_action':
@@ -120,7 +120,6 @@ class PluginTaskrulesAction extends CommonDBTM
         $groups_of_user = Group_User::getUserGroups($users_id);
         $groups = [];
         foreach ($groups_of_user as $group_of_user) {
-
             $group = new Group();
             if ($group->getFromDB($group_of_user['id'])) {
                 if (!$group->fields['is_itemgroup'] == 1) {
@@ -217,6 +216,8 @@ class PluginTaskrulesAction extends CommonDBTM
             $input['contact'] = '';
             $input['id'] = $item_linked['items_id'];
             $item->update($input);
+            $lockedfield = new Lockedfield();
+            $lockedfield->deleteByCriteria(['items_id' => $item_linked['items_id'], 'itemtype' => $item_linked['itemtype'], 'field' => 'contact']);
             $results[$item_linked['itemtype']][$item_linked['items_id']]['contact_action'] = [
                 'tickets_id' => $tickets_id,
                 'tickettasks_id' => $tickettasks_id,

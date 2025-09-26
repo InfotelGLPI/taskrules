@@ -430,6 +430,7 @@ class PluginTaskrulesRule extends CommonDBTM
     public static function preAddTask($item)
     {
         $ko = 0;
+        $koitem = 0;
         if ($item::getType() === TicketTask::getType()) {
             if (isset($item->input['tasktemplates_id'])) {
                 $rule = new self();
@@ -439,6 +440,7 @@ class PluginTaskrulesRule extends CommonDBTM
                         $items_linked = $item_ticket->find([
                             'tickets_id' => $item->input['tickets_id'],
                         ]);
+                        $found_items = [];
                         if (count($items_linked) > 0) {
                             $found_items = PluginTaskrulesCondition::checkCriteras("pre add task", $rule, $item->input['tickets_id'], $item->getID(), $items_linked);
                         }
@@ -458,8 +460,20 @@ class PluginTaskrulesRule extends CommonDBTM
                         } else {
                             $ko = 1;
                         }
+                    } else {
+                        $item_ticket = new Item_Ticket();
+                        $items_linked = $item_ticket->find([
+                            'tickets_id' => $item->input['tickets_id'],
+                        ]);
+                        if ($items_linked === false) {
+                            $koitem = 1;
+                        }
                     }
                 }
+            }
+            if ($koitem == 1) {
+                $errormsg = __('Warning : No items linked with this ticket', 'taskrules');
+                Session::addMessageAfterRedirect($errormsg, false, ERROR);
             }
             if ($ko == 1) {
                 $errormsg = __('Items not match with rule, task not created', 'taskrules');
@@ -476,6 +490,7 @@ class PluginTaskrulesRule extends CommonDBTM
             if (isset($item->fields['tasktemplates_id'])) {
                 $rule = new self();
                 if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
+                    $koitem = 0;
                     if ($rule->fields['trigger_creation'] == 1) {
                         $item_ticket = new Item_Ticket();
                         $items_linked = $item_ticket->find([
@@ -504,7 +519,26 @@ class PluginTaskrulesRule extends CommonDBTM
                                         }
                                     }
                                 }
+                            } else {
+                                $item_ticket = new Item_Ticket();
+                                $items_linked = $item_ticket->find([
+                                    'tickets_id' => $item->input['tickets_id'],
+                                ]);
+                                if ($items_linked === false) {
+                                    $koitem = 1;
+                                } else {
+                                    foreach ($items_linked as $item_linked) {
+                                        $results['errors']['not_found'][] = [
+                                            'itemtype' => $item_linked['itemtype'],
+                                            'items_id' => $item_linked['items_id']
+                                        ];
+                                    }
+                                }
                             }
+                        }
+                        if ($koitem == 1) {
+                            $errormsg = __('Warning : No items linked with this ticket', 'taskrules');
+                            Session::addMessageAfterRedirect($errormsg, false, ERROR);
                         }
                         if (count($results) > 0) {
                             $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'] = $item->fields['id'];
@@ -520,8 +554,8 @@ class PluginTaskrulesRule extends CommonDBTM
     public static function preUpdateTask($item)
     {
         $ko = 0;
+        $koitem = 0;
         if ($item::getType() === TicketTask::getType()) {
-
             if (isset($item->fields['tasktemplates_id']) && $item->input['state'] == Planning::DONE) {
                 $rule = new self();
                 if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
@@ -530,6 +564,7 @@ class PluginTaskrulesRule extends CommonDBTM
                         $items_linked = $item_ticket->find([
                             'tickets_id' => $item->input['tickets_id'],
                         ]);
+                        $found_items = [];
                         if (count($items_linked) > 0) {
                             $found_items = PluginTaskrulesCondition::checkCriteras("pre update task", $rule, $item->fields['tickets_id'], $item->getID(), $items_linked);
                         }
@@ -550,8 +585,20 @@ class PluginTaskrulesRule extends CommonDBTM
                         } else {
                             $ko = 1;
                         }
+                    } else {
+                        $item_ticket = new Item_Ticket();
+                        $items_linked = $item_ticket->find([
+                            'tickets_id' => $item->input['tickets_id'],
+                        ]);
+                        if (!$items_linked) {
+                            $koitem = 1;
+                        }
                     }
                 }
+            }
+            if ($koitem == 1) {
+                $errormsg = __('Warning : No items linked with this ticket', 'taskrules');
+                Session::addMessageAfterRedirect($errormsg, false, ERROR);
             }
             if ($ko == 1) {
                 $errormsg = __('Items not match with rule, task not updated', 'taskrules');
@@ -569,6 +616,7 @@ class PluginTaskrulesRule extends CommonDBTM
                 if ($item->fields['state'] == Planning::DONE) {
                     $rule = new self();
                     if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
+                        $koitem = 0;
                         if ($rule->fields['trigger_update'] == 1) {
                             $item_ticket = new Item_Ticket();
                             $items_linked = $item_ticket->find([
@@ -597,6 +645,25 @@ class PluginTaskrulesRule extends CommonDBTM
                                         }
                                     }
                                 }
+                            }  else {
+                                $item_ticket = new Item_Ticket();
+                                $items_linked = $item_ticket->find([
+                                    'tickets_id' => $item->input['tickets_id'],
+                                ]);
+                                if ($items_linked === false) {
+                                    $koitem = 1;
+                                } else {
+                                    foreach ($items_linked as $item_linked) {
+                                        $results['errors']['not_found'][] = [
+                                            'itemtype' => $item_linked['itemtype'],
+                                            'items_id' => $item_linked['items_id']
+                                        ];
+                                    }
+                                }
+                            }
+                            if ($koitem == 1) {
+                                $errormsg = __('Warning : No items linked with this ticket', 'taskrules');
+                                Session::addMessageAfterRedirect($errormsg, false, ERROR);
                             }
                             if (count($results) > 0) {
                                 $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'] = $item->fields['id'];
