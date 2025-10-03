@@ -110,7 +110,7 @@ class PluginTaskrulesLog extends CommonDBTM
 
             $i = 0;
             $j = 0;
-            Toolbox::logInfo($results);
+//            Toolbox::logInfo($results);
             foreach ($results as $k => $itemtype) {
                 unset($itemtype['users_id']);
                 unset($itemtype['groups_id']);
