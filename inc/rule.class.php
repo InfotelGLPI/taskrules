@@ -434,7 +434,7 @@ class PluginTaskrulesRule extends CommonDBTM
         if ($item::getType() === TicketTask::getType()) {
             if (isset($item->input['tasktemplates_id'])) {
                 $rule = new self();
-                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->input['tasktemplates_id']])) {
+                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->input['tasktemplates_id']]) && $rule->fields['active'] == 1) {
                     if ($rule->fields['preventcreation'] == 1) {
                         $item_ticket = new Item_Ticket();
                         $items_linked = $item_ticket->find([
@@ -489,7 +489,8 @@ class PluginTaskrulesRule extends CommonDBTM
         if ($item::getType() === TicketTask::getType()) {
             if (isset($item->fields['tasktemplates_id'])) {
                 $rule = new self();
-                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
+                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])
+                && $rule->fields['active'] == 1) {
                     $koitem = 0;
                     if ($rule->fields['trigger_creation'] == 1) {
                         $item_ticket = new Item_Ticket();
@@ -558,7 +559,7 @@ class PluginTaskrulesRule extends CommonDBTM
         if ($item::getType() === TicketTask::getType()) {
             if (isset($item->fields['tasktemplates_id']) && $item->input['state'] == Planning::DONE) {
                 $rule = new self();
-                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
+                if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']]) && $rule->fields['active'] == 1) {
                     if ($rule->fields['preventchange'] == 1) {
                         $item_ticket = new Item_Ticket();
                         $items_linked = $item_ticket->find([
@@ -615,7 +616,7 @@ class PluginTaskrulesRule extends CommonDBTM
             if (isset($item->fields['tasktemplates_id'])) {
                 if ($item->fields['state'] == Planning::DONE) {
                     $rule = new self();
-                    if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']])) {
+                    if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']]) && $rule->fields['active'] == 1) {
                         $koitem = 0;
                         if ($rule->fields['trigger_update'] == 1) {
                             $item_ticket = new Item_Ticket();
