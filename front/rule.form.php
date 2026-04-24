@@ -27,26 +27,27 @@
  --------------------------------------------------------------------------
  */
 
-
-include("../../../inc/includes.php");
+use GlpiPlugin\Taskrules\Condition;
+use GlpiPlugin\Taskrules\Log;
+use GlpiPlugin\Taskrules\Rule;
 
 global $DB;
 
 Session::checkRight("plugin_taskrules", READ);
 
-$rule = new PluginTaskrulesRule();
-$cond = new PluginTaskrulesCondition();
+$rule = new Rule();
+$cond = new Condition();
 
 if (isset($_POST["add"])) {
 
-    $types = PluginTaskrulesCondition::$types;
+    $types = Condition::$types;
     foreach ($types as $itemtype) {
-        $fieldname = PluginTaskrulesCondition::getFieldNameForItemtype($itemtype);
-        $criterianame = PluginTaskrulesCondition::getCriteriaNameForItemtype($itemtype);
+        $fieldname = Condition::getFieldNameForItemtype($itemtype);
+        $criterianame = Condition::getCriteriaNameForItemtype($itemtype);
         if (isset($_POST[$criterianame])) {
-            $input[$fieldname] = serialize($_POST[$criterianame]);
+            $input[$fieldname] = json_encode($_POST[$criterianame]);
         } else {
-            $input[$fieldname] = serialize([]);
+            $input[$fieldname] = json_encode([]);
         }
 
         unset($_POST[$criterianame]);
@@ -60,14 +61,14 @@ if (isset($_POST["add"])) {
     Html::back();
 } elseif (isset($_POST["update"])) {
 
-    $types = PluginTaskrulesCondition::$types;
+    $types = Condition::$types;
     foreach ($types as $itemtype) {
-        $fieldname = PluginTaskrulesCondition::getFieldNameForItemtype($itemtype);
-        $criterianame = PluginTaskrulesCondition::getCriteriaNameForItemtype($itemtype);
+        $fieldname = Condition::getFieldNameForItemtype($itemtype);
+        $criterianame = Condition::getCriteriaNameForItemtype($itemtype);
         if (isset($_POST[$criterianame])) {
-            $input[$fieldname] = serialize($_POST[$criterianame]);
+            $input[$fieldname] = json_encode($_POST[$criterianame]);
         } else {
-            $input[$fieldname] = serialize([]);
+            $input[$fieldname] = json_encode([]);
         }
         unset($_POST[$criterianame]);
     }
@@ -84,7 +85,7 @@ if (isset($_POST["add"])) {
     $rule->update($_POST);
     Html::back();
 } else {
-    Html::header(_n('Task rule', 'Task rules',2, 'taskrules'), $_SERVER['PHP_SELF'], 'config', 'taskrules', );
+    Html::header(_n('Task rule', 'Task rules',2, 'taskrules'), $_SERVER['PHP_SELF'], 'config', Rule::class );
 
     $rule->showForm();
 

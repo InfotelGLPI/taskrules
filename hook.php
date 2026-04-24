@@ -27,6 +27,10 @@
  --------------------------------------------------------------------------
  */
 
+use GlpiPlugin\Taskrules\Condition;
+use GlpiPlugin\Taskrules\Log;
+use GlpiPlugin\Taskrules\Profile;
+use GlpiPlugin\Taskrules\Rule;
 
 /**
  * Plugin install process
@@ -35,14 +39,18 @@
  */
 function plugin_taskrules_install()
 {
-    global $DB;
+    $migration = new Migration(PLUGIN_TASKRULES_VERSION);
 
-    if (!$DB->tableExists("glpi_plugin_taskrules_rules")) {
-        $DB->runFile(PLUGIN_TASKRULES_DIR . "/install/sql/empty-1.0.0.sql");
-    }
+    Condition::install($migration);
 
-    PluginTaskrulesProfile::createFirstAccess($_SESSION['glpiactiveprofile']['id']);
-    PluginTaskrulesProfile::initProfile();
+    Log::install($migration);
+
+    Rule::install($migration);
+
+    $migration->executeMigration();
+
+    Profile::createFirstAccess($_SESSION['glpiactiveprofile']['id']);
+    Profile::initProfile();
 
     return true;
 }
@@ -56,16 +64,14 @@ function plugin_taskrules_uninstall()
 {
     global $DB;
 
-    $tables = ["glpi_plugin_taskrules_rules",
-        "glpi_plugin_taskrules_conditions",
-        "glpi_plugin_taskrules_logs"];
+    Condition::uninstall();
 
-    foreach ($tables as $table) {
-        $DB->dropTable($table);
-    }
+    Log::uninstall();
+
+    Rule::uninstall();
 
     $profileRight = new ProfileRight();
-    foreach (PluginTaskrulesProfile::getAllRights() as $right) {
+    foreach (Profile::getAllRights() as $right) {
         $profileRight->deleteByCriteria(['name' => $right['field']]);
     }
 
@@ -75,12 +81,12 @@ function plugin_taskrules_uninstall()
 
 function plugin_taskrules_pre_additem(CommonDBTM $item)
 {
-    PluginTaskrulesRule::preAddTask($item);
+    Rule::preAddTask($item);
 }
 
 function plugin_taskrules_pre_updateitem(CommonDBTM $item)
 {
-    PluginTaskrulesRule::preUpdateTask($item);
+    Rule::preUpdateTask($item);
 }
 
 function plugin_taskrules_post_prepareadditem(CommonDBTM $item)
@@ -97,7 +103,7 @@ function plugin_taskrules_post_prepareadditem(CommonDBTM $item)
  */
 function plugin_taskrules_additem(CommonDBTM $item)
 {
-    PluginTaskrulesRule::afterAddTask($item);
+    Rule::afterAddTask($item);
 }
 
 /**
@@ -110,7 +116,7 @@ function plugin_taskrules_additem(CommonDBTM $item)
 function plugin_taskrules_updateitem(CommonDBTM $item)
 {
 
-    PluginTaskrulesRule::afterUpdateTask($item);
+    Rule::afterUpdateTask($item);
 }
 
 function plugin_taskrules_post_item_form($params)
@@ -144,16 +150,16 @@ function plugin_taskrules_post_item_form($params)
                     let taskDiv$id = document.getElementById('TicketTask_$id');
 
                     if (taskDiv$id) {
-                        
+
                         let button$id = document.createElement('button');
                         button$id.className = ''; // classes Bootstrap ou les tiennes
                         button$id.textContent = '';
                         button$id.style.marginTop = '10px';
-                        
+
                         button$id.addEventListener('click', function () {
                             plugin_taskrules_showresults($id);
                         });
-                        
+
                         button$id.click();
                     }
 
@@ -187,7 +193,7 @@ function plugin_taskrules_post_item_form($params)
                     foreach ($tasks_found as $task_found) {
                         $task = new TicketTask();
                         if ($task->getFromDB($task_found['id'])) {
-                            $rule = new PluginTaskrulesRule();
+                            $rule = new Rule();
                             if ($rule->getFromDBByCrit(
                                 ['tasktemplates_id' => $task->fields['tasktemplates_id'], 'trigger_update' => 1]
                             ) && $rule->fields['active'] == 1) {

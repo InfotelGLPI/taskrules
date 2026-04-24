@@ -27,12 +27,12 @@
  --------------------------------------------------------------------------
  */
 
-include('../../../inc/includes.php');
+use GlpiPlugin\Taskrules\Rule;
 
 Session::checkRight("plugin_taskrules", READ);
 
 if (Plugin::isPluginActive("taskrules")) {
-    Html::header(_n('Task rule', 'Task rules', 2, 'taskrules'), $_SERVER['PHP_SELF'], 'config', 'taskrules');
+    Html::header(_n('Task rule', 'Task rules', 2, 'taskrules'), $_SERVER['PHP_SELF'], 'config', Rule::class);
 
     echo "<table class='tab_cadre_fixe'>";
     echo "<tr class='tab_bg_2'>";

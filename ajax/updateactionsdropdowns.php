@@ -27,9 +27,10 @@
  --------------------------------------------------------------------------
  */
 
-$AJAX_INCLUDE = 1;
-include("../../../inc/includes.php");
+use GlpiPlugin\Taskrules\Condition;
+use GlpiPlugin\Taskrules\Rule;
 
+$AJAX_INCLUDE = 1;
 header("Content-Type: text/html; charset=UTF-8");
 Html::header_nocache();
 
@@ -43,9 +44,9 @@ if (isset($_POST['location_action']) && $_POST['location_action'] == 3) {
     ]);
 }
 
-$types = PluginTaskrulesCondition::getTypes();
+$types = Condition::getTypes();
 
-$rule = new PluginTaskrulesRule();
+$rule = new Rule();
 if ($rule->getFromDB($_POST['id'])) {
     $used_itemtypes = json_decode($rule->fields['used_itemtypes']);
     if (is_array($used_itemtypes) && count($used_itemtypes) > 0) {
@@ -54,7 +55,7 @@ if ($rule->getFromDB($_POST['id'])) {
 }
 
 if (isset($_POST['state_action']) && $_POST['state_action'] == 2) {
-    $condition = new PluginTaskrulesCondition();
+    $condition = new Condition();
     $states_id = $condition->getStatuses($types);
     Dropdown::showFromArray('states_id', $states_id, [
         'value' => $_POST['states_id'] ?? 0,

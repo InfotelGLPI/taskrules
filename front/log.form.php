@@ -27,12 +27,13 @@
  --------------------------------------------------------------------------
  */
 
-include('../../../inc/includes.php');
+
+use GlpiPlugin\Taskrules\Log;
 
 Session::checkRight("plugin_taskrules", DELETE);
 
-global $DB;
-
-$DB->truncate('glpi_plugin_taskrules_logs');
-
-Html::back();
+if (isset($_POST["purge"])) {
+    $log = new Log();
+    $log->deleteByCriteria([1]);
+    Html::back();
+}

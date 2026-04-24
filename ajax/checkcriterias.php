@@ -26,7 +26,9 @@
  along with Taskrules. If not, see <http://www.gnu.org/licenses/>.
  --------------------------------------------------------------------------
  */
-include('../../../inc/includes.php');
+
+use GlpiPlugin\Taskrules\Condition;
+use GlpiPlugin\Taskrules\Rule;
 
 Session::checkRight("plugin_taskrules", READ);
 
@@ -36,10 +38,10 @@ if (isset($_POST['tickettasks_id'])) {
     $tickettask = new TicketTask();
     if ($tickettask->getFromDB($_POST['tickettasks_id'])) {
         unset($_SESSION['plugin_taskrules']['show_updateresults']);
-        $rule = new PluginTaskrulesRule();
+        $rule = new Rule();
         if ($rule->getFromDBByCrit(["tasktemplates_id" => $tickettask->fields['tasktemplates_id'], "preventchange" => 1]
         ) && $rule->fields['active'] == 1) {
-            $rule = new PluginTaskrulesRule();
+            $rule = new Rule();
             if ($rule->getFromDBByCrit(
                 ["tasktemplates_id" => $tickettask->fields['tasktemplates_id'], "trigger_update" => 1]
             )) {
@@ -50,7 +52,7 @@ if (isset($_POST['tickettasks_id'])) {
                 $found_items = [];
                 $results = [];
                 if (count($items_linked) > 0) {
-                    $found_items = PluginTaskrulesCondition::checkCriteras(
+                    $found_items = Condition::checkCriteras(
                         "updatestate",
                         $rule,
                         $tickettask->fields['tickets_id'],

@@ -27,14 +27,15 @@
  --------------------------------------------------------------------------
  */
 
-include('../../../inc/includes.php');
+use GlpiPlugin\Taskrules\Log;
+use GlpiPlugin\Taskrules\Rule;
 
 Session::checkRight("plugin_taskrules", READ);
 
 if (Plugin::isPluginActive("taskrules")) {
-    Html::header(_n('Task rule', 'Task rules', 2, 'taskrules'), $_SERVER['PHP_SELF'], 'config', 'taskrules');
+    Html::header(_n('Task rule', 'Task rules', 2, 'taskrules'), $_SERVER['PHP_SELF'], 'config', Rule::class);
 
-    Search::show('PluginTaskrulesLog');
+    Search::show(Log::class);
 
     Html::footer();
 }

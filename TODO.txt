@@ -1,1 +1,4 @@
 Add warning for change statuses
+
+pourquoi certain pas pré coché
+groups_id

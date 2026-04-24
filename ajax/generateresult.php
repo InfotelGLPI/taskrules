@@ -26,7 +26,11 @@
  along with Taskrules. If not, see <http://www.gnu.org/licenses/>.
  --------------------------------------------------------------------------
  */
-include('../../../inc/includes.php');
+
+use GlpiPlugin\Taskrules\Action;
+use GlpiPlugin\Taskrules\Condition;
+use GlpiPlugin\Taskrules\Log;
+use GlpiPlugin\Taskrules\Rule;
 
 Session::checkRight("plugin_taskrules", READ);
 
@@ -34,7 +38,7 @@ if (isset($_POST['tickettasks_id'])) {
     $tickettask = new TicketTask();
     if ($tickettask->getFromDB($_POST['tickettasks_id'])) {
         unset($_SESSION['plugin_taskrules']['show_updateresults']);
-        $rule = new PluginTaskrulesRule();
+        $rule = new Rule();
         if ($rule->getFromDBByCrit(["tasktemplates_id" => $tickettask->fields['tasktemplates_id']]) && $rule->fields['active'] == 1) {
             $item_ticket = new Item_Ticket();
             $items_linked = $item_ticket->find([
@@ -43,14 +47,14 @@ if (isset($_POST['tickettasks_id'])) {
             $found_items = [];
             $results = [];
             if (count($items_linked) > 0) {
-                $found_items = PluginTaskrulesCondition::checkCriteras("launchresults", $rule, $tickettask->fields['tickets_id'], $tickettask->getID(), $items_linked);
+                $found_items = Condition::checkCriteras("launchresults", $rule, $tickettask->fields['tickets_id'], $tickettask->getID(), $items_linked);
                 if (count($found_items) > 0) {
                     foreach ($items_linked as $item_linked) {
                         if (getItemForItemtype($item_linked['itemtype'])) {
                             $item = new $item_linked['itemtype']();
                             if ($item->getfromDB($item_linked['items_id'])) {
                                 if (in_array($item_linked['items_id'], $found_items)) {
-                                    $results[] = PluginTaskrulesAction::launchActions(
+                                    $results[] = Action::launchActions(
                                         $rule,
                                         $tickettask->fields['tickets_id'],
                                         $_POST['tickettasks_id'],
@@ -72,9 +76,9 @@ if (isset($_POST['tickettasks_id'])) {
                 }
             }
             if (count($results) > 0) {
-                PluginTaskrulesLog::showResults($rule, $results, $tickettask->fields['tickets_id'], $_POST['tickettasks_id']);
+                Log::showResults($rule, $results, $tickettask->fields['tickets_id'], $_POST['tickettasks_id']);
             }
-            Html::redirect(Ticket::getFormURLWithID($tickettask->fields['tickets_id']));
+//            Html::redirect(Ticket::getFormURLWithID($tickettask->fields['tickets_id']));
         }
     }
 } else {

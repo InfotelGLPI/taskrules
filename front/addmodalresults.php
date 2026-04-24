@@ -27,8 +27,6 @@
  --------------------------------------------------------------------------
  */
 
-include('../../../inc/includes.php');
-
 Session::checkRight("plugin_taskrules", READ);
 
 Html::header(Ticket::getTypeName(Session::getPluralNumber()));

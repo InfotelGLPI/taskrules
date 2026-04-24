@@ -27,25 +27,33 @@
  --------------------------------------------------------------------------
  */
 
-include("../../../inc/includes.php");
+use GlpiPlugin\Taskrules\Log;
+
 header("Content-Type: text/html; charset=UTF-8");
 Html::header_nocache();
 
 Session::checkRight("plugin_taskrules", READ);
 
-$log = new PluginTaskrulesLog();
-$logs_found = $log->find([
-    'tickets_id' => $_REQUEST['tickets_id'],
-    'tickettasks_id' => $_REQUEST['tickettasks_id'],
-]);
+$tickets_id = (int)($_POST['tickets_id'] ?? 0);
+$tickettasks_id = (int)($_POST['tickettasks_id'] ?? 0);
 
-if (count($logs_found) > 0) {
-    foreach ($logs_found as $log_found) {
-        var_dump($log_found);
+if ($tickets_id > 0 && $tickettasks_id > 0) {
+    $log = new Log();
+    $logs_found = $log->find([
+        'tickets_id' => $tickets_id,
+        'tickettasks_id' => $tickettasks_id,
+    ]);
+
+    if (count($logs_found) > 0) {
+        foreach ($logs_found as $log_found) {
+            Toolbox::logDebug($log_found);
+        }
+    }
+
+    if (Session::haveRight("plugin_taskrules", PURGE)) {
+        $log->deleteByCriteria([
+            'tickets_id' => $tickets_id,
+            'tickettasks_id' => $tickettasks_id,
+        ]);
     }
 }
-
-$log->deleteByCriteria([
-    'tickets_id' => $_REQUEST['tickets_id'],
-    'tickettasks_id' => $_REQUEST['tickettasks_id'],
-]);
