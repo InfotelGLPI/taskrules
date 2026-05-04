@@ -44,12 +44,6 @@ if ($tickets_id > 0 && $tickettasks_id > 0) {
         'tickettasks_id' => $tickettasks_id,
     ]);
 
-    if (count($logs_found) > 0) {
-        foreach ($logs_found as $log_found) {
-            Toolbox::logDebug($log_found);
-        }
-    }
-
     if (Session::haveRight("plugin_taskrules", PURGE)) {
         $log->deleteByCriteria([
             'tickets_id' => $tickets_id,

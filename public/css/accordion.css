@@ -1,0 +1,23 @@
+.panel {
+    padding: 0 18px;
+    display: block; /* none */
+    background-color: white;
+    overflow: hidden;
+}
+
+.espace {
+    padding-left: 1em;
+    padding-right: 1em;
+  }
+
+.hespace {
+    margin-top: 1em;
+    margin-bottom: 1em;
+  }
+
+.ui-accordion-header {
+    background-color: #7d91a1!important;
+    color: white!important;
+    font-size: 16px !important;
+    border: none!important;
+}

@@ -34,9 +34,10 @@ use GlpiPlugin\Taskrules\Rule;
 
 Session::checkRight("plugin_taskrules", READ);
 
-if (isset($_POST['tickettasks_id'])) {
+$tickettasks_id = (int) ($_POST['tickettasks_id'] ?? 0);
+if ($tickettasks_id > 0) {
     $tickettask = new TicketTask();
-    if ($tickettask->getFromDB($_POST['tickettasks_id'])) {
+    if ($tickettask->getFromDB($tickettasks_id)) {
         unset($_SESSION['plugin_taskrules']['show_updateresults']);
         $rule = new Rule();
         if ($rule->getFromDBByCrit(["tasktemplates_id" => $tickettask->fields['tasktemplates_id']]) && $rule->fields['active'] == 1) {
@@ -57,7 +58,7 @@ if (isset($_POST['tickettasks_id'])) {
                                     $results[] = Action::launchActions(
                                         $rule,
                                         $tickettask->fields['tickets_id'],
-                                        $_POST['tickettasks_id'],
+                                        $tickettasks_id,
                                         $item_linked
                                     );
                                 } else {
@@ -76,7 +77,7 @@ if (isset($_POST['tickettasks_id'])) {
                 }
             }
             if (count($results) > 0) {
-                Log::showResults($rule, $results, $tickettask->fields['tickets_id'], $_POST['tickettasks_id']);
+                Log::showResults($rule, $results, $tickettask->fields['tickets_id'], $tickettasks_id);
             }
 //            Html::redirect(Ticket::getFormURLWithID($tickettask->fields['tickets_id']));
         }

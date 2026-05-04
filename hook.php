@@ -119,6 +119,40 @@ function plugin_taskrules_updateitem(CommonDBTM $item)
     Rule::afterUpdateTask($item);
 }
 
+function plugin_taskrules_post_show_item($params)
+{
+    if (!Session::haveRight("plugin_taskrules", READ)) {
+        return;
+    }
+    $item = $params['item'];
+    if (!($item instanceof TicketTask) || $item->isNewItem()) {
+        return;
+    }
+    if (!isset($item->fields['tasktemplates_id']) || $item->fields['tasktemplates_id'] <= 0) {
+        return;
+    }
+
+    $rule = new Rule();
+    if (!$rule->getFromDBByCrit(['tasktemplates_id' => $item->fields['tasktemplates_id'], 'trigger_update' => 1, 'active' => 1])) {
+        return;
+    }
+
+    $id = (int) $item->fields['id'];
+
+    echo Html::scriptBlock("
+        (function () {
+            var taskItem = document.querySelector('#TicketTask_{$id}');
+            if (!taskItem) return;
+            var checkbox = taskItem.querySelector('.todo-list-state .task-state-checkbox');
+            if (checkbox) {
+                checkbox.disabled = true;
+                checkbox.removeAttribute('onclick');
+                checkbox.title = '" . addslashes(__('State managed by a rule', 'taskrules')) . "';
+            }
+        })();
+    ");
+}
+
 function plugin_taskrules_post_item_form($params)
 {
 
@@ -197,6 +231,7 @@ function plugin_taskrules_post_item_form($params)
                             if ($rule->getFromDBByCrit(
                                 ['tasktemplates_id' => $task->fields['tasktemplates_id'], 'trigger_update' => 1]
                             ) && $rule->fields['active'] == 1) {
+
                                 $item_ticket = new Item_Ticket();
                                 $items_linked = $item_ticket->find([
                                     'tickets_id' => $tickettask->fields['tickets_id'],

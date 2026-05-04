@@ -54,7 +54,7 @@ function plugin_init_taskrules()
 {
     global $PLUGIN_HOOKS;
 
-    $PLUGIN_HOOKS['change_profile']['taskrules']   = [Profile::class, 'initProfile'];
+    $PLUGIN_HOOKS[Hooks::CHANGE_PROFILE]['taskrules'] = [Profile::class, 'initProfile'];
 
     if (Plugin::isPluginActive('taskrules')) {
 
@@ -70,19 +70,20 @@ function plugin_init_taskrules()
             }
             $PLUGIN_HOOKS[Hooks::ADD_CSS]['taskrules'][] = "css/taskrules.css";
             /* Prepare hooks to intercept tasks events (add task and task update) */
-            $PLUGIN_HOOKS['pre_item_add']['taskrules'] = ['TicketTask' => 'plugin_taskrules_pre_additem'];
-            $PLUGIN_HOOKS['post_prepareadd']['taskrules'] = ['TicketTask' => 'plugin_taskrules_post_prepareadditem'];
-            $PLUGIN_HOOKS['item_add']['taskrules'] = ['TicketTask' => 'plugin_taskrules_additem'];
-            $PLUGIN_HOOKS['pre_item_update']['taskrules'] = ['TicketTask' => 'plugin_taskrules_pre_updateitem'];
-            $PLUGIN_HOOKS['item_update']['taskrules'] = ['TicketTask' => 'plugin_taskrules_updateitem'];
+            $PLUGIN_HOOKS[Hooks::PRE_ITEM_ADD]['taskrules']    = ['TicketTask' => 'plugin_taskrules_pre_additem'];
+            $PLUGIN_HOOKS[Hooks::POST_PREPAREADD]['taskrules'] = ['TicketTask' => 'plugin_taskrules_post_prepareadditem'];
+            $PLUGIN_HOOKS[Hooks::ITEM_ADD]['taskrules']        = ['TicketTask' => 'plugin_taskrules_additem'];
+            $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['taskrules'] = ['TicketTask' => 'plugin_taskrules_pre_updateitem'];
+            $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['taskrules']     = ['TicketTask' => 'plugin_taskrules_updateitem'];
 
-            $PLUGIN_HOOKS['post_item_form']['taskrules'] = 'plugin_taskrules_post_item_form';
+            $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['taskrules'] = 'plugin_taskrules_post_item_form';
+            $PLUGIN_HOOKS[Hooks::POST_SHOW_ITEM]['taskrules'] = 'plugin_taskrules_post_show_item';
             /* Add a new tab on the Task template page */
             Plugin::registerClass(Rule::class, ['addtabon' => ['TaskTemplate']]);
         }
     }
     if (Session::haveRight("config", UPDATE)) {
-        $PLUGIN_HOOKS['config_page']['taskrules'] = 'front/config.form.php';
+        $PLUGIN_HOOKS[Hooks::CONFIG_PAGE]['taskrules'] = 'front/config.form.php';
     }
 }
 

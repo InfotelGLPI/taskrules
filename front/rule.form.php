@@ -39,6 +39,7 @@ $rule = new Rule();
 $cond = new Condition();
 
 if (isset($_POST["add"])) {
+    Session::checkRight("plugin_taskrules", CREATE);
 
     $types = Condition::$types;
     foreach ($types as $itemtype) {
@@ -60,6 +61,7 @@ if (isset($_POST["add"])) {
 
     Html::back();
 } elseif (isset($_POST["update"])) {
+    $rule->check((int) ($_POST['id'] ?? 0), UPDATE);
 
     $types = Condition::$types;
     foreach ($types as $itemtype) {

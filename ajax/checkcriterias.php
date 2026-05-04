@@ -34,9 +34,10 @@ Session::checkRight("plugin_taskrules", READ);
 
 $ok = 0;
 
-if (isset($_POST['tickettasks_id'])) {
+$tickettasks_id = (int) ($_POST['tickettasks_id'] ?? 0);
+if ($tickettasks_id > 0) {
     $tickettask = new TicketTask();
-    if ($tickettask->getFromDB($_POST['tickettasks_id'])) {
+    if ($tickettask->getFromDB($tickettasks_id)) {
         unset($_SESSION['plugin_taskrules']['show_updateresults']);
         $rule = new Rule();
         if ($rule->getFromDBByCrit(["tasktemplates_id" => $tickettask->fields['tasktemplates_id'], "preventchange" => 1]
