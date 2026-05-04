@@ -34,8 +34,6 @@ use DBConnection;
 use Dropdown;
 use Migration;
 
-
-
 /**
  * Class Log
  */
@@ -152,7 +150,7 @@ class Log extends CommonDBTM
 
             $i = 0;
             $j = 0;
-//            Toolbox::logInfo($results);
+            //            Toolbox::logInfo($results);
             foreach ($results as $k => $itemtype) {
                 unset($itemtype['users_id']);
                 unset($itemtype['groups_id']);
@@ -221,7 +219,7 @@ class Log extends CommonDBTM
                                                 'items_id' => $items_id,
                                                 'action_field' => $action,
                                                 'action' => 1,
-                                                'value' => $titlelog . " - " .__('Empty the field', 'taskrules')
+                                                'value' => $titlelog . " - " . __('Empty the field', 'taskrules'),
                                             ];
                                         } elseif ($action == 'contact_action'
                                             && $res['value'] == 'null') {
@@ -232,9 +230,9 @@ class Log extends CommonDBTM
                                                 'action_field' => $action,
                                                 'action' => 1,
                                                 'value' => __('Alternate username') . " - " . __(
-                                                        'Empty the field',
-                                                        'taskrules'
-                                                    )
+                                                    'Empty the field',
+                                                    'taskrules'
+                                                ),
                                             ];
                                         } elseif ($action == 'state_action'
                                             && $res['action'] == 2) {
@@ -244,7 +242,7 @@ class Log extends CommonDBTM
                                                 'items_id' => $items_id,
                                                 'action_field' => $action,
                                                 'action' => 2,
-                                                'value' => Dropdown::getDropdownName('glpi_states', $res['value'])
+                                                'value' => Dropdown::getDropdownName('glpi_states', $res['value']),
                                             ];
                                         } elseif ($action == 'location_action'
                                             && ($res['action'] == 2 || $res['action'] == 3)) {
@@ -254,7 +252,7 @@ class Log extends CommonDBTM
                                                 'items_id' => $items_id,
                                                 'action_field' => $action,
                                                 'action' => 2,
-                                                'value' => Dropdown::getDropdownName('glpi_locations', $res['value'])
+                                                'value' => Dropdown::getDropdownName('glpi_locations', $res['value']),
                                             ];
                                         } elseif ($action == 'user_action'
                                             && $res['action'] == 2) {
@@ -270,7 +268,7 @@ class Log extends CommonDBTM
                                                             'items_id' => $items_id,
                                                             'action_field' => $name,
                                                             'action' => 2,
-                                                            'value' => $error
+                                                            'value' => $error,
                                                         ];
                                                     }
                                                 }
@@ -282,7 +280,7 @@ class Log extends CommonDBTM
                                                     'items_id' => $items_id,
                                                     'action_field' => $action,
                                                     'action' => 2,
-                                                    'value' => getUserName($res['value'])
+                                                    'value' => getUserName($res['value']),
                                                 ];
                                             }
                                         } elseif ($action == 'group_action'
@@ -300,7 +298,7 @@ class Log extends CommonDBTM
                                                             'items_id' => $items_id,
                                                             'action_field' => $name,
                                                             'action' => 2,
-                                                            'value' => $error
+                                                            'value' => $error,
                                                         ];
                                                     }
                                                     if ($name == 'user_action') {
@@ -312,7 +310,7 @@ class Log extends CommonDBTM
                                                             'items_id' => $items_id,
                                                             'action_field' => $name,
                                                             'action' => 2,
-                                                            'value' => $error
+                                                            'value' => $error,
                                                         ];
                                                     }
                                                 }
@@ -324,7 +322,7 @@ class Log extends CommonDBTM
                                                     'items_id' => $items_id,
                                                     'action_field' => $action,
                                                     'action' => 2,
-                                                    'value' => Dropdown::getDropdownName('glpi_groups', $res['value'])
+                                                    'value' => Dropdown::getDropdownName('glpi_groups', $res['value']),
                                                 ];
                                             }
                                         } else {
@@ -470,7 +468,7 @@ class Log extends CommonDBTM
             'table' => $this->getTable(),
             'field' => 'items_id',
             'name' => __('Item'),
-//                        'datatype' => 'specific',
+            //                        'datatype' => 'specific',
             //            'itemlink_type' => $this->getType(),
         ];
 
@@ -552,22 +550,22 @@ class Log extends CommonDBTM
 
                 return '';
 
-            //            case 'value':
-            //                $log = new self();
-            //                if (isset($options["raw_data"]["id"])) {
-            //                    $log->getFromDB($options["raw_data"]["id"]);
-            //                }
-            //                if (isset($log->fields['action_field'])) {
-            //                    if ($log->fields['action_field'] == 'state_action') {
-            //                        return Dropdown::getDropdownName('glpi_states', $values[$field]);
-            //                    } elseif ($log->fields['action_field'] == 'location_action') {
-            //                        return Dropdown::getDropdownName('glpi_locations', $values[$field]);
-            //                    } else {
-            //                        return $values[$field];
-            //                    }
-            //                }
-            //
-            //                return ;
+                //            case 'value':
+                //                $log = new self();
+                //                if (isset($options["raw_data"]["id"])) {
+                //                    $log->getFromDB($options["raw_data"]["id"]);
+                //                }
+                //                if (isset($log->fields['action_field'])) {
+                //                    if ($log->fields['action_field'] == 'state_action') {
+                //                        return Dropdown::getDropdownName('glpi_states', $values[$field]);
+                //                    } elseif ($log->fields['action_field'] == 'location_action') {
+                //                        return Dropdown::getDropdownName('glpi_locations', $values[$field]);
+                //                    } else {
+                //                        return $values[$field];
+                //                    }
+                //                }
+                //
+                //                return ;
 
         }
         return parent::getSpecificValueToDisplay($field, $values, $options);
