@@ -1,11 +1,18 @@
-# TaskRules GLPI plugin
+## Taskrules plugin for GLPI
 
-Add your plugin description here.
+[![License](https://img.shields.io/badge/License-GNU%20v2-blue.svg?style=flat-square)](https://github.com/infotelGLPI/taskrules/blob/master/LICENSE)
+[![Web](https://img.shields.io/badge/Web-Infotel-blue.svg?style=flat-square)](https://blogglpi.infotel.com)
+[![Translate](https://img.shields.io/badge/Translate-Transifex-cyan)](https://explore.transifex.com/infotelGLPI/GLPI_taskrules/)
 
-## Contributing
+### French
 
-* Open a ticket for each bug/feature so it can be discussed
-* Follow [development guidelines](http://glpi-developer-documentation.readthedocs.io/en/latest/plugins/index.html)
-* Refer to [GitFlow](http://git-flow.readthedocs.io/) process for branching
-* Work on a new branch on your own fork
-* Open a PR that will be reviewed by a developer
+Ce plugin permet d'automatiser la mise à jour des matériels liés à un ticket lorsqu'une tâche est ajoutée au ticket ou que son statut passe à « fait ». Chaque règle est attachée à un modèle de tâche et applique, selon des conditions, des actions sur les matériels liés : changement de statut, de localisation, d'utilisateur, de groupe ou de contact.
+
+### English
+
+This plugin automates updates to the assets linked to a ticket when a task is added to the ticket or its status changes to "done". Each rule is attached to a task template and applies, based on conditions, actions to the linked assets: change of status, location, user, group or contact.
+
+### Documentation
+
+- [Documentation française](docs/fr_FR.md)
+- [English documentation](docs/en_GB.md)
