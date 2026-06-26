@@ -59,9 +59,15 @@ class Condition extends CommonDBTM
         if (empty($value)) {
             return [];
         }
+        // Try JSON first (new format)
         $decoded = json_decode($value, true);
         if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
             return $decoded;
+        }
+        // Fall back to PHP unserialize (legacy format stored before JSON migration)
+        $unserialized = @unserialize($value);
+        if (is_array($unserialized)) {
+            return $unserialized;
         }
         return [];
     }
@@ -135,9 +141,10 @@ class Condition extends CommonDBTM
             echo "<tr class='tab_bg_2'>";
             echo "<td>";
             $criterianame = self::getCriteriaNameForItemtype($itemtype);
-            $fieldname = self::getFieldNameForItemtype($itemtype);
-            $p[$criterianame] = self::decodeField($cond->fields[$fieldname]);
-            $_SESSION['glpisearch'][$itemtype][$criterianame] = self::decodeField($cond->fields[$fieldname]);
+            $fieldname    = self::getFieldNameForItemtype($itemtype);
+            $decoded      = self::decodeField($cond->fields[$fieldname]);
+            $p[$criterianame]                                = $decoded;
+            $_SESSION['glpisearch'][$itemtype][$criterianame] = $decoded;
             self::showGenericSearch($itemtype, $p);
             echo "</td>";
             echo "</tr>";
@@ -187,11 +194,10 @@ class Condition extends CommonDBTM
         $p['showaction']   = true;
         $p['actionname']   = 'search';
         $p['actionvalue']  = _sx('button', 'Search');
-        //        $p['criteria']     = [];
         $types = self::$types;
         foreach ($types as $type) {
-            $criterianame = self::getCriteriaNameForItemtype($type);
-            $p[$criterianame]     = [];
+            $criterianame     = self::getCriteriaNameForItemtype($type);
+            $p[$criterianame] = [];
         }
 
         foreach ($params as $key => $val) {
@@ -229,8 +235,6 @@ class Condition extends CommonDBTM
       ");
 
         echo "<div class='list-group list-group-flush list-group-hoverable criteria-list pt-2' id='$searchcriteriatableid'>";
-
-
         // Display normal search parameters
         $i = 0;
         if (is_array($p[$criterianame])
