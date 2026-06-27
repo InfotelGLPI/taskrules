@@ -4,7 +4,7 @@
 
 Le plugin **TaskRules** permet d'automatiser la mise à jour des éléments d'inventaire (matériels) liés à un ticket lorsqu'une **tâche** est ajoutée à ce ticket ou que son statut passe à « Fait ». Chaque règle est attachée à un **modèle de tâche** (`TaskTemplate`) : dès qu'une tâche de ticket utilisant ce modèle est créée ou clôturée, la règle évalue ses conditions sur les matériels liés au ticket, puis applique les actions configurées (changement de statut, de localisation, d'utilisateur, de groupe, de contact).
 
-**Licence** : GPLv2+  
+**Licence** : GPLv3+  
 **Auteur** : Edmond Doudard / Infotel  
 **Dépôt** : https://github.com/InfotelGLPI/taskrules
 

@@ -4,7 +4,7 @@
 
 The **TaskRules** plugin automates updates to the inventory items (assets) linked to a ticket whenever a **task** is added to that ticket, or when the task's status changes to "Done". Each rule is attached to a **task template** (`TaskTemplate`): as soon as a ticket task using that template is created or completed, the rule evaluates its conditions against the assets linked to the ticket, then applies the configured actions (change of status, location, user, group, or contact).
 
-**License**: GPLv2+  
+**License**: GPLv3+  
 **Author**: Edmond Doudard / Infotel  
 **Repository**: https://github.com/InfotelGLPI/taskrules
 
