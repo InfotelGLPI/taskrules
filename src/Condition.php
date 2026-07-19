@@ -119,7 +119,7 @@ class Condition extends CommonDBTM
         if (!$cond->getFromDBByCrit(["taskrules_id" => $id])) {
             $cond->getEmpty();
         }
-        $save_fold_status = $_SESSION['glpifold_search'];
+        $save_fold_status = $_SESSION['glpifold_search'] ?? 0;
         $_SESSION['glpifold_search'] = 0;
 
         $types = self::$types;

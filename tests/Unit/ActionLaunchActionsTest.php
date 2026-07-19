@@ -49,6 +49,13 @@ class StubComputerForAction extends \CommonDBTM
         return true;
     }
 
+    // Authorization is enforced by launchActions() via can(); this unit test
+    // isolates the field-mapping logic, so it grants the right unconditionally.
+    public function can($ID, int $right, ?array &$input = null): bool
+    {
+        return true;
+    }
+
     public function update($input, $history = 1, $options = []): bool
     {
         static::$capturedInputs[] = $input;

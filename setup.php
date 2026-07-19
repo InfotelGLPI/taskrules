@@ -98,7 +98,7 @@ function plugin_version_taskrules()
         'name'           => _n('Task rule', 'Task rules', 2, 'taskrules'),
         'version'        => PLUGIN_TASKRULES_VERSION,
         'author'         => 'Doudard Edmond / Infotel',
-        'license'        => 'GPLv2+',
+        'license'        => 'GPLv3+',
         'homepage'       => '',
         'requirements'   => [
             'glpi'       => [

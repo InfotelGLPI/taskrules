@@ -27,6 +27,7 @@
  --------------------------------------------------------------------------
  */
 
+use Glpi\Exception\Http\AccessDeniedHttpException;
 use GlpiPlugin\Taskrules\Condition;
 use GlpiPlugin\Taskrules\Rule;
 
@@ -38,6 +39,12 @@ $tickettasks_id = (int) ($_POST['tickettasks_id'] ?? 0);
 if ($tickettasks_id > 0) {
     $tickettask = new TicketTask();
     if ($tickettask->getFromDB($tickettasks_id)) {
+        // Enforce access to the parent ticket before evaluating its linked assets
+        // (defends against IDOR: no probing an arbitrary ticket's match status).
+        $ticket = new Ticket();
+        if (!$ticket->can((int) $tickettask->fields['tickets_id'], READ)) {
+            throw new AccessDeniedHttpException();
+        }
         unset($_SESSION['plugin_taskrules']['show_updateresults']);
         $rule = new Rule();
         if ($rule->getFromDBByCrit(["tasktemplates_id" => $tickettask->fields['tasktemplates_id'], "preventchange" => 1]

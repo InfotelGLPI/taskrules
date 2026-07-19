@@ -27,17 +27,27 @@
  --------------------------------------------------------------------------
  */
 
+use Glpi\Exception\Http\AccessDeniedHttpException;
 use GlpiPlugin\Taskrules\Action;
 use GlpiPlugin\Taskrules\Condition;
 use GlpiPlugin\Taskrules\Log;
 use GlpiPlugin\Taskrules\Rule;
 
-Session::checkRight("plugin_taskrules", READ);
+// This endpoint mutates the assets linked to the ticket, so it requires the
+// plugin UPDATE right (not merely READ).
+Session::checkRight("plugin_taskrules", UPDATE);
 
 $tickettasks_id = (int) ($_POST['tickettasks_id'] ?? 0);
 if ($tickettasks_id > 0) {
     $tickettask = new TicketTask();
     if ($tickettask->getFromDB($tickettasks_id)) {
+        // Enforce access to the parent ticket before acting on its linked assets
+        // (defends against IDOR: a user must not drive writes on an arbitrary
+        // tickettasks_id belonging to a ticket they cannot access).
+        $ticket = new Ticket();
+        if (!$ticket->can((int) $tickettask->fields['tickets_id'], READ)) {
+            throw new AccessDeniedHttpException();
+        }
         unset($_SESSION['plugin_taskrules']['show_updateresults']);
         $rule = new Rule();
         if ($rule->getFromDBByCrit(["tasktemplates_id" => $tickettask->fields['tasktemplates_id']]) && $rule->fields['active'] == 1) {

@@ -148,6 +148,16 @@ class Action extends CommonDBTM
         }
         //Launch Actions
         $item = new $item_linked['itemtype']();
+        // Defense in depth: never mutate an asset the current user is not allowed
+        // to update (this checks both the UPDATE right and entity access). Covers
+        // every caller of launchActions (AJAX endpoint and TicketTask hooks).
+        if (!$item->can((int) $item_linked['items_id'], UPDATE)) {
+            $results['errors']['no_right'][] = [
+                'itemtype' => $item_linked['itemtype'],
+                'items_id' => $item_linked['items_id'],
+            ];
+            return $results;
+        }
         // $states[1] = __('Empty the field on the linked item of ticket', 'taskrules');
         // $states[2] = __('Affect a specific state on the linked item of ticket', 'taskrules');
         if ($rule->fields['state_action'] == 1) {
