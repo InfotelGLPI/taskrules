@@ -1,0 +1,52 @@
+{#
+ -------------------------------------------------------------------------
+ Taskrules plugin for GLPI
+ Copyright (C) 2025-2026 by the Taskrules Development Team.
+
+ https://github.com/InfotelGLPI/Taskrules
+ -------------------------------------------------------------------------
+
+ LICENSE
+
+ This file is part of Taskrules.
+
+ Taskrules is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ Taskrules is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Taskrules. If not, see <http://www.gnu.org/licenses/>.
+ --------------------------------------------------------------------------
+ #}
+
+<div class="{{ card_class }}"{% if folded %} style="display: none;"{% endif %}>
+    <div id="searchcriteria{{ rand_criteria }}" class="{{ main_block_class }}">
+        {{ nbcount_script|raw }}
+        <div class="list-group list-group-flush list-group-hoverable criteria-list pt-2" id="{{ criteria_table_id }}">
+            {{ criteria_rows|raw }}
+            <a id="more-criteria{{ rand_criteria }}" role="button"
+               class="normalcriteria fold-search list-group-item p-2 border-0"
+               style="display: none;"></a>
+        </div>
+
+        <div class="card-footer d-flex search_actions">
+            <button id="addsearchcriteria{{ rand_criteria }}" class="btn btn-sm btn-outline-secondary me-1" type="button">
+                <i class="ti ti-square-plus"></i>
+                <span class="d-none d-sm-block">{{ __('rule') }}</span>
+            </button>
+            <button id="addcriteriagroup{{ rand_criteria }}" class="btn btn-sm btn-outline-secondary me-1" type="button">
+                <i class="ti ti-code-plus"></i>
+                <span class="d-none d-sm-block">{{ __('group') }}</span>
+            </button>
+        </div>
+
+        {{ js_script|raw }}
+        {{ hidden_fields|raw }}
+    </div>
+</div>

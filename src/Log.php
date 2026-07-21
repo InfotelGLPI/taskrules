@@ -33,6 +33,7 @@ use CommonDBTM;
 use DBConnection;
 use Dropdown;
 use Entity;
+use Glpi\Application\View\TemplateRenderer;
 use Migration;
 use Ticket;
 
@@ -116,54 +117,66 @@ class Log extends CommonDBTM
         }
 
         unset($_SESSION['plugin_taskrules']['results']);
+
+        // Collect the "not found" rows (items that did not match the rule).
+        $not_found_rows = [];
         if (isset($results['errors']['not_found'])
             && count($results['errors']['not_found']) > 0) {
             $not_found = $results['errors']['not_found'];
-
-            if (count($not_found) > 0) {
-                echo "<table class='tab_cadre_fixe'>";
-                echo "<tr class='tab_bg_2'>";
-                echo "<div class='alert alert-danger'>";
-                echo __('Items not updated (not match with rule)', 'taskrules');
-                echo "</div>";
-                //
-                //                echo "<td colspan='3' style='background: antiquewhite;'>";
-                //                echo __('Items not updated (not match with rule)', 'taskrules');
-                //                echo "</td>";
-                echo "</tr>";
-                foreach ($not_found as $n_found) {
-                    echo "<tr class='tab_bg_2'>";
-                    echo "<td width='20%'>";
-                    echo "<i class='ti ti-circle-x' style='color: red;'></i>";
-                    echo "</td>";
-                    echo "<td>";
-                    $obj = getItemForItemtype($n_found['itemtype']);
-                    echo $obj->getTypeName();
-                    echo "</td>";
-                    echo "<td>";
+            foreach ($not_found as $n_found) {
+                $obj = getItemForItemtype($n_found['itemtype']);
+                $type_name = '';
+                $link = '';
+                $serial = '';
+                if ($obj) {
+                    $type_name = $obj->getTypeName();
                     $obj->getFromDB($n_found['items_id']);
-                    echo $obj->getLink();
-                    echo "</td>";
-                    echo "<td>";
-                    echo htmlspecialchars($obj->fields['serial'] ?? '', ENT_QUOTES, 'UTF-8');
-                    echo "</td>";
-                    echo "</tr>";
+                    $link = $obj->getLink();
+                    $serial = $obj->fields['serial'] ?? '';
                 }
-                echo "</table><br>";
+                $not_found_rows[] = [
+                    'type_name' => $type_name,
+                    'link'      => $link,
+                    'serial'    => $serial,
+                ];
             }
         }
         unset($results['errors']);
-        $log_actions = [];
-        if (count($results) > 0) {
-            echo "<table class='tab_cadre_fixe'>";
-            //            echo "<tr class='tab_bg_2'>";
-            echo "<div class='alert alert-success'>";
-            echo __('Items updated', 'taskrules');
-            echo "</div>";
-            //            echo "</tr>";
-            echo "<tr class='tab_bg_2'>";
-            echo "<td>";
 
+        // Collect the "no rights" rows: assets that matched the rule but whose
+        // mutation was blocked by the can(UPDATE) guard in Action::launchActions().
+        // Each numeric entry is a launchActions() return that may carry
+        // ['errors']['no_right'] — surface them instead of silently dropping them.
+        $no_right_rows = [];
+        foreach ($results as $itemtype) {
+            if (is_array($itemtype)
+                && isset($itemtype['errors']['no_right'])
+                && is_array($itemtype['errors']['no_right'])) {
+                foreach ($itemtype['errors']['no_right'] as $nr) {
+                    $obj = getItemForItemtype($nr['itemtype']);
+                    $type_name = '';
+                    $link = '';
+                    $serial = '';
+                    if ($obj) {
+                        $type_name = $obj->getTypeName();
+                        $obj->getFromDB($nr['items_id']);
+                        $link = $obj->getLink();
+                        $serial = $obj->fields['serial'] ?? '';
+                    }
+                    $no_right_rows[] = [
+                        'type_name' => $type_name,
+                        'link'      => $link,
+                        'serial'    => $serial,
+                    ];
+                }
+            }
+        }
+
+        // Build the "updated" render model and, as a side effect, the
+        // $log_actions entries persisted at the end of the method.
+        $log_actions = [];
+        $updated_blocks = [];
+        if (count($results) > 0) {
             foreach ($results as $k => $itemtype) {
                 if (isset($itemtype['errors'])) {
                     if (count($itemtype['errors']) > 0
@@ -177,7 +190,6 @@ class Log extends CommonDBTM
 
             $i = 0;
             $j = 0;
-            //            Toolbox::logInfo($results);
             foreach ($results as $k => $itemtype) {
                 unset($itemtype['users_id']);
                 unset($itemtype['groups_id']);
@@ -185,51 +197,46 @@ class Log extends CommonDBTM
                 if (is_array($itemtype)) {
                     if (count($itemtype) > 0) {
                         unset($itemtype['not_found']);
-                        echo "<table class='tab_cadre_fixe'>";
+                        $groups = [];
                         foreach ($itemtype as $type => $type_results) {
                             $i++;
                             if (is_array($type_results)) {
                                 foreach ($type_results as $items_id => $items_id_results) {
-                                    echo "<tr class='tab_bg_2'>";
-                                    echo "<th width='20%'>";
                                     $obj = getItemForItemtype($type);
-                                    echo $obj->getTypeName();
-                                    echo "</th>";
-                                    echo "<th>";
-                                    $obj->getFromDB($items_id);
-                                    echo $obj->getLink();
-                                    echo "</th>";
-                                    echo "<th>";
-                                    echo htmlspecialchars($obj->fields['serial'] ?? '', ENT_QUOTES, 'UTF-8');
-                                    echo "</th>";
-                                    echo "</tr>";
+                                    $type_name = '';
+                                    $link = '';
+                                    $serial = '';
+                                    if ($obj) {
+                                        $type_name = $obj->getTypeName();
+                                        $obj->getFromDB($items_id);
+                                        $link = $obj->getLink();
+                                        $serial = $obj->fields['serial'] ?? '';
+                                    }
 
+                                    $item_actions = [];
                                     foreach ($items_id_results as $action => $res) {
                                         $j++;
-                                        echo "<tr class='tab_bg_2'>";
-                                        echo "<td>";
-                                        echo Action::getActionName($action);
-                                        echo "</td>";
-                                        echo "<td>";
+                                        $action_name = Action::getActionName($action);
+                                        $action_type = '';
                                         if ($action == 'state_action') {
-                                            echo Action::getStatusActionName($res['action']);
+                                            $action_type = Action::getStatusActionName($res['action']);
                                         } elseif ($action == 'location_action') {
-                                            echo Action::getLocationActionName($res['action']);
+                                            $action_type = Action::getLocationActionName($res['action']);
                                         } elseif ($action == 'contact_action') {
-                                            echo Action::getContactActionName($res['action']);
+                                            $action_type = Action::getContactActionName($res['action']);
                                         } elseif ($action == 'user_action') {
-                                            echo Action::getUserActionName($res['action']);
+                                            $action_type = Action::getUserActionName($res['action']);
                                         } elseif ($action == 'group_action') {
-                                            echo Action::getGroupActionName($res['action']);
+                                            $action_type = Action::getGroupActionName($res['action']);
                                         }
-                                        echo "</td>";
-                                        echo "<td>";
+
+                                        $result_html = '';
                                         if (($action == 'location_action'
                                                 || $action == 'status_action'
                                                 || $action == 'user_action'
                                                 || $action == 'group_action')
                                             && $res['action'] == 1 && $res['value'] == 0) {
-                                            echo "<i class='ti ti-check' style='color: forestgreen;'></i>";
+                                            $result_html = "<i class='ti ti-check' style='color: forestgreen;'></i>";
                                             $titlelog = "";
                                             if ($action == 'location_action') {
                                                 $titlelog = __('Location');
@@ -250,7 +257,7 @@ class Log extends CommonDBTM
                                             ];
                                         } elseif ($action == 'contact_action'
                                             && $res['value'] == 'null') {
-                                            echo "<i class='ti ti-check' style='color: forestgreen;'></i>";
+                                            $result_html = "<i class='ti ti-check' style='color: forestgreen;'></i>";
                                             $log_actions[$i][$j] = [
                                                 'itemtype' => $type,
                                                 'items_id' => $items_id,
@@ -263,7 +270,7 @@ class Log extends CommonDBTM
                                             ];
                                         } elseif ($action == 'state_action'
                                             && $res['action'] == 2) {
-                                            echo Dropdown::getDropdownName('glpi_states', $res['value']);
+                                            $result_html = Dropdown::getDropdownName('glpi_states', $res['value']);
                                             $log_actions[$i][$j] = [
                                                 'itemtype' => $type,
                                                 'items_id' => $items_id,
@@ -273,7 +280,7 @@ class Log extends CommonDBTM
                                             ];
                                         } elseif ($action == 'location_action'
                                             && ($res['action'] == 2 || $res['action'] == 3)) {
-                                            echo Dropdown::getDropdownName('glpi_locations', $res['value']);
+                                            $result_html = Dropdown::getDropdownName('glpi_locations', $res['value']);
                                             $log_actions[$i][$j] = [
                                                 'itemtype' => $type,
                                                 'items_id' => $items_id,
@@ -287,8 +294,8 @@ class Log extends CommonDBTM
                                             if ($errors) {
                                                 foreach ($errors as $name => $error) {
                                                     if ($name == 'user_action') {
-                                                        echo "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
-                                                        echo "<span style='color:red'>" . $error . "</span><br>";
+                                                        $result_html .= "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
+                                                        $result_html .= "<span style='color:red'>" . htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8') . "</span><br>";
                                                         $ko = 1;
                                                         $log_actions[$i][$j] = [
                                                             'itemtype' => $type,
@@ -301,7 +308,7 @@ class Log extends CommonDBTM
                                                 }
                                             }
                                             if ($ko == 0) {
-                                                echo getUserName($res['value']);
+                                                $result_html .= getUserName($res['value']);
                                                 $log_actions[$i][$j] = [
                                                     'itemtype' => $type,
                                                     'items_id' => $items_id,
@@ -317,8 +324,8 @@ class Log extends CommonDBTM
                                             if ($errors) {
                                                 foreach ($errors as $name => $error) {
                                                     if ($name == 'group_action') {
-                                                        echo "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
-                                                        echo "<span style='color:red'>" . $error . "</span><br>";
+                                                        $result_html .= "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
+                                                        $result_html .= "<span style='color:red'>" . htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8') . "</span><br>";
                                                         $kp = 1;
                                                         $log_actions[$i][$j] = [
                                                             'itemtype' => $type,
@@ -329,8 +336,8 @@ class Log extends CommonDBTM
                                                         ];
                                                     }
                                                     if ($name == 'user_action') {
-                                                        echo "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
-                                                        echo "<span style='color:red'>" . $error . "</span><br>";
+                                                        $result_html .= "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
+                                                        $result_html .= "<span style='color:red'>" . htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8') . "</span><br>";
                                                         $ko = 1;
                                                         $log_actions[$i][$j] = [
                                                             'itemtype' => $type,
@@ -343,7 +350,7 @@ class Log extends CommonDBTM
                                                 }
                                             }
                                             if ($ko == 0 && $kp == 0) {
-                                                echo Dropdown::getDropdownName('glpi_groups', $res['value']);
+                                                $result_html .= Dropdown::getDropdownName('glpi_groups', $res['value']);
                                                 $log_actions[$i][$j] = [
                                                     'itemtype' => $type,
                                                     'items_id' => $items_id,
@@ -353,23 +360,36 @@ class Log extends CommonDBTM
                                                 ];
                                             }
                                         } else {
-                                            echo htmlspecialchars((string) ($res['value'] ?? ''), ENT_QUOTES, 'UTF-8');
+                                            $result_html = htmlspecialchars((string) ($res['value'] ?? ''), ENT_QUOTES, 'UTF-8');
                                         }
 
-                                        echo "</td>";
-                                        echo "</tr>";
+                                        $item_actions[] = [
+                                            'action_name' => $action_name,
+                                            'action_type' => $action_type,
+                                            'result_html' => $result_html,
+                                        ];
                                     }
+
+                                    $groups[] = [
+                                        'type_name' => $type_name,
+                                        'link'      => $link,
+                                        'serial'    => $serial,
+                                        'actions'   => $item_actions,
+                                    ];
                                 }
                             }
                         }
-                        echo "</table>";
+                        $updated_blocks[] = ['groups' => $groups];
                     }
                 }
             }
-            echo "</td>";
-            echo "</tr>";
-            echo "</table>";
         }
+
+        TemplateRenderer::getInstance()->display('@taskrules/results.html.twig', [
+            'not_found_rows' => $not_found_rows,
+            'no_right_rows'  => $no_right_rows,
+            'updated_blocks' => $updated_blocks,
+        ]);
         unset($_SESSION['plugin_taskrules']['show_updateresults']['results']);
 
         $log = new Log();

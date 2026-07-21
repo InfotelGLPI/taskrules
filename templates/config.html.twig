@@ -1,0 +1,51 @@
+{#
+ -------------------------------------------------------------------------
+ Taskrules plugin for GLPI
+ Copyright (C) 2025-2026 by the Taskrules Development Team.
+
+ https://github.com/InfotelGLPI/Taskrules
+ -------------------------------------------------------------------------
+
+ LICENSE
+
+ This file is part of Taskrules.
+
+ Taskrules is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ Taskrules is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Taskrules. If not, see <http://www.gnu.org/licenses/>.
+ --------------------------------------------------------------------------
+ #}
+
+<table class="tab_cadre_fixe">
+    <tr class="tab_bg_2">
+        <th colspan="2">{{ _n('Task rule', 'Task rules', 2, 'taskrules') }}</th>
+    </tr>
+    <tr class="tab_bg_2">
+        <td>
+            <a href="{{ log_url }}">{{ __('See logs', 'taskrules') }}</a>
+        </td>
+        <td>
+            {% if can_purge %}
+                <form method="post" action="{{ purge_target }}">
+                    <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+                    {{ call('Html::submit', [__('Drop logs', 'taskrules'), {
+                        'name': 'purge',
+                        'class': 'btn btn-outline-danger',
+                        'confirm': __('Confirm the definitive deletion of all logs?', 'taskrules'),
+                    }])|raw }}
+                </form>
+            {% else %}
+                &nbsp;
+            {% endif %}
+        </td>
+    </tr>
+</table>

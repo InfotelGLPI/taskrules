@@ -30,6 +30,7 @@
 namespace GlpiPlugin\Taskrules;
 
 use Ajax;
+use Glpi\Application\View\TemplateRenderer;
 use CommonDBTM;
 use CommonGLPI;
 use DBConnection;
@@ -137,9 +138,6 @@ class Rule extends CommonDBTM
 
     public function showForm($tasktemplates_id, array $options = [])
     {
-        echo Html::css(PLUGIN_TASKRULES_WEBDIR . "/lib/jquery-ui/jquery-ui.min.css");
-        echo Html::script(PLUGIN_TASKRULES_WEBDIR . "/lib/jquery-ui/jquery-ui.min.js");
-
         $ID = 0;
         if ($this->getFromDBByCrit(['tasktemplates_id' => $tasktemplates_id])) {
             $ID = $this->fields['id'];
@@ -155,59 +153,37 @@ class Rule extends CommonDBTM
             $cond->getEmpty();
         }
 
-        echo "<form name='form' method='post' action='" . $this->getFormURL() . "'>";
-        echo "<table class='tab_cadre_fixe'>\n";
-        echo "<tr class='tab_bg_2'>\n";
-        echo "<td class='top'>\n";
-        echo Html::hidden('tasktemplates_id', ['value' => $tasktemplates_id]);
-        echo Html::hidden('id', ['value' => $ID]);
-        echo Html::hidden('groupIndex', ['value' => 0]);
-        echo Html::hidden('boolUpdStatuses', ['value' => 0]);
+        // The sub-forms below still echo their own markup; capture each output
+        // buffer and hand it to the template as pre-rendered raw slots.
+        $head_assets = Html::css(PLUGIN_TASKRULES_WEBDIR . "/lib/jquery-ui/jquery-ui.min.css")
+            . Html::script(PLUGIN_TASKRULES_WEBDIR . "/lib/jquery-ui/jquery-ui.min.js");
 
-
-        echo "<div id='accordion_rules'>";
-
-        /* ---------------------- */
-        /* "Parameters" section */
-        /* ---------------------- */
-        echo "<h3><a href='#'>" . _n("Parameter", "Parameters", 2, "taskrules") . "</a></h3>";
+        ob_start();
         $this->showParametersForm();
+        $parameters_form = ob_get_clean();
 
-        /* ---------------------- */
-        /* "Condition(s)" section */
-        /* ---------------------- */
-        echo "<h3><a href='#'>" . _n("Condition", "Conditions", 2, "taskrules") . "</a></h3>";
+        ob_start();
         $cond->showCriteriasForm($ID);
+        $criterias_form = ob_get_clean();
 
-        /* ----------------- */
-        /* "Trigger" section */
-        /* ----------------- */
-        echo "<h3><a href='#'>" . _n("Trigger", "Triggers", 2, "taskrules") . "</a></h3>";
+        ob_start();
         $this->showTriggersForm();
+        $triggers_form = ob_get_clean();
 
-        /* ------------------- */
-        /* "Action(s)" section */
-        /* ------------------- */
-        echo "<h3><a href='#'>" . _n("Action", "Actions", 2, "taskrules") . "</a></h3>";
+        ob_start();
         $this->showActionsForm($ID);
+        $actions_form = ob_get_clean();
 
-        echo "</div>";
-        echo "<script>accordion_taskrules();</script>";
-
-        echo "</td></tr>\n";
-
-        echo "<tr class='tab_bg_1'><td class='center' colspan='2'>";
-        if ($ID > 0) {
-            echo Html::submit(_sx('button', 'Update'), ['name' => 'update', 'class' => 'btn btn-primary']);
-        } else {
-            echo Html::submit(_sx('button', 'Add'), ['name' => 'add', 'class' => 'btn btn-primary']);
-        }
-
-        echo "</td></tr>";
-
-        echo "</table>\n";
-        echo "</div>\n";
-        Html::closeForm();
+        TemplateRenderer::getInstance()->display('@taskrules/rule_form.html.twig', [
+            'target'           => $this->getFormURL(),
+            'tasktemplates_id' => $tasktemplates_id,
+            'id'               => $ID,
+            'head_assets'      => $head_assets,
+            'parameters_form'  => $parameters_form,
+            'criterias_form'   => $criterias_form,
+            'triggers_form'    => $triggers_form,
+            'actions_form'     => $actions_form,
+        ]);
 
         return true;
     }

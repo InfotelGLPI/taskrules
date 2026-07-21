@@ -27,6 +27,7 @@
  --------------------------------------------------------------------------
  */
 
+use Glpi\Application\View\TemplateRenderer;
 use GlpiPlugin\Taskrules\Rule;
 
 Session::checkRight("plugin_taskrules", READ);
@@ -34,31 +35,11 @@ Session::checkRight("plugin_taskrules", READ);
 if (Plugin::isPluginActive("taskrules")) {
     Html::header(_n('Task rule', 'Task rules', 2, 'taskrules'), $_SERVER['PHP_SELF'], 'config', Rule::class);
 
-    echo "<table class='tab_cadre_fixe'>";
-    echo "<tr class='tab_bg_2'>";
-    echo "<th colspan='2'>";
-    echo _n('Task rule', 'Task rules', 2, 'taskrules');
-    echo "</th>";
-    echo "</tr>";
-    echo "<tr class='tab_bg_2'>";
-    echo "<td>";
-    echo "<a href='" . PLUGIN_TASKRULES_WEBDIR . "/front/log.php'>" . __('See logs', 'taskrules') . "</a>";
-    echo "</td>";
-    echo "<td>";
-    if (Session::haveRight("plugin_taskrules", PURGE)) {
-        echo "<form method='post' action='" . PLUGIN_TASKRULES_WEBDIR . "/front/log.form.php'>";
-        echo Html::submit(__('Drop logs', 'taskrules'), [
-            'name'    => 'purge',
-            'class'   => 'btn btn-outline-danger',
-            'confirm' => __('Confirm the definitive deletion of all logs?', 'taskrules'),
-        ]);
-        echo Html::closeForm();
-    } else {
-        echo "&nbsp;";
-    }
-    echo "</td>";
-    echo "</tr>";
-    echo "</table>";
+    TemplateRenderer::getInstance()->display('@taskrules/config.html.twig', [
+        'log_url'      => PLUGIN_TASKRULES_WEBDIR . '/front/log.php',
+        'purge_target' => PLUGIN_TASKRULES_WEBDIR . '/front/log.form.php',
+        'can_purge'    => Session::haveRight('plugin_taskrules', PURGE),
+    ]);
 
     Html::footer();
 }

@@ -1,0 +1,84 @@
+{#
+ -------------------------------------------------------------------------
+ Taskrules plugin for GLPI
+ Copyright (C) 2025-2026 by the Taskrules Development Team.
+
+ https://github.com/InfotelGLPI/Taskrules
+ -------------------------------------------------------------------------
+
+ LICENSE
+
+ This file is part of Taskrules.
+
+ Taskrules is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ Taskrules is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Taskrules. If not, see <http://www.gnu.org/licenses/>.
+ --------------------------------------------------------------------------
+ #}
+
+{% if not_found_rows is not empty %}
+    <div class="alert alert-danger">{{ __('Items not updated (not match with rule)', 'taskrules') }}</div>
+    <table class="tab_cadre_fixe">
+        {% for row in not_found_rows %}
+            <tr class="tab_bg_2">
+                <td width="20%"><i class="ti ti-circle-x" style="color: red;"></i></td>
+                <td>{{ row.type_name }}</td>
+                <td>{{ row.link|raw }}</td>
+                <td>{{ row.serial }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <br>
+{% endif %}
+
+{% if no_right_rows is not empty %}
+    <div class="alert alert-warning">{{ __('Items not updated (insufficient rights)', 'taskrules') }}</div>
+    <table class="tab_cadre_fixe">
+        {% for row in no_right_rows %}
+            <tr class="tab_bg_2">
+                <td width="20%"><i class="ti ti-lock" style="color: orange;"></i></td>
+                <td>{{ row.type_name }}</td>
+                <td>{{ row.link|raw }}</td>
+                <td>{{ row.serial }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <br>
+{% endif %}
+
+{% if updated_blocks is not empty %}
+    <div class="alert alert-success">{{ __('Items updated', 'taskrules') }}</div>
+    <table class="tab_cadre_fixe">
+        <tr class="tab_bg_2">
+            <td>
+                {% for block in updated_blocks %}
+                    <table class="tab_cadre_fixe">
+                        {% for group in block.groups %}
+                            <tr class="tab_bg_2">
+                                <th width="20%">{{ group.type_name }}</th>
+                                <th>{{ group.link|raw }}</th>
+                                <th>{{ group.serial }}</th>
+                            </tr>
+                            {% for action in group.actions %}
+                                <tr class="tab_bg_2">
+                                    <td>{{ action.action_name }}</td>
+                                    <td>{{ action.action_type }}</td>
+                                    <td>{{ action.result_html|raw }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </table>
+                {% endfor %}
+            </td>
+        </tr>
+    </table>
+{% endif %}

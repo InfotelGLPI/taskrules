@@ -34,6 +34,7 @@ use AllAssets;
 use CommonDBTM;
 use DBConnection;
 use Dropdown;
+use Glpi\Application\View\TemplateRenderer;
 use Glpi\Search\Input\QueryBuilder;
 use Glpi\Search\SearchEngine;
 use Glpi\Toolbox\URL;
@@ -108,10 +109,7 @@ class Condition extends CommonDBTM
 
     public function showCriteriasForm($id)
     {
-
-        echo "<div>";
-        echo "<table style='width:100%'>";
-
+        $p = [];
         $p['showbookmark'] = false;
         $p['mainform'] = true;
 
@@ -131,6 +129,7 @@ class Condition extends CommonDBTM
             }
         }
 
+        $criterias = [];
         foreach ($types as $itemtype) {
             // Guard the dynamic instantiation against a stale/forged itemtype,
             // mirroring the getItemForItemtype() guard used in checkCriteras().
@@ -138,28 +137,26 @@ class Condition extends CommonDBTM
             if (!$item) {
                 continue;
             }
-            echo "<tr class='tab_bg_2'>";
-            echo "<th>";
-            echo $item->getTypeName();
-            echo "</th>";
-            echo "</tr>";
-            echo "<tr class='tab_bg_2'>";
-            echo "<td>";
             $criterianame = self::getCriteriaNameForItemtype($itemtype);
             $fieldname    = self::getFieldNameForItemtype($itemtype);
             $decoded      = self::decodeField($cond->fields[$fieldname]);
             $p[$criterianame]                                = $decoded;
             $_SESSION['glpisearch'][$itemtype][$criterianame] = $decoded;
+
+            // showGenericSearch() still echoes; capture its output as a raw slot.
+            ob_start();
             self::showGenericSearch($itemtype, $p);
-            echo "</td>";
-            echo "</tr>";
+            $criterias[] = [
+                'type_name'   => $item->getTypeName(),
+                'search_html' => ob_get_clean(),
+            ];
         }
 
         $_SESSION['glpifold_search'] = $save_fold_status;
 
-
-        echo "</table>";
-        echo "</div>";
+        TemplateRenderer::getInstance()->display('@taskrules/criterias_form.html.twig', [
+            'criterias' => $criterias,
+        ]);
     }
 
     /**
@@ -214,34 +211,23 @@ class Condition extends CommonDBTM
         // Itemtype name used in JS function names, etc
         $normalized_itemtype = strtolower(str_replace('\\', '', $itemtype));
         $rand_criteria = mt_rand();
-        $main_block_class = '';
         $card_class = 'search-form card card-sm mb-4';
-        //        if ($p['mainform'] && $p['showaction']) {
-        //            echo "<form name='searchform$normalized_itemtype' class='search-form-container' method='get' action='" . $p['target'] . "'>";
-        //        } else {
-        $main_block_class = "search-form-container";
-        //            $card_class = 'border d-inline-block ms-1';
-        //        }
-        $display = $_SESSION['glpifold_search'] ? 'style="display: none;"' : '';
-        echo "<div class='$card_class' $display>";
+        $main_block_class = 'search-form-container';
 
-        echo "<div id='searchcriteria$rand_criteria' class='$main_block_class' >";
         $nbsearchcountvar      = 'nbcriteria' . $normalized_itemtype . mt_rand();
         $searchcriteriatableid = 'criteriatable' . $normalized_itemtype . mt_rand();
-        // init criteria count
 
+        // init criteria count
         $criterianame = self::getCriteriaNameForItemtype($itemtype);
         $cnt = 0;
         if (is_array($p[$criterianame])) {
             $cnt = count($p[$criterianame]);
         }
-        echo Html::scriptBlock("
-         var $nbsearchcountvar = " . $cnt . ";
-      ");
+        $nbcount_script = Html::scriptBlock("var $nbsearchcountvar = " . $cnt . ";");
 
-        echo "<div class='list-group list-group-flush list-group-hoverable criteria-list pt-2' id='$searchcriteriatableid'>";
-        // Display normal search parameters
-        $i = 0;
+        // Capture the (still echo-based) criteria rows so they can be injected
+        // into the template as a pre-rendered raw slot.
+        ob_start();
         if (is_array($p[$criterianame])
             && count($p[$criterianame]) > 0) {
             foreach (array_keys($p[$criterianame]) as $i) {
@@ -252,77 +238,15 @@ class Condition extends CommonDBTM
                 ]);
             }
         }
-
-
-        echo "<a id='more-criteria$rand_criteria' role='button'
-            class='normalcriteria fold-search list-group-item p-2 border-0'
-            style='display: none;'></a>";
-
-        echo "</div>"; // .list
-
-        // Keep track of the current savedsearches on reload
-        //        if (isset($_GET['savedsearches_id'])) {
-        //            echo Html::input("savedsearches_id", [
-        //                'type' => "hidden",
-        //                'value' => $_GET['savedsearches_id'],
-        //            ]);
-        //        }
-
-        echo "<div class='card-footer d-flex search_actions'>";
-        //        $linked = self::getMetaItemtypeAvailable($itemtype);
-        echo "<button id='addsearchcriteria$rand_criteria' class='btn btn-sm btn-outline-secondary me-1' type='button'>
-               <i class='ti ti-square-plus'></i>
-               <span class='d-none d-sm-block'>" . __s('rule') . "</span>
-            </button>";
-        //        if (count($linked)) {
-        //            echo "<button id='addmetasearchcriteria$rand_criteria' class='btn btn-sm btn-outline-secondary me-1' type='button'>
-        //                  <i class='ti ti-circle-plus'></i>
-        //                  <span class='d-none d-sm-block'>" . __s('global rule') . "</span>
-        //               </button>";
-        //        }
-        echo "<button id='addcriteriagroup$rand_criteria' class='btn btn-sm btn-outline-secondary me-1' type='button'>
-               <i class='ti ti-code-plus'></i>
-               <span class='d-none d-sm-block'>" . __s('group') . "</span>
-            </button>";
-        $json_p = json_encode($p);
-
-        //        if ($p['mainform']) {
-        //            if ($p['showaction']) {
-        //                // Display submit button
-        //                echo '<button class="btn btn-sm btn-primary me-1" type="submit" name="' . htmlspecialchars($p['actionname']) . '">
-        //                <i class="ti ti-list-search"></i>
-        //                <span class="d-none d-sm-block">' . $p['actionvalue'] . '</span>
-        //                </button>';
-        //            }
-        //            if ($p['showbookmark'] || $p['showreset']) {
-        //                if ($p['showbookmark']) {
-        //                    SavedSearch::showSaveButton(
-        //                        SavedSearch::SEARCH,
-        //                        $itemtype,
-        //                        isset($_GET['savedsearches_id'])
-        //                    );
-        //                }
-        //
-        //                if ($p['showreset']) {
-        //                    echo "<a class='btn btn-ghost-secondary btn-icon btn-sm me-1 search-reset'
-        //                        data-bs-toggle='tooltip' data-bs-placement='bottom'
-        //                        href='"
-        //                        . $p['target']
-        //                        . (strpos($p['target'], '?') ? '&amp;' : '?')
-        //                        . "reset=reset' title=\"" . __s('Blank') . "\"
-        //                  ><i class='ti ti-circle-x'></i></a>";
-        //                }
-        //            }
-        //        }
-        echo "</div>"; //.search_actions
+        $criteria_rows = ob_get_clean();
 
         // idor checks
         $idor_display_criteria       = Session::getNewIDORToken($itemtype);
-        $idor_display_meta_criteria  = Session::getNewIDORToken($itemtype);
         $idor_display_criteria_group = Session::getNewIDORToken($itemtype);
 
         $itemtype_escaped = addslashes($itemtype);
         $root_doc = PLUGIN_TASKRULES_WEBDIR;
+        $json_p = json_encode($p);
         $JS = <<<JAVASCRIPT
          $('#addsearchcriteria$rand_criteria').on('click', function(event) {
             event.preventDefault();
@@ -381,26 +305,33 @@ JAVASCRIPT;
          });
 JAVASCRIPT;
         }
-        echo Html::scriptBlock($JS);
+        $js_script = Html::scriptBlock($JS);
 
+        $hidden_fields = '';
         if (count($p['addhidden'])) {
             foreach ($p['addhidden'] as $key => $val) {
-                echo Html::hidden($key, ['value' => $val]);
+                $hidden_fields .= Html::hidden($key, ['value' => $val]);
             }
         }
 
         if ($p['mainform']) {
             // For dropdown
-            echo Html::hidden('itemtype', ['value' => $itemtype]);
+            $hidden_fields .= Html::hidden('itemtype', ['value' => $itemtype]);
             // Reset to start when submit new search
-            echo Html::hidden('start', ['value'    => 0]);
+            $hidden_fields .= Html::hidden('start', ['value' => 0]);
         }
 
-        echo "</div>"; // #searchcriteria
-        echo "</div>"; // .card
-        //        if ($p['mainform'] && $p['showaction']) {
-        //            Html::closeForm();
-        //        }
+        TemplateRenderer::getInstance()->display('@taskrules/generic_search.html.twig', [
+            'card_class'        => $card_class,
+            'main_block_class'  => $main_block_class,
+            'folded'            => (bool) ($_SESSION['glpifold_search'] ?? false),
+            'rand_criteria'     => $rand_criteria,
+            'criteria_table_id' => $searchcriteriatableid,
+            'nbcount_script'    => $nbcount_script,
+            'criteria_rows'     => $criteria_rows,
+            'js_script'         => $js_script,
+            'hidden_fields'     => $hidden_fields,
+        ]);
     }
 
     /* Display a criteria field set, this function should be called by ajax/search.php
@@ -431,7 +362,10 @@ JAVASCRIPT;
         $p           = $request['p'];
         $options     = self::getCleanedOptions($request["itemtype"]);
         $randrow     = mt_rand();
-        $normalized_itemtype = strtolower(str_replace('\\', '', $request["itemtype"]));
+        // Keep only alphanumerics: this value is echoed into HTML id/data-rowid
+        // attributes, so strip any quote/angle-bracket payload (defence in depth
+        // on top of the validateIDOR guard in ajax/search.php).
+        $normalized_itemtype = preg_replace('/[^a-z0-9]/', '', strtolower($request["itemtype"]));
         $rowid       = 'searchrow' . $normalized_itemtype . $randrow;
         $addclass    = $num == 0 ? ' headerRow' : '';
         $prefix      = isset($p['prefix_crit']) ? htmlspecialchars($p['prefix_crit'], ENT_QUOTES) : '';
@@ -723,7 +657,9 @@ JAVASCRIPT;
         $num         = (int) $request['num'];
         $p           = $request['p'];
         $randrow     = mt_rand();
-        $rowid       = 'searchrow' . $request['itemtype'] . $randrow;
+        // Sanitize the request itemtype before it lands in HTML id/data-rowid
+        // attributes (defence in depth on top of validateIDOR).
+        $rowid       = 'searchrow' . preg_replace('/[^a-z0-9]/i', '', (string) $request['itemtype']) . $randrow;
         $addclass    = $num == 0 ? ' headerRow' : '';
         $prefix      = isset($p['prefix_crit']) ? htmlspecialchars($p['prefix_crit'], ENT_QUOTES) : '';
         $parents_num = $p['parents_num'] ?? [];

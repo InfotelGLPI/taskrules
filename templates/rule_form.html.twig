@@ -1,0 +1,66 @@
+{#
+ -------------------------------------------------------------------------
+ Taskrules plugin for GLPI
+ Copyright (C) 2025-2026 by the Taskrules Development Team.
+
+ https://github.com/InfotelGLPI/Taskrules
+ -------------------------------------------------------------------------
+
+ LICENSE
+
+ This file is part of Taskrules.
+
+ Taskrules is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ Taskrules is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License
+ along with Taskrules. If not, see <http://www.gnu.org/licenses/>.
+ --------------------------------------------------------------------------
+ #}
+
+{{ head_assets|raw }}
+
+<form name="form" method="post" action="{{ target }}">
+    <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
+    <table class="tab_cadre_fixe">
+        <tr class="tab_bg_2">
+            <td class="top">
+                <input type="hidden" name="tasktemplates_id" value="{{ tasktemplates_id }}">
+                <input type="hidden" name="id" value="{{ id }}">
+                <input type="hidden" name="groupIndex" value="0">
+                <input type="hidden" name="boolUpdStatuses" value="0">
+
+                <div id="accordion_rules">
+                    <h3><a href="#">{{ _n('Parameter', 'Parameters', 2, 'taskrules') }}</a></h3>
+                    {{ parameters_form|raw }}
+
+                    <h3><a href="#">{{ _n('Condition', 'Conditions', 2, 'taskrules') }}</a></h3>
+                    {{ criterias_form|raw }}
+
+                    <h3><a href="#">{{ _n('Trigger', 'Triggers', 2, 'taskrules') }}</a></h3>
+                    {{ triggers_form|raw }}
+
+                    <h3><a href="#">{{ _n('Action', 'Actions', 2, 'taskrules') }}</a></h3>
+                    {{ actions_form|raw }}
+                </div>
+                {{ call('Html::scriptBlock', ['accordion_taskrules();'])|raw }}
+            </td>
+        </tr>
+        <tr class="tab_bg_1">
+            <td class="center" colspan="2">
+                {% if id > 0 %}
+                    {{ call('Html::submit', [_x('button', 'Update'), {'name': 'update', 'class': 'btn btn-primary'}])|raw }}
+                {% else %}
+                    {{ call('Html::submit', [_x('button', 'Add'), {'name': 'add', 'class': 'btn btn-primary'}])|raw }}
+                {% endif %}
+            </td>
+        </tr>
+    </table>
+</form>
