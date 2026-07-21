@@ -29,7 +29,8 @@
 
 use GlpiPlugin\Taskrules\Log;
 
-Session::checkRight("plugin_taskrules", DELETE);
+// Global, irreversible purge of the whole audit table: require PURGE (not DELETE).
+Session::checkRight("plugin_taskrules", PURGE);
 
 if (isset($_POST["purge"])) {
     $log = new Log();

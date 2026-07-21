@@ -27,6 +27,7 @@
  --------------------------------------------------------------------------
  */
 
+use Glpi\Exception\Http\AccessDeniedHttpException;
 use GlpiPlugin\Taskrules\Log;
 
 header("Content-Type: text/html; charset=UTF-8");
@@ -38,6 +39,21 @@ $tickets_id = (int)($_POST['tickets_id'] ?? 0);
 $tickettasks_id = (int)($_POST['tickettasks_id'] ?? 0);
 
 if ($tickets_id > 0 && $tickettasks_id > 0) {
+    // Enforce access to the parent ticket before touching its audit logs.
+    // PURGE is a global right (not entity-scoped), so without this check any
+    // holder could delete another entity's log entries via a forged POST (IDOR).
+    $tickettask = new TicketTask();
+    if (
+        !$tickettask->getFromDB($tickettasks_id)
+        || (int) $tickettask->fields['tickets_id'] !== $tickets_id
+    ) {
+        throw new AccessDeniedHttpException();
+    }
+    $ticket = new Ticket();
+    if (!$ticket->can($tickets_id, READ)) {
+        throw new AccessDeniedHttpException();
+    }
+
     $log = new Log();
     $logs_found = $log->find([
         'tickets_id' => $tickets_id,

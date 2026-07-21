@@ -32,7 +32,9 @@ namespace GlpiPlugin\Taskrules;
 use CommonDBTM;
 use DBConnection;
 use Dropdown;
+use Entity;
 use Migration;
+use Ticket;
 
 /**
  * Class Log
@@ -54,6 +56,8 @@ class Log extends CommonDBTM
         if (!$DB->tableExists($table)) {
             $query = "CREATE TABLE `$table` (
                         `id` int {$default_key_sign} NOT NULL auto_increment,
+                        `entities_id` int {$default_key_sign} NOT NULL DEFAULT '0',
+                        `is_recursive` tinyint NOT NULL DEFAULT '0',
                         `tickets_id` int {$default_key_sign} NOT NULL DEFAULT '0',
                         `tickettasks_id` int {$default_key_sign} NOT NULL DEFAULT '0',
                         `itemtype` varchar(100) NOT NULL,
@@ -64,11 +68,20 @@ class Log extends CommonDBTM
                         `value` text DEFAULT NULL,
                         `date` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
                         PRIMARY KEY (`id`),
+                        KEY `entities_id` (`entities_id`),
                         KEY `tickets_id` (`tickets_id`),
                         KEY `tickettasks_id` (`tickettasks_id`)
                ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
 
             $DB->doQuery($query);
+        } else {
+            // Entity isolation for existing installs: add entities_id/is_recursive so
+            // GLPI marks the log as entity-assigned and restricts Search::show() to the
+            // reader's accessible entities. Legacy rows default to the root entity (0).
+            $migration->addField($table, 'entities_id', 'integer', ['after' => 'id']);
+            $migration->addField($table, 'is_recursive', 'bool', ['after' => 'entities_id']);
+            $migration->addKey($table, 'entities_id');
+            $migration->migrationOneTable($table);
         }
     }
 
@@ -78,6 +91,20 @@ class Log extends CommonDBTM
 
         $table  = self::getTable();
         $DB->dropTable($table, true);
+    }
+
+    public function prepareInputForAdd($input)
+    {
+        // Stamp the log with the parent ticket's entity so GLPI can scope
+        // Search::show() to entities the reader is allowed to see.
+        if (!isset($input['entities_id']) && !empty($input['tickets_id'])) {
+            $ticket = new Ticket();
+            if ($ticket->getFromDB((int) $input['tickets_id'])) {
+                $input['entities_id'] = (int) $ticket->fields['entities_id'];
+            }
+        }
+
+        return parent::prepareInputForAdd($input);
     }
 
     public static function showResults($rule, $results, $tickets_id, $tickettasks_id)
@@ -505,6 +532,15 @@ class Log extends CommonDBTM
             'name' => __('Date'),
             'datatype' => 'datetime',
             'massiveaction' => false,
+        ];
+
+        $tab[] = [
+            'id' => '80',
+            'table' => 'glpi_entities',
+            'field' => 'completename',
+            'linkfield' => 'entities_id',
+            'name' => Entity::getTypeName(1),
+            'datatype' => 'dropdown',
         ];
 
         return $tab;

@@ -45,7 +45,17 @@ if (Plugin::isPluginActive("taskrules")) {
     echo "<a href='" . PLUGIN_TASKRULES_WEBDIR . "/front/log.php'>" . __('See logs', 'taskrules') . "</a>";
     echo "</td>";
     echo "<td>";
-    echo "<a href='" . PLUGIN_TASKRULES_WEBDIR . "/front/log.form.php'>" . __('Drop logs', 'taskrules') . "</a>";
+    if (Session::haveRight("plugin_taskrules", PURGE)) {
+        echo "<form method='post' action='" . PLUGIN_TASKRULES_WEBDIR . "/front/log.form.php'>";
+        echo Html::submit(__('Drop logs', 'taskrules'), [
+            'name'    => 'purge',
+            'class'   => 'btn btn-outline-danger',
+            'confirm' => __('Confirm the definitive deletion of all logs?', 'taskrules'),
+        ]);
+        echo Html::closeForm();
+    } else {
+        echo "&nbsp;";
+    }
     echo "</td>";
     echo "</tr>";
     echo "</table>";

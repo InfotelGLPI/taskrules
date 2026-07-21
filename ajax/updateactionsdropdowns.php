@@ -39,7 +39,7 @@ Session::checkRight("plugin_taskrules", UPDATE);
 if (isset($_POST['location_action']) && $_POST['location_action'] == 3) {
     Location::Dropdown([
         'name' => 'locations_id',
-        'value' => $_POST['locations_id'],
+        'value' => (int) ($_POST['locations_id'] ?? 0),
         'entity' => $_SESSION["glpiactive_entity"],
     ]);
 }
@@ -47,7 +47,8 @@ if (isset($_POST['location_action']) && $_POST['location_action'] == 3) {
 $types = Condition::getTypes();
 
 $rule = new Rule();
-if ($rule->getFromDB($_POST['id'])) {
+$rule_id = (int) ($_POST['id'] ?? 0);
+if ($rule_id > 0 && $rule->getFromDB($rule_id)) {
     $used_itemtypes = json_decode($rule->fields['used_itemtypes']);
     if (is_array($used_itemtypes) && count($used_itemtypes) > 0) {
         $types = $used_itemtypes;
@@ -58,6 +59,6 @@ if (isset($_POST['state_action']) && $_POST['state_action'] == 2) {
     $condition = new Condition();
     $states_id = $condition->getStatuses($types);
     Dropdown::showFromArray('states_id', $states_id, [
-        'value' => $_POST['states_id'] ?? 0,
+        'value' => (int) ($_POST['states_id'] ?? 0),
     ]);
 }

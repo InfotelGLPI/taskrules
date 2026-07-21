@@ -824,7 +824,10 @@ class Rule extends CommonDBTM
         $input = array_intersect_key($input, array_flip($allowed));
 
         if (!empty($input['used_itemtypes'])) {
-            $input['used_itemtypes'] = json_encode(array_values($input['used_itemtypes']));
+            // Keep only known itemtypes: prevents persisting an arbitrary class name
+            // later instantiated via `new $itemtype()` in Condition::showCriteriasForm.
+            $itemtypes = array_values(array_intersect((array) $input['used_itemtypes'], Condition::$types));
+            $input['used_itemtypes'] = json_encode($itemtypes);
         } else {
             $input['used_itemtypes'] = json_encode([]);
         }
@@ -846,7 +849,10 @@ class Rule extends CommonDBTM
         $input = array_intersect_key($input, array_flip($allowed));
 
         if (!empty($input['used_itemtypes'])) {
-            $input['used_itemtypes'] = json_encode(array_values($input['used_itemtypes']));
+            // Keep only known itemtypes: prevents persisting an arbitrary class name
+            // later instantiated via `new $itemtype()` in Condition::showCriteriasForm.
+            $itemtypes = array_values(array_intersect((array) $input['used_itemtypes'], Condition::$types));
+            $input['used_itemtypes'] = json_encode($itemtypes);
         } else {
             $input['used_itemtypes'] = json_encode([]);
         }

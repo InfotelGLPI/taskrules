@@ -4,4 +4,7 @@ vendor/
 .gh_token
 composer.lock
 *.min.*
-
+/vendor/
+.php-cs-fixer.cache
+.phpunit.result.cache
+/.phpunit.cache/

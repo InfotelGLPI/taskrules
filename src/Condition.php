@@ -65,7 +65,7 @@ class Condition extends CommonDBTM
             return $decoded;
         }
         // Fall back to PHP unserialize (legacy format stored before JSON migration)
-        $unserialized = @unserialize($value);
+        $unserialized = @unserialize($value, ['allowed_classes' => false]);
         if (is_array($unserialized)) {
             return $unserialized;
         }
@@ -132,7 +132,12 @@ class Condition extends CommonDBTM
         }
 
         foreach ($types as $itemtype) {
-            $item = new $itemtype();
+            // Guard the dynamic instantiation against a stale/forged itemtype,
+            // mirroring the getItemForItemtype() guard used in checkCriteras().
+            $item = getItemForItemtype($itemtype);
+            if (!$item) {
+                continue;
+            }
             echo "<tr class='tab_bg_2'>";
             echo "<th>";
             echo $item->getTypeName();
