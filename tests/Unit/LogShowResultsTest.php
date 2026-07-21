@@ -74,22 +74,46 @@ class LogShowResultsTest extends TestCase
         unset($_SESSION['plugin_taskrules']);
     }
 
+    /**
+     * Render results.html.twig through a standalone Twig environment.
+     *
+     * The lightweight "Unit" suite does not bootstrap the GLPI kernel, so
+     * GLPI's TemplateRenderer (which needs GLPI_CACHE_DIR) is unavailable.
+     * We render the real template file with the same 'html' auto-escaping
+     * strategy GLPI uses, so the escaping contract of {{ row.serial }} is
+     * still exercised against the actual template.
+     */
+    private function renderResults(array $model): string
+    {
+        $loader = new \Twig\Loader\FilesystemLoader(dirname(__DIR__, 2) . '/templates');
+        $twig = new \Twig\Environment($loader, [
+            'autoescape' => 'html',
+            'cache'      => false,
+        ]);
+        // Stub GLPI's translation function: identity is enough for rendering.
+        $twig->addFunction(new \Twig\TwigFunction('__', static fn($s) => $s));
+        $twig->addFunction(new \Twig\TwigFunction('_n', static fn($s, $p, $n) => $n > 1 ? $p : $s));
+
+        return $twig->render('results.html.twig', $model + [
+            'not_found_rows' => [],
+            'no_right_rows'  => [],
+            'updated_blocks' => [],
+        ]);
+    }
+
     public function testSerialXssIsHtmlEncodedInNotFoundSection(): void
     {
         $xss = '<script>alert(1)</script>';
         StubItemForLog::$stubSerial = $xss;
 
-        $results = [
-            'errors' => [
-                'not_found' => [
-                    ['itemtype' => StubItemForLog::class, 'items_id' => 1],
-                ],
-            ],
-        ];
+        $rows = Log::buildNotFoundRows([
+            ['itemtype' => StubItemForLog::class, 'items_id' => 1],
+        ]);
 
-        ob_start();
-        Log::showResults(null, $results, 0, 0);
-        $output = ob_get_clean();
+        // The model carries the raw serial; escaping is the template's job.
+        $this->assertSame($xss, $rows[0]['serial']);
+
+        $output = $this->renderResults(['not_found_rows' => $rows]);
 
         $this->assertStringNotContainsString($xss, $output);
         $this->assertStringContainsString(htmlspecialchars($xss, ENT_QUOTES, 'UTF-8'), $output);
@@ -99,17 +123,11 @@ class LogShowResultsTest extends TestCase
     {
         StubItemForLog::$stubSerial = 'SN-12345';
 
-        $results = [
-            'errors' => [
-                'not_found' => [
-                    ['itemtype' => StubItemForLog::class, 'items_id' => 2],
-                ],
-            ],
-        ];
+        $rows = Log::buildNotFoundRows([
+            ['itemtype' => StubItemForLog::class, 'items_id' => 2],
+        ]);
 
-        ob_start();
-        Log::showResults(null, $results, 0, 0);
-        $output = ob_get_clean();
+        $output = $this->renderResults(['not_found_rows' => $rows]);
 
         $this->assertStringContainsString('SN-12345', $output);
     }
@@ -118,17 +136,11 @@ class LogShowResultsTest extends TestCase
     {
         StubItemForLog::$stubSerial = '';
 
-        $results = [
-            'errors' => [
-                'not_found' => [
-                    ['itemtype' => StubItemForLog::class, 'items_id' => 3],
-                ],
-            ],
-        ];
+        $rows = Log::buildNotFoundRows([
+            ['itemtype' => StubItemForLog::class, 'items_id' => 3],
+        ]);
 
-        ob_start();
-        Log::showResults(null, $results, 0, 0);
-        $output = ob_get_clean();
+        $output = $this->renderResults(['not_found_rows' => $rows]);
 
         $this->assertIsString($output);
     }

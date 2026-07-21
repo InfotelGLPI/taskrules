@@ -108,6 +108,40 @@ class Log extends CommonDBTM
         return parent::prepareInputForAdd($input);
     }
 
+    /**
+     * Build the render-model rows for items that did not match the rule.
+     *
+     * Rows carry raw field values on purpose: HTML escaping is delegated to
+     * Twig auto-escaping in results.html.twig ({{ row.serial }} / {{ row.type_name }}).
+     * The {{ row.link|raw }} column is a GLPI-built link and is emitted as-is.
+     *
+     * @param array $not_found list of ['itemtype' => class, 'items_id' => int]
+     *
+     * @return array<int, array{type_name: string, link: string, serial: string}>
+     */
+    public static function buildNotFoundRows(array $not_found): array
+    {
+        $rows = [];
+        foreach ($not_found as $n_found) {
+            $obj = getItemForItemtype($n_found['itemtype']);
+            $type_name = '';
+            $link = '';
+            $serial = '';
+            if ($obj) {
+                $type_name = $obj->getTypeName();
+                $obj->getFromDB($n_found['items_id']);
+                $link = $obj->getLink();
+                $serial = $obj->fields['serial'] ?? '';
+            }
+            $rows[] = [
+                'type_name' => $type_name,
+                'link'      => $link,
+                'serial'    => $serial,
+            ];
+        }
+        return $rows;
+    }
+
     public static function showResults($rule, $results, $tickets_id, $tickettasks_id)
     {
         $errors = [];
@@ -122,24 +156,7 @@ class Log extends CommonDBTM
         $not_found_rows = [];
         if (isset($results['errors']['not_found'])
             && count($results['errors']['not_found']) > 0) {
-            $not_found = $results['errors']['not_found'];
-            foreach ($not_found as $n_found) {
-                $obj = getItemForItemtype($n_found['itemtype']);
-                $type_name = '';
-                $link = '';
-                $serial = '';
-                if ($obj) {
-                    $type_name = $obj->getTypeName();
-                    $obj->getFromDB($n_found['items_id']);
-                    $link = $obj->getLink();
-                    $serial = $obj->fields['serial'] ?? '';
-                }
-                $not_found_rows[] = [
-                    'type_name' => $type_name,
-                    'link'      => $link,
-                    'serial'    => $serial,
-                ];
-            }
+            $not_found_rows = self::buildNotFoundRows($results['errors']['not_found']);
         }
         unset($results['errors']);
 
