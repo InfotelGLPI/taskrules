@@ -29,6 +29,11 @@
    </authors>
    <versions>
       <!-- Add as many version tag you want -->
+       <version>
+           <num>2.0.1</num>
+           <!-- Add as many compatibility tag you want -->
+           <compatibility>11.0</compatibility>
+       </version>
       <version>
          <num>2.0.0</num>
          <!-- Add as many compatibility tag you want -->
