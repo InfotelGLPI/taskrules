@@ -287,7 +287,9 @@ class Log extends CommonDBTM
                                             ];
                                         } elseif ($action == 'state_action'
                                             && $res['action'] == 2) {
-                                            $result_html = Dropdown::getDropdownName('glpi_states', $res['value']);
+                                            // Dropdown names are stored raw (GLPI 11) and result_html is
+                                            // rendered with |raw in results.html.twig: escape like the else branch.
+                                            $result_html = htmlspecialchars((string) Dropdown::getDropdownName('glpi_states', $res['value']), ENT_QUOTES, 'UTF-8');
                                             $log_actions[$i][$j] = [
                                                 'itemtype' => $type,
                                                 'items_id' => $items_id,
@@ -297,7 +299,9 @@ class Log extends CommonDBTM
                                             ];
                                         } elseif ($action == 'location_action'
                                             && ($res['action'] == 2 || $res['action'] == 3)) {
-                                            $result_html = Dropdown::getDropdownName('glpi_locations', $res['value']);
+                                            // Dropdown names are stored raw (GLPI 11) and result_html is
+                                            // rendered with |raw in results.html.twig: escape like the else branch.
+                                            $result_html = htmlspecialchars((string) Dropdown::getDropdownName('glpi_locations', $res['value']), ENT_QUOTES, 'UTF-8');
                                             $log_actions[$i][$j] = [
                                                 'itemtype' => $type,
                                                 'items_id' => $items_id,
@@ -325,7 +329,9 @@ class Log extends CommonDBTM
                                                 }
                                             }
                                             if ($ko == 0) {
-                                                $result_html .= getUserName($res['value']);
+                                                // User display name is stored raw (GLPI 11) and result_html is
+                                                // rendered with |raw in results.html.twig: escape it.
+                                                $result_html .= htmlspecialchars((string) getUserName($res['value']), ENT_QUOTES, 'UTF-8');
                                                 $log_actions[$i][$j] = [
                                                     'itemtype' => $type,
                                                     'items_id' => $items_id,
@@ -367,7 +373,9 @@ class Log extends CommonDBTM
                                                 }
                                             }
                                             if ($ko == 0 && $kp == 0) {
-                                                $result_html .= Dropdown::getDropdownName('glpi_groups', $res['value']);
+                                                // Group names are stored raw (GLPI 11) and result_html is
+                                                // rendered with |raw in results.html.twig: escape it.
+                                                $result_html .= htmlspecialchars((string) Dropdown::getDropdownName('glpi_groups', $res['value']), ENT_QUOTES, 'UTF-8');
                                                 $log_actions[$i][$j] = [
                                                     'itemtype' => $type,
                                                     'items_id' => $items_id,
