@@ -316,6 +316,9 @@ class Rule extends CommonDBTM
             'state_action' => '__VALUE__',
             'states_id' => $this->fields['states_id'],
             'id' => $id,
+            // IDOR token bound to this rule id: the endpoint may only read the rule
+            // the form actually exposed, not an arbitrary id forged by the client.
+            '_idor_token' => Session::getNewIDORToken('', ['id' => (int) $id]),
         ];
         Ajax::updateItemOnSelectEvent(
             "dropdown_state_action$randstate",
@@ -358,7 +361,10 @@ class Rule extends CommonDBTM
         $params = [
             'location_action' => '__VALUE__',
             'locations_id' => $this->fields['locations_id'],
-            'id' => $id
+            'id' => $id,
+            // IDOR token bound to this rule id: the endpoint may only read the rule
+            // the form actually exposed, not an arbitrary id forged by the client.
+            '_idor_token' => Session::getNewIDORToken('', ['id' => (int) $id]),
         ];
         Ajax::updateItemOnSelectEvent(
             "dropdown_location_action$randlocation",

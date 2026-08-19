@@ -27,6 +27,7 @@
  --------------------------------------------------------------------------
  */
 
+use Glpi\Exception\Http\AccessDeniedHttpException;
 use GlpiPlugin\Taskrules\Condition;
 use GlpiPlugin\Taskrules\Rule;
 
@@ -35,6 +36,13 @@ header("Content-Type: text/html; charset=UTF-8");
 Html::header_nocache();
 
 Session::checkRight("plugin_taskrules", UPDATE);
+
+// Consistency with the other AJAX endpoints (ajax/search.php): require a valid
+// IDOR token bound to the rule id emitted by Rule::showActionsForm(), so the read
+// of an arbitrary Rule cannot be forged from an id the form never authorized.
+if (!Session::validateIDOR($_POST)) {
+    throw new AccessDeniedHttpException();
+}
 
 if (isset($_POST['location_action']) && $_POST['location_action'] == 3) {
     Location::Dropdown([

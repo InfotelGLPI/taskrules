@@ -34,6 +34,11 @@ Session::checkRight("plugin_taskrules", PURGE);
 
 if (isset($_POST["purge"])) {
     $log = new Log();
-    $log->deleteByCriteria([1]);
+    // The log table is entity-assigned (entities_id/is_recursive), and Search::show()
+    // restricts reads to the reader's visible entities. Mirror that isolation on the
+    // destructive path: a PURGE holder limited to a child entity must not wipe the whole
+    // audit trail across every entity. Super-admins (glpishowallentities) still get a
+    // WHERE-true criteria and purge everything they can already see.
+    $log->deleteByCriteria(getEntitiesRestrictCriteria(Log::getTable(), '', '', true));
     Html::back();
 }
