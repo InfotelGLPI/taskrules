@@ -1,30 +1,30 @@
 <?php
 
-/*
- -------------------------------------------------------------------------
- Taskrules plugin for GLPI
- Copyright (C) 2025-2026 by the Taskrules Development Team.
-
- https://github.com/InfotelGLPI/Taskrules
- -------------------------------------------------------------------------
-
- LICENSE
-
- This file is part of Taskrules.
-
- Taskrules is free software; you can redistribute it and/or modify
- it under the terms of the GNU General Public License as published by
- the Free Software Foundation; either version 3 of the License, or
- (at your option) any later version.
-
- Taskrules is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- GNU General Public License for more details.
-
- You should have received a copy of the GNU General Public License
- along with Taskrules. If not, see <http://www.gnu.org/licenses/>.
- --------------------------------------------------------------------------
+/**
+ * -------------------------------------------------------------------------
+ * Taskrules plugin for GLPI
+ * Copyright (C) 2025-2026 by the Taskrules Development Team.
+ *
+ * https://github.com/InfotelGLPI/Taskrules
+ * -------------------------------------------------------------------------
+ *
+ * LICENSE
+ *
+ * This file is part of Taskrules.
+ *
+ * Taskrules is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Taskrules is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Taskrules. If not, see <http://www.gnu.org/licenses/>.
+ * --------------------------------------------------------------------------
  */
 
 namespace GlpiPlugin\Taskrules;
@@ -244,7 +244,7 @@ class Condition extends CommonDBTM
         $idor_display_criteria       = Session::getNewIDORToken($itemtype);
         $idor_display_criteria_group = Session::getNewIDORToken($itemtype);
 
-        $itemtype_escaped = addslashes($itemtype);
+        $itemtype_json = json_encode($itemtype, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
         $root_doc = PLUGIN_TASKRULES_WEBDIR;
         $json_p = json_encode($p);
         $JS = <<<JAVASCRIPT
@@ -252,7 +252,7 @@ class Condition extends CommonDBTM
             event.preventDefault();
             $.post('{$root_doc}/ajax/search.php', {
                'action': 'display_criteria',
-               'itemtype': '$itemtype_escaped',
+               'itemtype': $itemtype_json,
                'num': $nbsearchcountvar,
                'p': $json_p,
                '_idor_token': '$idor_display_criteria'
@@ -267,7 +267,7 @@ class Condition extends CommonDBTM
             event.preventDefault();
             $.post('{$root_doc}/ajax/search.php', {
                'action': 'display_criteria_group',
-               'itemtype': '$itemtype_escaped',
+               'itemtype': $itemtype_json,
                'meta': true,
                'num': $nbsearchcountvar,
                'p': $json_p,
@@ -792,12 +792,18 @@ JAVASCRIPT;
                                 'reset' => 'reset',
                             ];
 
-                            $results = Search::getDatas($item_linked['itemtype'], $searchCriteria);
-                            //                            Toolbox::logInfo($results['sql']['search']);
-                            //                            Toolbox::logInfo($results['data']['items']);
-                            $_SESSION['glpilist_limit'] = $glpilist_limit;
-                            foreach ($results['data']['items'] as $k => $val) {
-                                $found_items[$k] = $k;
+                            // Guarantee the unbounded pagination override is reverted even if
+                            // Search::getDatas() throws (malformed criteria, invalid search
+                            // option, SQL error). Without the finally, an exception would leave
+                            // glpilist_limit = 999999999 in the user's session, making every
+                            // later search load all rows unpaginated for the rest of the session.
+                            try {
+                                $results = Search::getDatas($item_linked['itemtype'], $searchCriteria);
+                                foreach ($results['data']['items'] as $k => $val) {
+                                    $found_items[$k] = $k;
+                                }
+                            } finally {
+                                $_SESSION['glpilist_limit'] = $glpilist_limit;
                             }
                         }
                     }

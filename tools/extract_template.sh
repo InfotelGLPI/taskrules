@@ -1,6 +1,31 @@
 #!/bin/bash
 
-# Only strings with domain specified are extracted (use Xt args of keyword param to set number of args needed)
+#
+# -------------------------------------------------------------------------
+# Taskrules plugin for GLPI
+# Copyright (C) 2025-2026 by the Taskrules Development Team.
+#
+# https://github.com/InfotelGLPI/Taskrules
+# -------------------------------------------------------------------------
+#
+# LICENSE
+#
+# This file is part of Taskrules.
+#
+# Taskrules is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# Taskrules is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Taskrules. If not, see <http://www.gnu.org/licenses/>.
+# --------------------------------------------------------------------------
+#
 
 xgettext *.php */*.php --copyright-holder='Taskrules Development Team' --package-name='GLPI - Taskrules plugin' --package-version='1.0.0' -o locales/glpi.pot -L PHP --add-comments=TRANS --from-code=UTF-8 --force-po  \
 	--keyword=_n:1,2,4t --keyword=__s:1,2t --keyword=__:1,2t --keyword=_e:1,2t --keyword=_x:1c,2,3t \
