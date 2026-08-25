@@ -64,16 +64,22 @@ function plugin_taskrules_uninstall()
 {
     global $DB;
 
+    // Purge the plugin's profile rights BEFORE dropping the tables: getAllRights()
+    // resolves its right set through \Profile::getRightsFor(Rule::class), which
+    // instantiates Rule and introspects its table (SHOW COLUMNS). Running this after
+    // Rule::uninstall() would query glpi_plugin_taskrules_rules once it no longer
+    // exists and abort the whole uninstall. $all=true so any secondary rights are
+    // removed too (no residual rows left in glpi_profilerights).
+    $profileRight = new ProfileRight();
+    foreach (Profile::getAllRights(true) as $right) {
+        $profileRight->deleteByCriteria(['name' => $right['field']]);
+    }
+
     Condition::uninstall();
 
     Log::uninstall();
 
     Rule::uninstall();
-
-    $profileRight = new ProfileRight();
-    foreach (Profile::getAllRights() as $right) {
-        $profileRight->deleteByCriteria(['name' => $right['field']]);
-    }
 
     return true;
 }
