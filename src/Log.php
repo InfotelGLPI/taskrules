@@ -282,7 +282,7 @@ class Log extends CommonDBTM
                                                 'action' => 1,
                                                 'value' => __('Alternate username') . " - " . __(
                                                     'Empty the field',
-                                                    'taskrules'
+                                                    'taskrules',
                                                 ),
                                             ];
                                         } elseif ($action == 'state_action'

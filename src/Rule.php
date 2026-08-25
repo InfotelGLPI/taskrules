@@ -45,7 +45,6 @@ use Session;
 use Ticket;
 use TicketTask;
 
-
 /**
  * Class Rule
  */
@@ -58,7 +57,8 @@ class Rule extends CommonDBTM
         return _n('Task rule', 'Task rules', $nb, 'taskrules');
     }
 
-    static function getIcon() {
+    public static function getIcon()
+    {
         return "ti ti-settings";
     }
 
@@ -116,8 +116,8 @@ class Rule extends CommonDBTM
                         self::getTypeName(),
                         $dbu->countElementsInTable(
                             $this->getTable(),
-                            ["tasktemplates_id" => $item->getID()]
-                        )
+                            ["tasktemplates_id" => $item->getID()],
+                        ),
                     );
                 }
                 return self::createTabEntry(self::getTypeName());
@@ -215,7 +215,7 @@ class Rule extends CommonDBTM
         echo "<td>";
         echo __(
             "Prevent the task from changing its status (from \"to do\" to \"done\") in case of an error",
-            "taskrules"
+            "taskrules",
         );
         echo "</td>";
         echo "<td>";
@@ -247,8 +247,8 @@ class Rule extends CommonDBTM
             $possible_values,
             [
                 'values' => $values,
-                'multiple' => 'multiples'
-            ]
+                'multiple' => 'multiples',
+            ],
         );
         echo "</td>";
         echo "</tr>";
@@ -324,7 +324,7 @@ class Rule extends CommonDBTM
             "dropdown_state_action$randstate",
             "specific_states_id",
             PLUGIN_TASKRULES_WEBDIR . "/ajax/updateactionsdropdowns.php",
-            $params
+            $params,
         );
 
         echo "&nbsp;<span id='specific_states_id'>";
@@ -339,7 +339,7 @@ class Rule extends CommonDBTM
         echo "<td>";
         echo "<div class='left'>" . __(
             'Please note that only statuses common to all objects appear if multiple itemtypes are used.',
-            "taskrules"
+            "taskrules",
         ) . "</div>";
 
         echo "</td>";
@@ -370,7 +370,7 @@ class Rule extends CommonDBTM
             "dropdown_location_action$randlocation",
             "specific_locations_id",
             PLUGIN_TASKRULES_WEBDIR . "/ajax/updateactionsdropdowns.php",
-            $params
+            $params,
         );
 
         echo "&nbsp;<span id='specific_locations_id'>";
@@ -554,7 +554,7 @@ class Rule extends CommonDBTM
                                                     $rule,
                                                     $item->fields['tickets_id'],
                                                     $item->fields['id'],
-                                                    $item_linked
+                                                    $item_linked,
                                                 );
                                             } else {
                                                 $results['errors']['not_found'][] = ['itemtype' => $item_linked['itemtype'], 'items_id' => $item_linked['items_id']];
@@ -573,7 +573,7 @@ class Rule extends CommonDBTM
                                     foreach ($items_linked as $item_linked) {
                                         $results['errors']['not_found'][] = [
                                             'itemtype' => $item_linked['itemtype'],
-                                            'items_id' => $item_linked['items_id']
+                                            'items_id' => $item_linked['items_id'],
                                         ];
                                     }
                                 }
@@ -680,7 +680,7 @@ class Rule extends CommonDBTM
                                                     $rule,
                                                     $item->fields['tickets_id'],
                                                     $item->fields['id'],
-                                                    $item_linked
+                                                    $item_linked,
                                                 );
                                             } else {
                                                 $results['errors']['not_found'][] = ['itemtype' => $item_linked['itemtype'], 'items_id' => $item_linked['items_id']];
@@ -688,7 +688,7 @@ class Rule extends CommonDBTM
                                         }
                                     }
                                 }
-                            }  else {
+                            } else {
                                 $item_ticket = new Item_Ticket();
                                 $items_linked = $item_ticket->find([
                                     'tickets_id' => $item->input['tickets_id'],
@@ -699,7 +699,7 @@ class Rule extends CommonDBTM
                                     foreach ($items_linked as $item_linked) {
                                         $results['errors']['not_found'][] = [
                                             'itemtype' => $item_linked['itemtype'],
-                                            'items_id' => $item_linked['items_id']
+                                            'items_id' => $item_linked['items_id'],
                                         ];
                                     }
                                 }
@@ -713,7 +713,7 @@ class Rule extends CommonDBTM
                                 $_SESSION['plugin_taskrules']['results'] = $results;
                                 //                                Log::showResults($rule, $results, $item->fields['tickets_id'], $item->fields['id']);
                             }
-//                            Html::redirect(Ticket::getFormURLWithID($item->fields['tickets_id']));
+                            //                            Html::redirect(Ticket::getFormURLWithID($item->fields['tickets_id']));
                         }
                     }
                 }
@@ -736,7 +736,7 @@ class Rule extends CommonDBTM
                     'width' => 1140,
                     'height' => 500,
                     'dialog_class'  => 'modal-xl',
-                ]
+                ],
             );
 
             $id    = (int) $tickettasks_id;
@@ -792,17 +792,18 @@ class Rule extends CommonDBTM
                                 }
                             });
                         }
-            ");
+            ",
+            );
         }
     }
 
 
-    function prepareInputForAdd($input)
+    public function prepareInputForAdd($input)
     {
         $allowed = ['tasktemplates_id', 'used_itemtypes', 'active', 'preventcreation',
-                    'preventchange', 'trigger_creation', 'trigger_update', 'state_action',
-                    'states_id', 'location_action', 'locations_id', 'contact_action',
-                    'user_action', 'group_action'];
+            'preventchange', 'trigger_creation', 'trigger_update', 'state_action',
+            'states_id', 'location_action', 'locations_id', 'contact_action',
+            'user_action', 'group_action'];
         $input = array_intersect_key($input, array_flip($allowed));
 
         if (!empty($input['used_itemtypes'])) {
@@ -822,12 +823,12 @@ class Rule extends CommonDBTM
      *
      * @return mixed[]
      */
-    function prepareInputForUpdate($input)
+    public function prepareInputForUpdate($input)
     {
         $allowed = ['id', 'tasktemplates_id', 'used_itemtypes', 'active', 'preventcreation',
-                    'preventchange', 'trigger_creation', 'trigger_update', 'state_action',
-                    'states_id', 'location_action', 'locations_id', 'contact_action',
-                    'user_action', 'group_action'];
+            'preventchange', 'trigger_creation', 'trigger_update', 'state_action',
+            'states_id', 'location_action', 'locations_id', 'contact_action',
+            'user_action', 'group_action'];
         $input = array_intersect_key($input, array_flip($allowed));
 
         if (!empty($input['used_itemtypes'])) {

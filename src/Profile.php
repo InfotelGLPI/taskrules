@@ -36,13 +36,12 @@ use Html;
 use ProfileRight;
 use Session;
 
-
 /**
  * Class Profile
  */
 class Profile extends \Profile
 {
-    static $rightname = "profile";
+    public static $rightname = "profile";
 
     public static function getTypeName($nb = 0)
     {
@@ -102,13 +101,13 @@ class Profile extends \Profile
     /**
      * @param $ID
      */
-    static function createFirstAccess($ID)
+    public static function createFirstAccess($ID)
     {
         //85
         self::addDefaultProfileInfos(
             $ID,
             ['plugin_taskrules' => 127],
-            true
+            true,
         );
     }
 
@@ -119,7 +118,7 @@ class Profile extends \Profile
      *
      * @internal param $profile
      */
-    static function addDefaultProfileInfos($profiles_id, $rights, $drop_existing = false)
+    public static function addDefaultProfileInfos($profiles_id, $rights, $drop_existing = false)
     {
 
         $profileRight = new ProfileRight();
@@ -127,13 +126,13 @@ class Profile extends \Profile
         foreach ($rights as $right => $value) {
             if ($dbu->countElementsInTable(
                 'glpi_profilerights',
-                ["profiles_id" => $profiles_id, "name" => $right]
+                ["profiles_id" => $profiles_id, "name" => $right],
             ) && $drop_existing) {
                 $profileRight->deleteByCriteria(['profiles_id' => $profiles_id, 'name' => $right]);
             }
             if (!$dbu->countElementsInTable(
                 'glpi_profilerights',
-                ["profiles_id" => $profiles_id, "name" => $right]
+                ["profiles_id" => $profiles_id, "name" => $right],
             )) {
                 $myright['profiles_id'] = $profiles_id;
                 $myright['name']        = $right;
@@ -153,13 +152,13 @@ class Profile extends \Profile
      *
      * @return array
      */
-    static function getAllRights($all = false)
+    public static function getAllRights($all = false)
     {
         $rights = [
             ['itemtype' => Rule::class,
                 'label'    => Rule::getTypeName(Session::getPluralNumber()),
                 'field'    => Rule::$rightname,
-                'rights' => \Profile::getRightsFor(Rule::class)
+                'rights' => \Profile::getRightsFor(Rule::class),
             ],
         ];
 
@@ -174,7 +173,7 @@ class Profile extends \Profile
      * @return int
      */
 
-    static function translateARight($old_right)
+    public static function translateARight($old_right)
     {
         switch ($old_right) {
             case '':
@@ -195,7 +194,7 @@ class Profile extends \Profile
     /**
      * Initialize profiles, and migrate it necessary
      */
-    static function initProfile()
+    public static function initProfile()
     {
         global $DB;
         $profile = new self();
@@ -204,7 +203,7 @@ class Profile extends \Profile
         foreach ($profile->getAllRights(true) as $data) {
             if ($dbu->countElementsInTable(
                 "glpi_profilerights",
-                ["name" => $data['field']]
+                ["name" => $data['field']],
             ) == 0) {
                 ProfileRight::addProfileRights([$data['field']]);
             }
@@ -214,8 +213,8 @@ class Profile extends \Profile
             'FROM' => 'glpi_profilerights',
             'WHERE' => [
                 'profiles_id' => $_SESSION['glpiactiveprofile']['id'],
-                'name' => ['LIKE', '%plugin_taskrules%']
-            ]
+                'name' => ['LIKE', '%plugin_taskrules%'],
+            ],
         ]);
         foreach ($it as $prof) {
             $_SESSION['glpiactiveprofile'][$prof['name']] = $prof['rights'];
@@ -223,7 +222,7 @@ class Profile extends \Profile
     }
 
 
-    static function removeRightsFromSession()
+    public static function removeRightsFromSession()
     {
         foreach (self::getAllRights(true) as $right) {
             if (isset($_SESSION['glpiactiveprofile'][$right['field']])) {

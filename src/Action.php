@@ -37,8 +37,6 @@ use Lockedfield;
 use Ticket_User;
 use User;
 
-
-
 /**
  * Class Action
  */

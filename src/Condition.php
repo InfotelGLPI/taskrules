@@ -527,7 +527,7 @@ JAVASCRIPT;
             [
                 'action'     => 'display_searchoption',
                 'field'      => '__VALUE__',
-            ] + $params
+            ] + $params,
         );
         echo "</div>"; //.row
         echo "</div>"; //#$spanid
@@ -590,9 +590,9 @@ JAVASCRIPT;
                         sprintf(
                             'Duplicate keys found in search options for item type %s: %s',
                             $itemtype,
-                            implode(', ', $duplicate_keys)
+                            implode(', ', $duplicate_keys),
                         ),
-                        E_USER_WARNING
+                        E_USER_WARNING,
                     );
                 }
                 self::$search[$itemtype] += $new_options;

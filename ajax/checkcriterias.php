@@ -47,11 +47,12 @@ if ($tickettasks_id > 0) {
         }
         unset($_SESSION['plugin_taskrules']['show_updateresults']);
         $rule = new Rule();
-        if ($rule->getFromDBByCrit(["tasktemplates_id" => $tickettask->fields['tasktemplates_id'], "preventchange" => 1]
+        if ($rule->getFromDBByCrit(
+            ["tasktemplates_id" => $tickettask->fields['tasktemplates_id'], "preventchange" => 1],
         ) && $rule->fields['active'] == 1) {
             $rule = new Rule();
             if ($rule->getFromDBByCrit(
-                ["tasktemplates_id" => $tickettask->fields['tasktemplates_id'], "trigger_update" => 1]
+                ["tasktemplates_id" => $tickettask->fields['tasktemplates_id'], "trigger_update" => 1],
             )) {
                 $item_ticket = new Item_Ticket();
                 $items_linked = $item_ticket->find([
@@ -65,7 +66,7 @@ if ($tickettasks_id > 0) {
                         $rule,
                         $tickettask->fields['tickets_id'],
                         $tickettask->getID(),
-                        $items_linked
+                        $items_linked,
                     );
                     if (count($found_items) > 0) {
                         foreach ($items_linked as $item_linked) {

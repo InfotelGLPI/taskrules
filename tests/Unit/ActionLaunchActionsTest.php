@@ -40,8 +40,14 @@ class StubComputerForAction extends \CommonDBTM
     public static $notable = false;
     public static array $capturedInputs = [];
 
-    public static function getTypeName($nb = 0): string { return 'Computer'; }
-    public static function getTable($classname = null): string { return 'glpi_computers'; }
+    public static function getTypeName($nb = 0): string
+    {
+        return 'Computer';
+    }
+    public static function getTable($classname = null): string
+    {
+        return 'glpi_computers';
+    }
 
     public function getFromDB($ID): bool
     {
@@ -69,7 +75,10 @@ class StubComputerForAction extends \CommonDBTM
 class StubRuleForAction
 {
     public array $fields;
-    public function __construct(array $fields) { $this->fields = $fields; }
+    public function __construct(array $fields)
+    {
+        $this->fields = $fields;
+    }
 }
 
 class ActionLaunchActionsTest extends TestCase
@@ -127,16 +136,16 @@ class ActionLaunchActionsTest extends TestCase
 
         $this->assertNotEmpty(
             StubComputerForAction::$capturedInputs,
-            'update() aurait dû être appelé au moins une fois sur le PC lié.'
+            'update() aurait dû être appelé au moins une fois sur le PC lié.',
         );
 
         // $input s'accumule entre les blocs d'actions : fusionner tous les
         // appels pour obtenir l'état final de chaque champ.
         $merged = array_merge(...StubComputerForAction::$capturedInputs);
 
-        $this->assertSame(2, $merged['states_id'],    'Le statut doit passer à "en production" (states_id=2).');
+        $this->assertSame(2, $merged['states_id'], 'Le statut doit passer à "en production" (states_id=2).');
         $this->assertSame(5, $merged['locations_id'], 'Le lieu doit être défini à "Stock" (locations_id=5).');
-        $this->assertSame(0, $merged['users_id'],     "L'utilisateur affecté doit être vidé (users_id=0).");
-        $this->assertSame(0, $merged['groups_id'],    'Le groupe affecté doit être vidé (groups_id=0).');
+        $this->assertSame(0, $merged['users_id'], "L'utilisateur affecté doit être vidé (users_id=0).");
+        $this->assertSame(0, $merged['groups_id'], 'Le groupe affecté doit être vidé (groups_id=0).');
     }
 }

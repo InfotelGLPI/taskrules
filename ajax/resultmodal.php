@@ -35,8 +35,8 @@ Html::header_nocache();
 
 Session::checkRight("plugin_taskrules", READ);
 
-$tickets_id = (int)($_POST['tickets_id'] ?? 0);
-$tickettasks_id = (int)($_POST['tickettasks_id'] ?? 0);
+$tickets_id = (int) ($_POST['tickets_id'] ?? 0);
+$tickettasks_id = (int) ($_POST['tickettasks_id'] ?? 0);
 
 if ($tickets_id > 0 && $tickettasks_id > 0) {
     // Enforce access to the parent ticket before touching its audit logs.

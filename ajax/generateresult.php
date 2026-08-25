@@ -69,7 +69,7 @@ if ($tickettasks_id > 0) {
                                         $rule,
                                         $tickettask->fields['tickets_id'],
                                         $tickettasks_id,
-                                        $item_linked
+                                        $item_linked,
                                     );
                                 } else {
                                     $results['errors']['not_found'][] = ['itemtype' => $item_linked['itemtype'], 'items_id' => $item_linked['items_id']];
@@ -81,7 +81,7 @@ if ($tickettasks_id > 0) {
                     foreach ($items_linked as $item_linked) {
                         $results['errors']['not_found'][] = [
                             'itemtype' => $item_linked['itemtype'],
-                            'items_id' => $item_linked['items_id']
+                            'items_id' => $item_linked['items_id'],
                         ];
                     }
                 }
@@ -89,7 +89,7 @@ if ($tickettasks_id > 0) {
             if (count($results) > 0) {
                 Log::showResults($rule, $results, $tickettask->fields['tickets_id'], $tickettasks_id);
             }
-//            Html::redirect(Ticket::getFormURLWithID($tickettask->fields['tickets_id']));
+            //            Html::redirect(Ticket::getFormURLWithID($tickettask->fields['tickets_id']));
         }
     }
 } else {

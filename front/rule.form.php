@@ -98,7 +98,7 @@ if (isset($_POST["add"])) {
     $rule->update($_POST);
     Html::back();
 } else {
-    Html::header(_n('Task rule', 'Task rules',2, 'taskrules'), $_SERVER['PHP_SELF'], 'config', Rule::class );
+    Html::header(_n('Task rule', 'Task rules', 2, 'taskrules'), $_SERVER['PHP_SELF'], 'config', Rule::class);
 
     $rule->showForm();
 

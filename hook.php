@@ -91,7 +91,7 @@ function plugin_taskrules_pre_updateitem(CommonDBTM $item)
 
 function plugin_taskrules_post_prepareadditem(CommonDBTM $item)
 {
-//    $item->input['state'] = Planning::DONE;
+    //    $item->input['state'] = Planning::DONE;
 }
 
 /**
@@ -175,7 +175,7 @@ function plugin_taskrules_post_item_form($params)
                     'width' => 1140,
                     'height' => 500,
                     'dialog_class'  => 'modal-xl',
-                ]
+                ],
             );
 
             $id = (int) $tickettasks_id;
@@ -214,7 +214,7 @@ function plugin_taskrules_post_item_form($params)
                                 }
                             }
                         });
-                    }"
+                    }",
             );
         } else {
             $tickettask = $params['item'];
@@ -229,7 +229,7 @@ function plugin_taskrules_post_item_form($params)
                         if ($task->getFromDB($task_found['id'])) {
                             $rule = new Rule();
                             if ($rule->getFromDBByCrit(
-                                ['tasktemplates_id' => $task->fields['tasktemplates_id'], 'trigger_update' => 1]
+                                ['tasktemplates_id' => $task->fields['tasktemplates_id'], 'trigger_update' => 1],
                             ) && $rule->fields['active'] == 1) {
 
                                 $item_ticket = new Item_Ticket();
