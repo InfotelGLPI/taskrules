@@ -33,7 +33,7 @@ use Glpi\Plugin\Hooks;
 use GlpiPlugin\Taskrules\Profile;
 use GlpiPlugin\Taskrules\Rule;
 
-define('PLUGIN_TASKRULES_VERSION', '2.0.1');
+define('PLUGIN_TASKRULES_VERSION', '2.0.2');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_TASKRULES_MIN_GLPI_VERSION", "11.0.0");
@@ -59,6 +59,13 @@ function plugin_init_taskrules()
 
         Plugin::registerClass(Profile::class, ['addtabon' => "Profile"]);
 
+        /* Task rules are a global policy: intercept task events (add and update) whatever the actor's rights */
+        $PLUGIN_HOOKS[Hooks::PRE_ITEM_ADD]['taskrules']    = ['TicketTask' => 'plugin_taskrules_pre_additem'];
+        $PLUGIN_HOOKS[Hooks::POST_PREPAREADD]['taskrules'] = ['TicketTask' => 'plugin_taskrules_post_prepareadditem'];
+        $PLUGIN_HOOKS[Hooks::ITEM_ADD]['taskrules']        = ['TicketTask' => 'plugin_taskrules_additem'];
+        $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['taskrules'] = ['TicketTask' => 'plugin_taskrules_pre_updateitem'];
+        $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['taskrules']     = ['TicketTask' => 'plugin_taskrules_updateitem'];
+
         if (Session::haveRight("plugin_taskrules", READ)
             || Session::haveRight("config", READ)) {
 
@@ -68,12 +75,6 @@ function plugin_init_taskrules()
                 $PLUGIN_HOOKS[Hooks::ADD_CSS]['taskrules'][] = "css/accordion.css";
             }
             $PLUGIN_HOOKS[Hooks::ADD_CSS]['taskrules'][] = "css/taskrules.css";
-            /* Prepare hooks to intercept tasks events (add task and task update) */
-            $PLUGIN_HOOKS[Hooks::PRE_ITEM_ADD]['taskrules']    = ['TicketTask' => 'plugin_taskrules_pre_additem'];
-            $PLUGIN_HOOKS[Hooks::POST_PREPAREADD]['taskrules'] = ['TicketTask' => 'plugin_taskrules_post_prepareadditem'];
-            $PLUGIN_HOOKS[Hooks::ITEM_ADD]['taskrules']        = ['TicketTask' => 'plugin_taskrules_additem'];
-            $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['taskrules'] = ['TicketTask' => 'plugin_taskrules_pre_updateitem'];
-            $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['taskrules']     = ['TicketTask' => 'plugin_taskrules_updateitem'];
 
             $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['taskrules'] = 'plugin_taskrules_post_item_form';
             $PLUGIN_HOOKS[Hooks::POST_SHOW_ITEM]['taskrules'] = 'plugin_taskrules_post_show_item';

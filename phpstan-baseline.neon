@@ -57,13 +57,7 @@ parameters:
 		-
 			message: '#^Instantiating an object from an unrestricted dynamic string is forbidden \(see https\://github\.com/glpi\-project/phpstan\-glpi\?tab\=readme\-ov\-file\#forbiddynamicinstantiationrule\)\.$#'
 			identifier: glpi.forbidDynamicInstantiation
-			count: 5
-			path: src/Rule.php
-
-		-
-			message: '#^Method GlpiPlugin\\Taskrules\\Rule\:\:displayTabContentForItem\(\) should return bool but empty return statement found\.$#'
-			identifier: return.empty
-			count: 1
+			count: 3
 			path: src/Rule.php
 
 		-

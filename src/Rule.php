@@ -108,6 +108,9 @@ class Rule extends CommonDBTM
 
     public function getTabNameForItem(CommonGLPI $item, $withtemplate = 0)
     {
+        if (!self::canView()) {
+            return '';
+        }
         switch ($item->getType()) {
             case 'TaskTemplate':
                 if ($_SESSION['glpishow_count_on_tabs']) {
@@ -126,8 +129,9 @@ class Rule extends CommonDBTM
 
     public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
     {
-        if ($item->getType() != 'TaskTemplate') {
-            return;
+        // The tab is reachable through common.tabs.php even when it is not registered: gate the rendering
+        if ($item->getType() != 'TaskTemplate' || !self::canView()) {
+            return false;
         }
 
         $rule = new self();
@@ -487,15 +491,13 @@ class Rule extends CommonDBTM
                             $found_items = Condition::checkCriteras("pre add task", $rule, $item->input['tickets_id'], $item->getID(), $items_linked);
                         }
                         if (count($found_items) > 0) {
+                            // Keep $item (the TicketTask) intact: a single non-matching asset blocks
                             foreach ($items_linked as $item_linked) {
-                                if (getItemForItemtype($item_linked['itemtype'])) {
-                                    $item = new $item_linked['itemtype']();
-                                    if ($item->getfromDB($item_linked['items_id'])) {
-                                        if (in_array($item_linked['items_id'], $found_items)) {
-                                            $ko = 0;
-                                        } else {
-                                            $ko = 1;
-                                        }
+                                $asset = getItemForItemtype($item_linked['itemtype']);
+                                if ($asset && $asset->getFromDB($item_linked['items_id'])) {
+                                    if (!in_array($item_linked['items_id'], $found_items)) {
+                                        $ko = 1;
+                                        break;
                                     }
                                 }
                             }
@@ -520,7 +522,8 @@ class Rule extends CommonDBTM
             if ($ko == 1) {
                 $errormsg = __('Items not match with rule, task not created', 'taskrules');
                 Session::addMessageAfterRedirect($errormsg, false, ERROR);
-                $item->input = [];
+                // Cancel the TicketTask creation (core aborts add() when input is not an array)
+                $item->input = false;
                 return false;
             }
         }
@@ -599,13 +602,13 @@ class Rule extends CommonDBTM
         $ko = 0;
         $koitem = 0;
         if ($item::getType() === TicketTask::getType()) {
-            if (isset($item->fields['tasktemplates_id']) && $item->input['state'] == Planning::DONE) {
+            if (isset($item->fields['tasktemplates_id'], $item->input['state']) && $item->input['state'] == Planning::DONE) {
                 $rule = new self();
                 if ($rule->getFromDBByCrit(["tasktemplates_id" => $item->fields['tasktemplates_id']]) && $rule->fields['active'] == 1) {
                     if ($rule->fields['preventchange'] == 1) {
                         $item_ticket = new Item_Ticket();
                         $items_linked = $item_ticket->find([
-                            'tickets_id' => $item->input['tickets_id'],
+                            'tickets_id' => $item->fields['tickets_id'],
                         ]);
                         $found_items = [];
                         if (count($items_linked) > 0) {
@@ -613,15 +616,13 @@ class Rule extends CommonDBTM
                         }
 
                         if (count($found_items) > 0) {
+                            // Keep $item (the TicketTask) intact: a single non-matching asset blocks
                             foreach ($items_linked as $item_linked) {
-                                if (getItemForItemtype($item_linked['itemtype'])) {
-                                    $item = new $item_linked['itemtype']();
-                                    if ($item->getfromDB($item_linked['items_id'])) {
-                                        if (in_array($item_linked['items_id'], $found_items)) {
-                                            $ko = 0;
-                                        } else {
-                                            $ko = 1;
-                                        }
+                                $asset = getItemForItemtype($item_linked['itemtype']);
+                                if ($asset && $asset->getFromDB($item_linked['items_id'])) {
+                                    if (!in_array($item_linked['items_id'], $found_items)) {
+                                        $ko = 1;
+                                        break;
                                     }
                                 }
                             }
@@ -631,7 +632,7 @@ class Rule extends CommonDBTM
                     } else {
                         $item_ticket = new Item_Ticket();
                         $items_linked = $item_ticket->find([
-                            'tickets_id' => $item->input['tickets_id'],
+                            'tickets_id' => $item->fields['tickets_id'],
                         ]);
                         if (!$items_linked) {
                             $koitem = 1;
@@ -646,6 +647,7 @@ class Rule extends CommonDBTM
             if ($ko == 1) {
                 $errormsg = __('Items not match with rule, task not updated', 'taskrules');
                 Session::addMessageAfterRedirect($errormsg, false, ERROR);
+                // Block the state change on the TicketTask itself
                 unset($item->input['state']);
                 return false;
             }
