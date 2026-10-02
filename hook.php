@@ -171,6 +171,9 @@ function plugin_taskrules_post_item_form($params)
             $tickettasks_id = $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'];
 
             unset($_SESSION['plugin_taskrules']['show_updateresults']);
+            // One-shot marker consumed by ajax/generateresult.php: the endpoint
+            // only runs for a task whose rule was actually triggered by a hook.
+            $_SESSION['plugin_taskrules']['pending_results'][(int) $tickettasks_id] = true;
             echo Ajax::createIframeModalWindow(
                 "results$tickettasks_id",
                 PLUGIN_TASKRULES_WEBDIR . "/front/modalresults.php",

@@ -48,9 +48,19 @@ if ($tickettasks_id > 0) {
         if (!$ticket->can((int) $tickettask->fields['tickets_id'], READ)) {
             throw new AccessDeniedHttpException();
         }
+        // Only replay the rule for a task whose rule was really triggered by the
+        // TicketTask hooks (one-shot marker set in plugin_taskrules_post_item_form).
+        if (empty($_SESSION['plugin_taskrules']['pending_results'][$tickettasks_id])) {
+            throw new AccessDeniedHttpException();
+        }
+        unset($_SESSION['plugin_taskrules']['pending_results'][$tickettasks_id]);
         unset($_SESSION['plugin_taskrules']['show_updateresults']);
         $rule = new Rule();
-        if ($rule->getFromDBByCrit(["tasktemplates_id" => $tickettask->fields['tasktemplates_id']]) && $rule->fields['active'] == 1) {
+        if ($rule->getFromDBByCrit(["tasktemplates_id" => $tickettask->fields['tasktemplates_id']])
+            && $rule->fields['active'] == 1
+            // Revalidate the trigger: creation trigger, or update trigger on a done task.
+            && ($rule->fields['trigger_creation'] == 1
+                || ($rule->fields['trigger_update'] == 1 && $tickettask->fields['state'] == Planning::DONE))) {
             $item_ticket = new Item_Ticket();
             $items_linked = $item_ticket->find([
                 'tickets_id' => $tickettask->fields['tickets_id'],

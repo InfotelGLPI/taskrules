@@ -246,7 +246,8 @@ class Condition extends CommonDBTM
 
         $itemtype_json = json_encode($itemtype, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
         $root_doc = PLUGIN_TASKRULES_WEBDIR;
-        $json_p = json_encode($p);
+        // HEX flags keep "</script>" in criteria values from breaking out of the inline script.
+        $json_p = json_encode($p, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
         $JS = <<<JAVASCRIPT
          $('#addsearchcriteria$rand_criteria').on('click', function(event) {
             event.preventDefault();
