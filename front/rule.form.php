@@ -48,6 +48,7 @@ if (isset($_POST["add"])) {
     Session::checkRight("plugin_taskrules", CREATE);
     Session::checkRight("config", UPDATE);
 
+    $input = [];
     $types = Condition::$types;
     foreach ($types as $itemtype) {
         $fieldname = Condition::getFieldNameForItemtype($itemtype);
@@ -61,10 +62,12 @@ if (isset($_POST["add"])) {
         unset($_POST[$criterianame]);
     }
 
+    // The conditions belong to the rule: none is stored when the rule was refused
     $id = $rule->add($_POST);
-    $input['taskrules_id'] = $id;
-
-    $cond->add($input);
+    if ($id) {
+        $input['taskrules_id'] = $id;
+        $cond->add($input);
+    }
 
     Html::back();
 } elseif (isset($_POST["update"])) {
@@ -74,6 +77,7 @@ if (isset($_POST["add"])) {
     Session::checkRight("config", UPDATE);
     $rule->check((int) ($_POST['id'] ?? 0), UPDATE);
 
+    $input = [];
     $types = Condition::$types;
     foreach ($types as $itemtype) {
         $fieldname = Condition::getFieldNameForItemtype($itemtype);

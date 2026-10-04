@@ -1,0 +1,54 @@
+{#
+ # -------------------------------------------------------------------------
+ # Taskrules plugin for GLPI
+ # Copyright (C) 2025-2026 by the Taskrules Development Team.
+ #
+ # https://github.com/InfotelGLPI/Taskrules
+ # -------------------------------------------------------------------------
+ #
+ # LICENSE
+ #
+ # This file is part of Taskrules.
+ #
+ # Taskrules is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation; either version 3 of the License, or
+ # (at your option) any later version.
+ #
+ # Taskrules is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with Taskrules. If not, see <http://www.gnu.org/licenses/>.
+ # --------------------------------------------------------------------------
+ #}
+
+{# One criterion of a condition search (Condition::renderCriteria()). The widgets (link /
+   field selectors, search option of the core and its reload script) are rendered by the core
+   in return mode and output raw; hidden fields are name => value; the row id is alphanumeric. #}
+<div class="list-group-item {{ padding }} border-0 normalcriteria{{ header_class }}" id="{{ rowid }}">
+    <div class="row g-1">
+        {% if not from_meta %}
+            {% for name, value in hidden_fields %}
+                <input type="hidden" name="{{ name }}" id="{{ name }}" value="{{ value }}">
+            {% endfor %}
+            <div class="col-auto">
+                <button class="btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria" type="button"
+                        data-rowid="{{ rowid }}" data-bs-toggle="tooltip" data-bs-placement="left"
+                        title="{{ __('Delete a rule') }}">
+                    <i class="ti ti-square-minus"></i>
+                </button>
+            </div>
+            <div class="col-auto">{{ link_dropdown|raw }}</div>
+        {% endif %}
+        <div class="col-auto">{{ field_dropdown|raw }}</div>
+        <div class="col-auto">
+            <div class="row g-1" id="{{ spanid }}">
+                {{ search_option|raw }}
+            </div>
+            {{ update_script|raw }}
+        </div>
+    </div>
+</div>

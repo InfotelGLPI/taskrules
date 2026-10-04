@@ -1,0 +1,56 @@
+{#
+ # -------------------------------------------------------------------------
+ # Taskrules plugin for GLPI
+ # Copyright (C) 2025-2026 by the Taskrules Development Team.
+ #
+ # https://github.com/InfotelGLPI/Taskrules
+ # -------------------------------------------------------------------------
+ #
+ # LICENSE
+ #
+ # This file is part of Taskrules.
+ #
+ # Taskrules is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation; either version 3 of the License, or
+ # (at your option) any later version.
+ #
+ # Taskrules is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with Taskrules. If not, see <http://www.gnu.org/licenses/>.
+ # --------------------------------------------------------------------------
+ #}
+
+{# Two-column settings table of the rule form (parameters, triggers, actions), built from data
+   (Rule::getParametersRows() / getTriggersRows() / getActionsRows()):
+   - switch: an on/off switch (rule/switch.html.twig);
+   - widget: a selector of the core, rendered in return mode, output raw (the core escapes it);
+     with "specific", the container its reload script fills (ajax/updateactionsdropdowns.php),
+     holding the current specific selector, also rendered by the core.
+   An optional note fills a third cell. #}
+<div>
+    <table class="" width="100%">
+        {% for row in rows %}
+            <tr class="tab_bg_2">
+                <td>{{ row.label }}</td>
+                <td>
+                    {% if row.type == 'switch' %}
+                        {{ include('@taskrules/rule/switch.html.twig', row.switch) }}
+                    {% else %}
+                        {{ row.widget|raw }}
+                        {% if row.specific is defined %}
+                            &nbsp;<span id="{{ row.specific.id }}">{{ row.specific.widget|raw }}</span>
+                        {% endif %}
+                    {% endif %}
+                </td>
+                {% if row.note is defined %}
+                    <td><div class="left">{{ row.note }}</div></td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+    </table>
+</div>

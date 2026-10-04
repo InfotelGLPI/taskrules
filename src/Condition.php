@@ -109,6 +109,14 @@ class Condition extends CommonDBTM
 
     public function showCriteriasForm($id)
     {
+        echo $this->renderCriteriasForm($id);
+    }
+
+    /**
+     * Conditions part of the rule form: one search of criteria per used itemtype
+     */
+    public function renderCriteriasForm($id): string
+    {
         $p = [];
         $p['showbookmark'] = false;
         $p['mainform'] = true;
@@ -143,18 +151,15 @@ class Condition extends CommonDBTM
             $p[$criterianame]                                = $decoded;
             $_SESSION['glpisearch'][$itemtype][$criterianame] = $decoded;
 
-            // showGenericSearch() still echoes; capture its output as a raw slot.
-            ob_start();
-            self::showGenericSearch($itemtype, $p);
             $criterias[] = [
                 'type_name'   => $item->getTypeName(),
-                'search_html' => ob_get_clean(),
+                'search_html' => self::renderGenericSearch($itemtype, $p),
             ];
         }
 
         $_SESSION['glpifold_search'] = $save_fold_status;
 
-        TemplateRenderer::getInstance()->display('@taskrules/criterias_form.html.twig', [
+        return TemplateRenderer::getInstance()->render('@taskrules/criterias_form.html.twig', [
             'criterias' => $criterias,
         ]);
     }
@@ -171,8 +176,17 @@ class Condition extends CommonDBTM
      **/
     public static function showGenericSearch($itemtype, array $params)
     {
-        /** @var array $CFG_GLPI */
-        global $CFG_GLPI;
+        echo self::renderGenericSearch($itemtype, $params);
+    }
+
+    /**
+     * Search form of the criteria of an itemtype, as a string (see showGenericSearch())
+     *
+     * @param class-string<CommonDBTM> $itemtype
+     * @param array<string, mixed>     $params
+     */
+    public static function renderGenericSearch($itemtype, array $params): string
+    {
 
         // Default values of parameters
         $p['sort']         = '';
@@ -208,130 +222,56 @@ class Condition extends CommonDBTM
 
         $p['target'] = URL::sanitizeURL($p['target']);
 
-        // Itemtype name used in JS function names, etc
+        // Itemtype name used in element ids
         $normalized_itemtype = strtolower(str_replace('\\', '', $itemtype));
         $rand_criteria = mt_rand();
-        $card_class = 'search-form card card-sm mb-4';
-        $main_block_class = 'search-form-container';
-
-        $nbsearchcountvar      = 'nbcriteria' . $normalized_itemtype . mt_rand();
         $searchcriteriatableid = 'criteriatable' . $normalized_itemtype . mt_rand();
 
-        // init criteria count
+        // Criteria rows already set
         $criterianame = self::getCriteriaNameForItemtype($itemtype);
+        // Each row is a criterion (or a group) rendered by its own template
+        $criteria_rows = [];
         $cnt = 0;
         if (is_array($p[$criterianame])) {
             $cnt = count($p[$criterianame]);
-        }
-        $nbcount_script = Html::scriptBlock("var $nbsearchcountvar = " . $cnt . ";");
-
-        // Capture the (still echo-based) criteria rows so they can be injected
-        // into the template as a pre-rendered raw slot.
-        ob_start();
-        if (is_array($p[$criterianame])
-            && count($p[$criterianame]) > 0) {
             foreach (array_keys($p[$criterianame]) as $i) {
-                self::displayCriteria([
+                $criteria_rows[] = self::renderCriteria([
                     'itemtype' => $itemtype,
-                    'num' => $i,
-                    'p' => $p,
+                    'num'      => $i,
+                    'p'        => $p,
                 ]);
             }
         }
-        $criteria_rows = ob_get_clean();
 
-        // idor checks
-        $idor_display_criteria       = Session::getNewIDORToken($itemtype);
-        $idor_display_criteria_group = Session::getNewIDORToken($itemtype);
-
-        $itemtype_json = json_encode($itemtype, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
-        $root_doc = PLUGIN_TASKRULES_WEBDIR;
-        // HEX flags keep "</script>" in criteria values from breaking out of the inline script.
-        $json_p = json_encode($p, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP);
-        $JS = <<<JAVASCRIPT
-         $('#addsearchcriteria$rand_criteria').on('click', function(event) {
-            event.preventDefault();
-            $.post('{$root_doc}/ajax/search.php', {
-               'action': 'display_criteria',
-               'itemtype': $itemtype_json,
-               'num': $nbsearchcountvar,
-               'p': $json_p,
-               '_idor_token': '$idor_display_criteria'
-            })
-            .done(function(data) {
-               $(data).insertBefore('#more-criteria$rand_criteria');
-               $nbsearchcountvar++;
-            });
-         });
-
-         $('#addcriteriagroup$rand_criteria').on('click', function(event) {
-            event.preventDefault();
-            $.post('{$root_doc}/ajax/search.php', {
-               'action': 'display_criteria_group',
-               'itemtype': $itemtype_json,
-               'meta': true,
-               'num': $nbsearchcountvar,
-               'p': $json_p,
-               '_idor_token': '$idor_display_criteria_group'
-            })
-            .done(function(data) {
-               $(data).insertBefore('#more-criteria$rand_criteria');
-               $nbsearchcountvar++;
-            });
-         });
-JAVASCRIPT;
-
-        if ($p['mainform']) {
-            $JS .= <<<JAVASCRIPT
-         var toggle_fold_search = function(show_search) {
-            $('#searchcriteria{$rand_criteria}').closest('.search-form').toggle(show_search);
-         };
-
-         // Init search_criteria state
-         var search_criteria_visibility = window.localStorage.getItem('show_full_searchcriteria');
-         if (search_criteria_visibility !== undefined && search_criteria_visibility == 'false') {
-            $('.fold-search').click();
-         }
-
-         $(document).on("click", ".remove-search-criteria", function() {
-            // force removal of tooltip
-            var tooltip = bootstrap.Tooltip.getInstance($(this)[0]);
-            if (tooltip !== null) {
-               tooltip.dispose();
-            }
-
-            var rowID = $(this).data('rowid');
-            $('#' + rowID).remove();
-            $('#searchcriteria{$rand_criteria} .criteria-list .list-group-item:first-child').addClass('headerRow').show();
-         });
-JAVASCRIPT;
+        // name => value, output as hidden inputs by generic_search.html.twig
+        $hidden_fields = [];
+        foreach ($p['addhidden'] as $key => $val) {
+            $hidden_fields[(string) $key] = $val;
         }
-        $js_script = Html::scriptBlock($JS);
-
-        $hidden_fields = '';
-        if (count($p['addhidden'])) {
-            foreach ($p['addhidden'] as $key => $val) {
-                $hidden_fields .= Html::hidden($key, ['value' => $val]);
-            }
-        }
-
         if ($p['mainform']) {
             // For dropdown
-            $hidden_fields .= Html::hidden('itemtype', ['value' => $itemtype]);
+            $hidden_fields['itemtype'] = $itemtype;
             // Reset to start when submit new search
-            $hidden_fields .= Html::hidden('start', ['value' => 0]);
+            $hidden_fields['start'] = 0;
         }
 
-        TemplateRenderer::getInstance()->display('@taskrules/generic_search.html.twig', [
-            'card_class'        => $card_class,
-            'main_block_class'  => $main_block_class,
+        return TemplateRenderer::getInstance()->render('@taskrules/generic_search.html.twig', [
+            'card_class'        => 'search-form card card-sm mb-4',
+            'main_block_class'  => 'search-form-container',
             'folded'            => (bool) ($_SESSION['glpifold_search'] ?? false),
             'rand_criteria'     => $rand_criteria,
             'criteria_table_id' => $searchcriteriatableid,
-            'nbcount_script'    => $nbcount_script,
             'criteria_rows'     => $criteria_rows,
-            'js_script'         => $js_script,
             'hidden_fields'     => $hidden_fields,
+            // Read by public/scripts/rule_form.js to add a criterion or a group
+            'search_config'     => [
+                'url'           => PLUGIN_TASKRULES_WEBDIR . '/ajax/search.php',
+                'itemtype'      => $itemtype,
+                'count'         => $cnt,
+                'p'             => $p,
+                'idor_criteria' => Session::getNewIDORToken($itemtype),
+                'idor_group'    => Session::getNewIDORToken($itemtype),
+            ],
         ]);
     }
 
@@ -348,15 +288,24 @@ JAVASCRIPT;
     */
     public static function displayCriteria($request = [])
     {
+        echo self::renderCriteria($request);
+    }
+
+    /**
+     * One criterion of a search, as a string (see displayCriteria())
+     *
+     * @param array<string, mixed> $request
+     */
+    public static function renderCriteria($request = []): string
+    {
         /** @var array $CFG_GLPI */
         global $CFG_GLPI;
-
 
         if (
             !isset($request["itemtype"])
             || !isset($request["num"])
         ) {
-            return;
+            return '';
         }
 
         $num         = (int) $request['num'];
@@ -388,8 +337,7 @@ JAVASCRIPT;
             (isset($criteria[$criterianame])
             && is_array($criteria[$criterianame]))) {
 
-            self::displayCriteriaGroup($request);
-            return;
+            return self::renderCriteriaGroup($request);
         }
 
         $add_padding = "p-2";
@@ -397,9 +345,9 @@ JAVASCRIPT;
             $add_padding = "p-0";
         }
 
-        echo "<div class='list-group-item $add_padding border-0 normalcriteria$addclass' id='$rowid'>";
-        echo "<div class='row g-1'>";
-
+        // name => value, output as hidden inputs by search/criteria.html.twig
+        $hidden_fields = [];
+        $link_dropdown = '';
         if (!$from_meta) {
             // First line display add / delete images for normal and meta search items
             if (
@@ -413,41 +361,18 @@ JAVASCRIPT;
                     $item = getItemForItemtype($request["itemtype"]);
                 }
                 if ($item && $item->maybeDeleted()) {
-                    echo Html::hidden('is_deleted', [
-                        'value' => $p['is_deleted'],
-                        'id'    => 'is_deleted',
-                    ]);
+                    $hidden_fields['is_deleted'] = $p['is_deleted'];
                 }
-                echo Html::hidden('as_map', [
-                    'value' => $p['as_map'],
-                    'id'    => 'as_map',
-                ]);
-                echo Html::hidden('browse', [
-                    'value' => $p['browse'],
-                    'id'    => 'browse',
-                ]);
-            }
-            echo "<div class='col-auto'>";
-            echo "<button class='btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria' type='button' data-rowid='$rowid'
-                       data-bs-toggle='tooltip' data-bs-placement='left'
-                       title=\"" . __s('Delete a rule') . "\">
-            <i class='ti ti-square-minus'></i>
-         </button>";
-            echo "</div>";
-        }
-        // Display link item
-        $value = '';
-        if (!$from_meta) {
-            echo "<div class='col-auto'>";
-            if (isset($criteria["link"])) {
-                $value = $criteria["link"];
+                $hidden_fields['as_map'] = $p['as_map'];
+                $hidden_fields['browse'] = $p['browse'];
             }
 
+            // Link item
             $operators = SearchEngine::getLogicalOperators(($num == 0));
-            Dropdown::showFromArray("criteria{$prefix}[$num][link]", $operators, [
-                'value' => $value,
+            $link_dropdown = Dropdown::showFromArray("criteria{$prefix}[$num][link]", $operators, [
+                'value'   => $criteria["link"] ?? '',
+                'display' => false,
             ]);
-            echo "</div>";
         }
 
         $values   = [];
@@ -477,25 +402,16 @@ JAVASCRIPT;
         if ($CFG_GLPI['allow_search_view'] == 1 && !isset($request['from_meta'])) {
             $values['view'] = Dropdown::EMPTY_VALUE;
         }
-        //        if ($CFG_GLPI['allow_search_all'] && !isset($request['from_meta'])) {
-        //            $values['all'] = __('All');
-        //        }
-        $value = '';
+        $value = $criteria['field'] ?? '';
 
-        if (isset($criteria['field'])) {
-            $value = $criteria['field'];
-        }
-
-        echo "<div class='col-auto'>";
-        $rand = Dropdown::showFromArray("criteria{$prefix}[$num][field]", $values, [
-            'value' => $value,
+        $rand = mt_rand();
+        $field_dropdown = Dropdown::showFromArray("criteria{$prefix}[$num][field]", $values, [
+            'value'   => $value,
+            'rand'    => $rand,
+            'display' => false,
         ]);
-        echo "</div>";
         $field_id = Html::cleanId("dropdown_criteria{$prefix}[$num][field]$rand");
         $spanid   = Html::cleanId('SearchSpan' . $normalized_itemtype . $prefix . $num);
-
-        echo "<div class='col-auto'>";
-        echo "<div class='row g-1' id='$spanid'>";
 
         $used_itemtype = $request["itemtype"];
         // Force Computer itemtype for AllAssets to permit to show specific items
@@ -503,36 +419,54 @@ JAVASCRIPT;
             $used_itemtype = 'Computer';
         }
 
-        $searchtype = $criteria['searchtype']
-            ?? "";
-        $p_value    = $criteria['value']
-            ?? "";
-
         $p['prefix_crit'] = $prefix;
         $params = [
             'itemtype'    => $used_itemtype,
             '_idor_token' => Session::getNewIDORToken($used_itemtype),
             'field'       => $value,
-            'searchtype'  => $searchtype,
-            'value'       => $p_value,
+            'searchtype'  => $criteria['searchtype'] ?? "",
+            'value'       => $criteria['value'] ?? "",
             'num'         => $num,
             'p'           => $p,
         ];
-        Search::displaySearchoption($params);
-        echo "</div>";
 
-        Ajax::updateItemOnSelectEvent(
-            $field_id,
-            $spanid,
-            $CFG_GLPI["root_doc"] . "/ajax/search.php",
-            [
-                'action'     => 'display_searchoption',
-                'field'      => '__VALUE__',
-            ] + $params,
-        );
-        echo "</div>"; //.row
-        echo "</div>"; //#$spanid
-        echo "</div>";
+        return TemplateRenderer::getInstance()->render('@taskrules/search/criteria.html.twig', [
+            'padding'        => isset($request["from_meta"]) ? 'p-0' : 'p-2',
+            'header_class'   => $addclass,
+            'rowid'          => $rowid,
+            'from_meta'      => $from_meta,
+            'hidden_fields'  => $hidden_fields,
+            'link_dropdown'  => $link_dropdown,
+            'field_dropdown' => $field_dropdown,
+            'spanid'         => $spanid,
+            // Search option part of the core (QueryBuilder::displaySearchoption()), which only
+            // displays: captured as a raw slot, the core renders and escapes it
+            'search_option'  => self::captureCoreSearchOption($params),
+            'update_script'  => Ajax::updateItemOnSelectEvent(
+                $field_id,
+                $spanid,
+                $CFG_GLPI["root_doc"] . "/ajax/search.php",
+                [
+                    'action'     => 'display_searchoption',
+                    'field'      => '__VALUE__',
+                ] + $params,
+                false,
+            ),
+        ]);
+    }
+
+    /**
+     * Search option part of a criterion, rendered by the core: Search::displaySearchoption()
+     * has no return mode, its output is the only one captured here
+     *
+     * @param array<string, mixed> $params
+     */
+    private static function captureCoreSearchOption(array $params): string
+    {
+        ob_start();
+        Search::displaySearchoption($params);
+
+        return (string) ob_get_clean();
     }
 
     /**
@@ -654,6 +588,16 @@ JAVASCRIPT;
 
     public static function displayCriteriaGroup($request = [])
     {
+        echo self::renderCriteriaGroup($request);
+    }
+
+    /**
+     * A group of criteria, as a string (see displayCriteriaGroup())
+     *
+     * @param array<string, mixed> $request
+     */
+    public static function renderCriteriaGroup($request = []): string
+    {
 
         $num         = (int) $request['num'];
         $p           = $request['p'];
@@ -672,37 +616,24 @@ JAVASCRIPT;
             ];
         }
 
-        echo "<div class='list-group-item p-2 border-0 normalcriteria$addclass' id='$rowid'>";
-        echo "<div class='row g-1'>";
-        echo "<div class='col-auto'>";
-        echo "<button class='btn btn-sm btn-icon btn-ghost-secondary remove-search-criteria' type='button' data-rowid='$rowid'
-                    data-bs-toggle='tooltip' data-bs-placement='left'
-                    title=\"" . __s('Delete a rule') . "\"
-      >
-         <i class='ti ti-square-minus'></i>
-      </button>";
-        echo "</div>";
-        echo "<div class='col-auto'>";
-        Dropdown::showFromArray("criteria{$prefix}[$num][link]", SearchEngine::getLogicalOperators(), [
-            'value' => $criteria["link"] ?? '',
-        ]);
-        echo "</div>";
-
         $parents_num = $p['parents_num'] ?? [];
         array_push($parents_num, $num);
         $params = [
-            'mainform' => false,
+            'mainform'    => false,
             'parents_num' => $parents_num,
         ];
         $params['prefix_crit'] = "{$prefix}[$num][$criterianame]";
         $params[$criterianame] = $criteria[$criterianame] ?? [];
 
-        echo "<div class='col-auto'>";
-        self::showGenericSearch($request['itemtype'], $params);
-        echo "</div>";
-
-        echo "</div>";//.row
-        echo "</div>";//.list-group-item
+        return TemplateRenderer::getInstance()->render('@taskrules/search/criteria_group.html.twig', [
+            'header_class'  => $addclass,
+            'rowid'         => $rowid,
+            'link_dropdown' => Dropdown::showFromArray("criteria{$prefix}[$num][link]", SearchEngine::getLogicalOperators(), [
+                'value'   => $criteria["link"] ?? '',
+                'display' => false,
+            ]),
+            'search'        => self::renderGenericSearch($request['itemtype'], $params),
+        ]);
     }
 
     /**

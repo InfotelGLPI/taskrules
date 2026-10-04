@@ -27,6 +27,8 @@
  * --------------------------------------------------------------------------
  */
 
+use Glpi\Application\View\TemplateRenderer;
+use Glpi\DBAL\QuerySubQuery;
 use GlpiPlugin\Taskrules\Condition;
 use GlpiPlugin\Taskrules\Log;
 use GlpiPlugin\Taskrules\Profile;
@@ -73,6 +75,27 @@ function plugin_taskrules_uninstall()
     $profileRight = new ProfileRight();
     foreach (Profile::getAllRights(true) as $right) {
         $profileRight->deleteByCriteria(['name' => $right['field']]);
+    }
+
+    // Display preferences, saved searches... of the plugin itemtypes (Log is listed through
+    // Search::show()): left behind, they would point to classes that no longer exist
+    foreach ([
+        DisplayPreference::class,
+        SavedSearch::class,
+        SavedSearch_User::class,
+        Notepad::class,
+        \Log::class,
+    ] as $itemtype) {
+        $item = new $itemtype();
+        if ($item instanceof SavedSearch_User) {
+            $item->deleteByCriteria(['savedsearches_id' => new QuerySubQuery([
+                'SELECT' => 'id',
+                'FROM'   => SavedSearch::getTable(),
+                'WHERE'  => ['itemtype' => [Rule::class, Condition::class, Log::class]],
+            ])]);
+            continue;
+        }
+        $item->deleteByCriteria(['itemtype' => [Rule::class, Condition::class, Log::class]]);
     }
 
     Condition::uninstall();
@@ -143,116 +166,60 @@ function plugin_taskrules_post_show_item($params)
         return;
     }
 
-    $id = (int) $item->fields['id'];
-
-    echo Html::scriptBlock("
-        (function () {
-            var taskItem = document.querySelector('#TicketTask_{$id}');
-            if (!taskItem) return;
-            var checkbox = taskItem.querySelector('.todo-list-state .task-state-checkbox');
-            if (checkbox) {
-                checkbox.disabled = true;
-                checkbox.removeAttribute('onclick');
-                checkbox.title = " . json_encode(__('State managed by a rule', 'taskrules'), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) . ";
-            }
-        })();
-    ");
+    // The "done" checkbox of the task is locked by public/scripts/task_results.js
+    TemplateRenderer::getInstance()->display('@taskrules/task_locked.html.twig', [
+        'task_id' => (int) $item->fields['id'],
+    ]);
 }
 
 function plugin_taskrules_post_item_form($params)
 {
+    // Same right as ajax/generateresult.php, which the results modal calls: a READ-only
+    // profile used to get the modal and a silent 403 in it
+    if (!Session::haveRight("plugin_taskrules", UPDATE)
+        || !($params['item'] instanceof TicketTask)) {
+        return;
+    }
 
-    if (Session::haveRight("plugin_taskrules", READ)
-     && $params['item']::getType() === TicketTask::getType()) {
+    static $rendered = false;
 
-        if (isset($_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'])
-            && is_int($_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'])
+    $pending_task = 0;
+    if (isset($_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'])
+        && is_int($_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'])
         && $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'] > 0) {
-            $tickettasks_id = $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'];
+        $pending_task = $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'];
+        unset($_SESSION['plugin_taskrules']['show_updateresults']);
+        // One-shot marker consumed by ajax/generateresult.php: the endpoint only renders the
+        // results of a task whose rule was actually triggered by a hook
+        $_SESSION['plugin_taskrules']['pending_results'][$pending_task] = true;
+    }
 
-            unset($_SESSION['plugin_taskrules']['show_updateresults']);
-            // One-shot marker consumed by ajax/generateresult.php: the endpoint
-            // only runs for a task whose rule was actually triggered by a hook.
-            $_SESSION['plugin_taskrules']['pending_results'][(int) $tickettasks_id] = true;
-            echo Ajax::createIframeModalWindow(
-                "results$tickettasks_id",
-                PLUGIN_TASKRULES_WEBDIR . "/front/modalresults.php",
-                [
-                    'title' => __('Results of changes of linked items', 'taskrules'),
-                    'reloadonclose' => false,
-                    'display' => false,
-                    'width' => 1140,
-                    'height' => 500,
-                    'dialog_class'  => 'modal-xl',
-                ],
-            );
-
-            $id = (int) $tickettasks_id;
-            echo Html::scriptBlock(
-                "
-                    let taskDiv$id = document.getElementById('TicketTask_$id');
-
-                    if (taskDiv$id) {
-
-                        let button$id = document.createElement('button');
-                        button$id.className = ''; // classes Bootstrap ou les tiennes
-                        button$id.textContent = '';
-                        button$id.style.marginTop = '10px';
-
-                        button$id.addEventListener('click', function () {
-                            plugin_taskrules_showresults($id);
-                        });
-
-                        button$id.click();
-                    }
-
-                    function plugin_taskrules_showresults(taskId) {
-                        $.ajax({
-                            type: 'POST',
-                            url: '" . PLUGIN_TASKRULES_WEBDIR . "/ajax/generateresult.php',
-                            data: {
-                                'tickettasks_id': taskId
-                            },
-                            success: function (html) {
-                                let modalBody = document.querySelector('#results' + taskId + ' div.modal-body');
-                                if (modalBody) {
-                                    modalBody.innerHTML = html;
-
-                                    $('#results' + taskId).modal('show');
-                                    $('#ajax_loader').hide();
-                                }
-                            }
-                        });
-                    }",
-            );
-        } else {
-            $tickettask = $params['item'];
-            if (isset($tickettask->fields['tickets_id'])) {
-                $tickettasks = new TicketTask();
-                $tasks_found = $tickettasks->find([
-                    'tickets_id' => $tickettask->fields['tickets_id'],
-                ]);
-                if (count($tasks_found) > 0) {
-                    foreach ($tasks_found as $task_found) {
-                        $task = new TicketTask();
-                        if ($task->getFromDB($task_found['id'])) {
-                            $rule = new Rule();
-                            if ($rule->getFromDBByCrit(
-                                ['tasktemplates_id' => $task->fields['tasktemplates_id'], 'trigger_update' => 1],
-                            ) && $rule->fields['active'] == 1) {
-
-                                $item_ticket = new Item_Ticket();
-                                $items_linked = $item_ticket->find([
-                                    'tickets_id' => $tickettask->fields['tickets_id'],
-                                ]);
-                                if (count($items_linked) > 0) {
-                                    $rule->launchResultsOnTicketTaskState($task_found['id']);
-                                }
-                            }
-                        }
-                    }
+    // States of the tasks of the ticket a rule may change, synchronised in the timeline
+    $task_states = [];
+    $tickets_id  = (int) ($params['item']->fields['tickets_id'] ?? 0);
+    if ($pending_task === 0 && $tickets_id > 0) {
+        $item_ticket = new Item_Ticket();
+        if (count($item_ticket->find(['tickets_id' => $tickets_id])) > 0) {
+            $tickettask = new TicketTask();
+            foreach ($tickettask->find(['tickets_id' => $tickets_id]) as $task) {
+                $rule = new Rule();
+                if ($rule->getFromDBByCrit(['tasktemplates_id' => $task['tasktemplates_id'], 'trigger_update' => 1, 'active' => 1])) {
+                    $task_states[(int) $task['id']] = (int) $task['state'] === Planning::DONE;
                 }
             }
         }
     }
+
+    if ($pending_task === 0 && $task_states === []) {
+        return;
+    }
+
+    // One modal for the page, whatever the number of task forms displayed
+    TemplateRenderer::getInstance()->display('@taskrules/results_modal.html.twig', [
+        'modal_rendered' => $rendered,
+        'url'            => PLUGIN_TASKRULES_WEBDIR . '/ajax/generateresult.php',
+        'pending_task'   => $pending_task,
+        'task_states'    => $task_states,
+    ]);
+    $rendered = true;
 }

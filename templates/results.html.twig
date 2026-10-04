@@ -72,7 +72,13 @@
                                 <tr class="tab_bg_2">
                                     <td>{{ action.action_name }}</td>
                                     <td>{{ action.action_type }}</td>
-                                    <td>{{ action.result_html|raw }}</td>
+                                    <td>
+                                        {% if action.result.done %}<i class="ti ti-check" style="color: forestgreen;"></i>{% endif %}
+                                        {% for error in action.result.errors %}
+                                            <i class="ti ti-circle-x" style="color: red;"></i>&nbsp;<span style="color:red">{{ error }}</span><br>
+                                        {% endfor %}
+                                        {{ action.result.value }}
+                                    </td>
                                 </tr>
                             {% endfor %}
                         {% endfor %}

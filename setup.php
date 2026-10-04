@@ -57,14 +57,14 @@ function plugin_init_taskrules()
 
     if (Plugin::isPluginActive('taskrules')) {
 
-        Plugin::registerClass(Profile::class, ['addtabon' => "Profile"]);
+        Plugin::registerClass(Profile::class, ['addtabon' => [\Profile::class]]);
 
         /* Task rules are a global policy: intercept task events (add and update) whatever the actor's rights */
-        $PLUGIN_HOOKS[Hooks::PRE_ITEM_ADD]['taskrules']    = ['TicketTask' => 'plugin_taskrules_pre_additem'];
-        $PLUGIN_HOOKS[Hooks::POST_PREPAREADD]['taskrules'] = ['TicketTask' => 'plugin_taskrules_post_prepareadditem'];
-        $PLUGIN_HOOKS[Hooks::ITEM_ADD]['taskrules']        = ['TicketTask' => 'plugin_taskrules_additem'];
-        $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['taskrules'] = ['TicketTask' => 'plugin_taskrules_pre_updateitem'];
-        $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['taskrules']     = ['TicketTask' => 'plugin_taskrules_updateitem'];
+        $PLUGIN_HOOKS[Hooks::PRE_ITEM_ADD]['taskrules']    = [TicketTask::class => 'plugin_taskrules_pre_additem'];
+        $PLUGIN_HOOKS[Hooks::POST_PREPAREADD]['taskrules'] = [TicketTask::class => 'plugin_taskrules_post_prepareadditem'];
+        $PLUGIN_HOOKS[Hooks::ITEM_ADD]['taskrules']        = [TicketTask::class => 'plugin_taskrules_additem'];
+        $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['taskrules'] = [TicketTask::class => 'plugin_taskrules_pre_updateitem'];
+        $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['taskrules']     = [TicketTask::class => 'plugin_taskrules_updateitem'];
 
         if (Session::haveRight("plugin_taskrules", READ)
             || Session::haveRight("config", READ)) {
@@ -72,14 +72,19 @@ function plugin_init_taskrules()
             if (isset($_SERVER['REQUEST_URI'])
                 && strpos($_SERVER['REQUEST_URI'], 'tasktemplate.form.php') !== false) {
                 $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['taskrules'][] = 'js/accordion.js';
+                // Switches, condition searches and accordion of the rule form (tab loaded over AJAX)
+                $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['taskrules'][] = 'scripts/rule_form.js';
                 $PLUGIN_HOOKS[Hooks::ADD_CSS]['taskrules'][] = "css/accordion.css";
             }
             $PLUGIN_HOOKS[Hooks::ADD_CSS]['taskrules'][] = "css/taskrules.css";
+            // Ticket timeline: locked task states, results modal of a rule (delegated, idle
+            // when no marker of the plugin is on the page)
+            $PLUGIN_HOOKS[Hooks::ADD_JAVASCRIPT]['taskrules'][] = 'scripts/task_results.js';
 
             $PLUGIN_HOOKS[Hooks::POST_ITEM_FORM]['taskrules'] = 'plugin_taskrules_post_item_form';
             $PLUGIN_HOOKS[Hooks::POST_SHOW_ITEM]['taskrules'] = 'plugin_taskrules_post_show_item';
             /* Add a new tab on the Task template page */
-            Plugin::registerClass(Rule::class, ['addtabon' => ['TaskTemplate']]);
+            Plugin::registerClass(Rule::class, ['addtabon' => [TaskTemplate::class]]);
         }
     }
     if (Session::haveRight("config", UPDATE)) {

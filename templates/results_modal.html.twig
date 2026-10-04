@@ -1,0 +1,50 @@
+{#
+ # -------------------------------------------------------------------------
+ # Taskrules plugin for GLPI
+ # Copyright (C) 2025-2026 by the Taskrules Development Team.
+ #
+ # https://github.com/InfotelGLPI/Taskrules
+ # -------------------------------------------------------------------------
+ #
+ # LICENSE
+ #
+ # This file is part of Taskrules.
+ #
+ # Taskrules is free software; you can redistribute it and/or modify
+ # it under the terms of the GNU General Public License as published by
+ # the Free Software Foundation; either version 3 of the License, or
+ # (at your option) any later version.
+ #
+ # Taskrules is distributed in the hope that it will be useful,
+ # but WITHOUT ANY WARRANTY; without even the implied warranty of
+ # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ # GNU General Public License for more details.
+ #
+ # You should have received a copy of the GNU General Public License
+ # along with Taskrules. If not, see <http://www.gnu.org/licenses/>.
+ # --------------------------------------------------------------------------
+ #}
+
+{# Results of the rule of a task (plugin_taskrules_post_item_form()): one modal per page, its
+   body filled by public/scripts/task_results.js from ajax/generateresult.php. The marker
+   carries the task whose results are pending, or none: the task states are then only
+   synchronised (data-taskrules-task-states). #}
+{% if not modal_rendered %}
+    <div id="taskrules_results" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title">{{ __('Results of changes of linked items', 'taskrules') }}</h3>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="{{ __('Close') }}"></button>
+                </div>
+                <div class="modal-body"></div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+<div class="d-none" data-taskrules-results
+     data-url="{{ url }}"
+     data-pending="{{ pending_task|default(0) }}"
+     data-task-states="{{ task_states|json_encode }}"
+     data-done-label="{{ __('Done') }}"
+     data-todo-label="{{ __('To do') }}"></div>

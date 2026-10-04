@@ -25,28 +25,35 @@
  # --------------------------------------------------------------------------
  #}
 
+{# Condition search of an itemtype (Condition::renderGenericSearch()). The "add criterion" and
+   "add group" buttons post to ajax/search.php with the settings of data-taskrules-search
+   (public/scripts/rule_form.js). Each criteria row is a search/criteria.html.twig or
+   search/criteria_group.html.twig render, output raw; hidden fields are name => value. #}
 <div class="{{ card_class }}"{% if folded %} style="display: none;"{% endif %}>
-    <div id="searchcriteria{{ rand_criteria }}" class="{{ main_block_class }}">
-        {{ nbcount_script|raw }}
+    <div id="searchcriteria{{ rand_criteria }}" class="{{ main_block_class }}"
+         data-taskrules-search="{{ search_config|json_encode }}">
         <div class="list-group list-group-flush list-group-hoverable criteria-list pt-2" id="{{ criteria_table_id }}">
-            {{ criteria_rows|raw }}
+            {% for row in criteria_rows %}
+                {{ row|raw }}
+            {% endfor %}
             <a id="more-criteria{{ rand_criteria }}" role="button"
                class="normalcriteria fold-search list-group-item p-2 border-0"
-               style="display: none;"></a>
+               style="display: none;" data-taskrules-more></a>
         </div>
 
         <div class="card-footer d-flex search_actions">
-            <button id="addsearchcriteria{{ rand_criteria }}" class="btn btn-sm btn-outline-secondary me-1" type="button">
+            <button class="btn btn-sm btn-outline-secondary me-1" type="button" data-taskrules-add="display_criteria">
                 <i class="ti ti-square-plus"></i>
                 <span class="d-none d-sm-block">{{ __('rule') }}</span>
             </button>
-            <button id="addcriteriagroup{{ rand_criteria }}" class="btn btn-sm btn-outline-secondary me-1" type="button">
+            <button class="btn btn-sm btn-outline-secondary me-1" type="button" data-taskrules-add="display_criteria_group">
                 <i class="ti ti-code-plus"></i>
                 <span class="d-none d-sm-block">{{ __('group') }}</span>
             </button>
         </div>
 
-        {{ js_script|raw }}
-        {{ hidden_fields|raw }}
+        {% for name, value in hidden_fields %}
+            <input type="hidden" name="{{ name }}" value="{{ value }}">
+        {% endfor %}
     </div>
 </div>

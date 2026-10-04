@@ -43,6 +43,7 @@ use Migration;
 use Planning;
 use Session;
 use Ticket;
+use TaskTemplate;
 use TicketTask;
 
 /**
@@ -112,7 +113,7 @@ class Rule extends CommonDBTM
             return '';
         }
         switch ($item->getType()) {
-            case 'TaskTemplate':
+            case TaskTemplate::class:
                 if ($_SESSION['glpishow_count_on_tabs']) {
                     $dbu = new DbUtils();
                     return self::createTabEntry(
@@ -130,7 +131,7 @@ class Rule extends CommonDBTM
     public static function displayTabContentForItem(CommonGLPI $item, $tabnum = 1, $withtemplate = 0)
     {
         // The tab is reachable through common.tabs.php even when it is not registered: gate the rendering
-        if ($item->getType() != 'TaskTemplate' || !self::canView()) {
+        if ($item->getType() != TaskTemplate::class || !self::canView()) {
             return false;
         }
 
@@ -157,36 +158,16 @@ class Rule extends CommonDBTM
             $cond->getEmpty();
         }
 
-        // The sub-forms below still echo their own markup; capture each output
-        // buffer and hand it to the template as pre-rendered raw slots.
-        $head_assets = Html::css(PLUGIN_TASKRULES_WEBDIR . "/lib/jquery-ui/jquery-ui.min.css")
-            . Html::script(PLUGIN_TASKRULES_WEBDIR . "/lib/jquery-ui/jquery-ui.min.js");
-
-        ob_start();
-        $this->showParametersForm();
-        $parameters_form = ob_get_clean();
-
-        ob_start();
-        $cond->showCriteriasForm($ID);
-        $criterias_form = ob_get_clean();
-
-        ob_start();
-        $this->showTriggersForm();
-        $triggers_form = ob_get_clean();
-
-        ob_start();
-        $this->showActionsForm($ID);
-        $actions_form = ob_get_clean();
-
         TemplateRenderer::getInstance()->display('@taskrules/rule_form.html.twig', [
             'target'           => $this->getFormURL(),
             'tasktemplates_id' => $tasktemplates_id,
             'id'               => $ID,
-            'head_assets'      => $head_assets,
-            'parameters_form'  => $parameters_form,
-            'criterias_form'   => $criterias_form,
-            'triggers_form'    => $triggers_form,
-            'actions_form'     => $actions_form,
+            'webdir'           => PLUGIN_TASKRULES_WEBDIR,
+            'parameters_rows'  => $this->getParametersRows(),
+            // Condition searches: rendered by Condition (search templates of the plugin)
+            'criterias_form'   => $cond->renderCriteriasForm($ID),
+            'triggers_rows'    => $this->getTriggersRows(),
+            'actions_rows'     => $this->getActionsRows($ID),
         ]);
 
         return true;
@@ -194,104 +175,101 @@ class Rule extends CommonDBTM
 
     public function showParametersForm()
     {
-        echo "<div>";
-        echo "<table class='' width='100%'>";
-
-        echo "<tr class='tab_bg_2'>";
-        echo "<td>";
-        echo __("Active", "taskrules");
-        echo "</td>";
-        echo "<td>";
-        self::showSwitchField('active', $this->fields['active']);
-        echo "</td>";
-        echo "</tr>";
-
-        echo "<tr class='tab_bg_2'>";
-        echo "<td>";
-        echo __("Prevent task creation on error", "taskrules");
-        echo "</td>";
-        echo "<td>";
-        self::showSwitchField('preventcreation', $this->fields['preventcreation']);
-        echo "</td>";
-        echo "</tr>";
-
-        echo "<tr class='tab_bg_2'>";
-        echo "<td>";
-        echo __(
-            "Prevent the task from changing its status (from \"to do\" to \"done\") in case of an error",
-            "taskrules",
-        );
-        echo "</td>";
-        echo "<td>";
-        self::showSwitchField('preventchange', $this->fields['preventchange']);
-        echo "</td>";
-        echo "</tr>";
-
-        echo "<tr class='tab_bg_2'>";
-
-        echo "<td>" . __('Used itemtypes', 'taskrules') . "</td>";
-        echo "<td>";
-
-        $types = Condition::$types;
-
-        if (!empty($types)) {
-            foreach ($types as $itemtype) {
-                $item = new $itemtype();
-                $possible_values[$itemtype] = $item->getTypeName();
-            }
-        }
-
-        if ($this->fields['used_itemtypes'] == null) {
-            $values = [];
-        } else {
-            $values = json_decode($this->fields['used_itemtypes']);
-        }
-        Dropdown::showFromArray(
-            "used_itemtypes",
-            $possible_values,
-            [
-                'values' => $values,
-                'multiple' => 'multiples',
-            ],
-        );
-        echo "</td>";
-        echo "</tr>";
-        echo "</table>";
-        echo "</div>";
+        TemplateRenderer::getInstance()->display('@taskrules/rule/settings_table.html.twig', [
+            'rows' => $this->getParametersRows(),
+        ]);
     }
 
+    /**
+     * Rows of the parameters part of the rule form
+     *
+     * @return list<array<string, mixed>> rows of rule/settings_table.html.twig
+     */
+    private function getParametersRows(): array
+    {
+        $possible_values = [];
+        foreach (Condition::$types as $itemtype) {
+            $item = new $itemtype();
+            $possible_values[$itemtype] = $item->getTypeName();
+        }
+
+        $values = $this->fields['used_itemtypes'] == null ? [] : json_decode($this->fields['used_itemtypes']);
+
+        return [
+            [
+                'label' => __("Active", "taskrules"),
+                'type'  => 'switch',
+                'switch' => self::getSwitchData('active', $this->fields['active']),
+            ],
+            [
+                'label' => __("Prevent task creation on error", "taskrules"),
+                'type'  => 'switch',
+                'switch' => self::getSwitchData('preventcreation', $this->fields['preventcreation']),
+            ],
+            [
+                'label' => __(
+                    "Prevent the task from changing its status (from \"to do\" to \"done\") in case of an error",
+                    "taskrules",
+                ),
+                'type'  => 'switch',
+                'switch' => self::getSwitchData('preventchange', $this->fields['preventchange']),
+            ],
+            [
+                'label' => __('Used itemtypes', 'taskrules'),
+                'type'  => 'widget',
+                'widget' => Dropdown::showFromArray('used_itemtypes', $possible_values, [
+                    'values'   => $values,
+                    'multiple' => 'multiples',
+                    'display'  => false,
+                ]),
+            ],
+        ];
+    }
 
     public function showTriggersForm()
     {
-        echo "<div>";
-        echo "<table class='' width='100%'>";
+        TemplateRenderer::getInstance()->display('@taskrules/rule/settings_table.html.twig', [
+            'rows' => $this->getTriggersRows(),
+        ]);
+    }
 
-        echo "<tr class='tab_bg_2'>";
-        echo "<td>";
-        echo __("Activate when a task is added to the ticket", "taskrules");
-        echo "</td>";
-        echo "<td>";
-        self::showSwitchField('trigger_creation', $this->fields['trigger_creation']);
-        echo "</td>";
-        echo "</tr>";
-
-        echo "<tr class='tab_bg_2'>";
-        echo "<td>";
-        echo __('Trigger upon updating the task status from "to do" to "done"', "taskrules");
-        echo "</td>";
-        echo "<td>";
-        self::showSwitchField('trigger_update', $this->fields['trigger_update']);
-        echo "</td>";
-        echo "</tr>";
-
-
-        echo "</table>";
-        echo "</div>";
+    /**
+     * Rows of the triggers part of the rule form
+     *
+     * @return list<array<string, mixed>> rows of rule/settings_table.html.twig
+     */
+    private function getTriggersRows(): array
+    {
+        return [
+            [
+                'label' => __("Activate when a task is added to the ticket", "taskrules"),
+                'type'  => 'switch',
+                'switch' => self::getSwitchData('trigger_creation', $this->fields['trigger_creation']),
+            ],
+            [
+                'label' => __('Trigger upon updating the task status from "to do" to "done"', "taskrules"),
+                'type'  => 'switch',
+                'switch' => self::getSwitchData('trigger_update', $this->fields['trigger_update']),
+            ],
+        ];
     }
 
     public function showActionsForm($id)
     {
+        TemplateRenderer::getInstance()->display('@taskrules/rule/settings_table.html.twig', [
+            'rows' => $this->getActionsRows($id),
+        ]);
+    }
 
+    /**
+     * Rows of the actions part of the rule form: one selector per field of the linked item,
+     * the status and location ones reloading their specific value through
+     * ajax/updateactionsdropdowns.php
+     *
+     * @return list<array<string, mixed>> rows of rule/settings_table.html.twig
+     */
+    private function getActionsRows($id): array
+    {
         $types = Condition::$types;
         $rule = new Rule();
         if ($rule->getFromDB($id)) {
@@ -300,177 +278,159 @@ class Rule extends CommonDBTM
                 $types = $used_itemtypes;
             }
         }
+        // IDOR token bound to this rule id: the endpoint may only read the rule the form
+        // actually exposed, not an arbitrary id forged by the client.
+        $idor_token = Session::getNewIDORToken('', ['id' => (int) $id]);
+        $ajax_url   = PLUGIN_TASKRULES_WEBDIR . "/ajax/updateactionsdropdowns.php";
 
-        echo "<div>";
-        echo "<table class='' width='100%'>";
-
-        echo "<tr class='tab_bg_2'>";
-        echo "<td>";
-        echo __('Status');
-        echo "</td>";
-        echo "<td>";
-        $states[0] = __('Do not change', 'taskrules');
-        $states[1] = __('Empty the field on the linked item of ticket', 'taskrules');
-        $states[2] = __('Affect a specific state on the linked item of ticket', 'taskrules');
-        $randstate = Dropdown::showFromArray('state_action', $states, [
-            'value' => $this->fields['state_action'] ?? 0,
-        ]);
-
-        $params = [
-            'state_action' => '__VALUE__',
-            'states_id' => $this->fields['states_id'],
-            'id' => $id,
-            // IDOR token bound to this rule id: the endpoint may only read the rule
-            // the form actually exposed, not an arbitrary id forged by the client.
-            '_idor_token' => Session::getNewIDORToken('', ['id' => (int) $id]),
+        // Status
+        $states = [
+            0 => __('Do not change', 'taskrules'),
+            1 => __('Empty the field on the linked item of ticket', 'taskrules'),
+            2 => __('Affect a specific state on the linked item of ticket', 'taskrules'),
         ];
-        Ajax::updateItemOnSelectEvent(
+        $randstate = mt_rand();
+        $state_field = Dropdown::showFromArray('state_action', $states, [
+            'value'   => $this->fields['state_action'] ?? 0,
+            'rand'    => $randstate,
+            'display' => false,
+        ]);
+        // Reload script of the core, kept with the selector it observes
+        $state_field .= Ajax::updateItemOnSelectEvent(
             "dropdown_state_action$randstate",
             "specific_states_id",
-            PLUGIN_TASKRULES_WEBDIR . "/ajax/updateactionsdropdowns.php",
-            $params,
+            $ajax_url,
+            [
+                'state_action' => '__VALUE__',
+                'states_id'    => $this->fields['states_id'],
+                'id'           => $id,
+                '_idor_token'  => $idor_token,
+            ],
+            false,
         );
-
-        echo "&nbsp;<span id='specific_states_id'>";
+        $specific_state = '';
         if ($this->fields['states_id'] > 0) {
             $condition = new Condition();
-            $states_id = $condition->getStatuses($types);
-            Dropdown::showFromArray('states_id', $states_id, [
-                'value' => $this->fields['states_id'] ?? 0,
+            $specific_state = Dropdown::showFromArray('states_id', $condition->getStatuses($types), [
+                'value'   => $this->fields['states_id'] ?? 0,
+                'display' => false,
             ]);
         }
-        echo "</span>";
-        echo "<td>";
-        echo "<div class='left'>" . __(
-            'Please note that only statuses common to all objects appear if multiple itemtypes are used.',
-            "taskrules",
-        ) . "</div>";
 
-        echo "</td>";
-        echo "</tr>";
-
-        echo "<tr class='tab_bg_2'>";
-        echo "<td>";
-        echo __('Location');
-        echo "</td>";
-        echo "<td>";
-        $locations[0] = __('Do not change', 'taskrules');
-        $locations[1] = __('Empty the field on the linked item of ticket', 'taskrules');
-        $locations[2] = __('Affect location of ticket requester on the linked item of ticket', 'taskrules');
-        $locations[3] = __('Affect a specific location on the linked item of ticket', 'taskrules');
-        $randlocation = Dropdown::showFromArray('location_action', $locations, [
-            'value' => $this->fields['location_action'],
-        ]);
-
-        $params = [
-            'location_action' => '__VALUE__',
-            'locations_id' => $this->fields['locations_id'],
-            'id' => $id,
-            // IDOR token bound to this rule id: the endpoint may only read the rule
-            // the form actually exposed, not an arbitrary id forged by the client.
-            '_idor_token' => Session::getNewIDORToken('', ['id' => (int) $id]),
+        // Location
+        $locations = [
+            0 => __('Do not change', 'taskrules'),
+            1 => __('Empty the field on the linked item of ticket', 'taskrules'),
+            2 => __('Affect location of ticket requester on the linked item of ticket', 'taskrules'),
+            3 => __('Affect a specific location on the linked item of ticket', 'taskrules'),
         ];
-        Ajax::updateItemOnSelectEvent(
+        $randlocation = mt_rand();
+        $location_field = Dropdown::showFromArray('location_action', $locations, [
+            'value'   => $this->fields['location_action'],
+            'rand'    => $randlocation,
+            'display' => false,
+        ]);
+        // Reload script of the core, kept with the selector it observes
+        $location_field .= Ajax::updateItemOnSelectEvent(
             "dropdown_location_action$randlocation",
             "specific_locations_id",
-            PLUGIN_TASKRULES_WEBDIR . "/ajax/updateactionsdropdowns.php",
-            $params,
+            $ajax_url,
+            [
+                'location_action' => '__VALUE__',
+                'locations_id'    => $this->fields['locations_id'],
+                'id'              => $id,
+                '_idor_token'     => $idor_token,
+            ],
+            false,
         );
-
-        echo "&nbsp;<span id='specific_locations_id'>";
+        $specific_location = '';
         if ($this->fields['locations_id'] > 0
             && $this->fields['location_action'] == 3) {
-            Location::Dropdown([
-                'name' => 'locations_id',
-                'value' => $this->fields['locations_id'],
-                'entity' => $_SESSION["glpiactive_entity"],
+            $specific_location = Location::dropdown([
+                'name'    => 'locations_id',
+                'value'   => $this->fields['locations_id'],
+                'entity'  => $_SESSION["glpiactive_entity"],
+                'display' => false,
             ]);
         }
 
-        echo "</span>";
-        echo "</td>";
-        echo "</tr>";
+        $contacts = [
+            0 => __('Do not change', 'taskrules'),
+            1 => __('Empty the field on the linked item of ticket', 'taskrules'),
+        ];
+        $users = [
+            0 => __('Do not change', 'taskrules'),
+            1 => __('Empty the field on the linked item of ticket', 'taskrules'),
+            2 => __('Affect ticket requester on the linked item of ticket', 'taskrules'),
+        ];
+        $groups = [
+            0 => __('Do not change', 'taskrules'),
+            1 => __('Empty the field on the linked item of ticket', 'taskrules'),
+            2 => __('Affect group of the requester on the linked item of ticket', 'taskrules'),
+        ];
 
-        echo "<tr class='tab_bg_2'>";
-        echo "<td>";
-        echo __('Alternate username');
-        echo "</td>";
-        echo "<td>";
-        $contacts[0] = __('Do not change', 'taskrules');
-        $contacts[1] = __('Empty the field on the linked item of ticket', 'taskrules');
-        Dropdown::showFromArray('contact_action', $contacts, [
-            'value' => $this->fields['contact_action'],
-        ]);
-        echo "</td>";
-        echo "</tr>";
-
-        echo "<tr class='tab_bg_2'>";
-        echo "<td>";
-        echo __('User');
-        echo "</td>";
-        echo "<td>";
-        $users[0] = __('Do not change', 'taskrules');
-        $users[1] = __('Empty the field on the linked item of ticket', 'taskrules');
-        $users[2] = __('Affect ticket requester on the linked item of ticket', 'taskrules');
-        Dropdown::showFromArray('user_action', $users, [
-            'value' => $this->fields['user_action'],
-        ]);
-        echo "</td>";
-        echo "</tr>";
-
-        echo "<tr class='tab_bg_2'>";
-        echo "<td>";
-        echo __('Group');
-        echo "</td>";
-        echo "<td>";
-        $groups[0] = __('Do not change', 'taskrules');
-        $groups[1] = __('Empty the field on the linked item of ticket', 'taskrules');
-        $groups[2] = __('Affect group of the requester on the linked item of ticket', 'taskrules');
-        Dropdown::showFromArray('group_action', $groups, [
-            'value' => $this->fields['group_action'],
-        ]);
-        echo "</td>";
-        echo "</tr>";
-
-        echo "</table>";
-        echo "</div>";
+        return [
+            [
+                'label'    => __('Status'),
+                'type'     => 'widget',
+                'widget'   => $state_field,
+                'specific' => ['id' => 'specific_states_id', 'widget' => $specific_state],
+                'note'  => __(
+                    'Please note that only statuses common to all objects appear if multiple itemtypes are used.',
+                    "taskrules",
+                ),
+            ],
+            [
+                'label'    => __('Location'),
+                'type'     => 'widget',
+                'widget'   => $location_field,
+                'specific' => ['id' => 'specific_locations_id', 'widget' => $specific_location],
+            ],
+            [
+                'label' => __('Alternate username'),
+                'type'  => 'widget',
+                'widget' => Dropdown::showFromArray('contact_action', $contacts, [
+                    'value'   => $this->fields['contact_action'],
+                    'display' => false,
+                ]),
+            ],
+            [
+                'label' => __('User'),
+                'type'  => 'widget',
+                'widget' => Dropdown::showFromArray('user_action', $users, [
+                    'value'   => $this->fields['user_action'],
+                    'display' => false,
+                ]),
+            ],
+            [
+                'label' => __('Group'),
+                'type'  => 'widget',
+                'widget' => Dropdown::showFromArray('group_action', $groups, [
+                    'value'   => $this->fields['group_action'],
+                    'display' => false,
+                ]),
+            ],
+        ];
     }
 
     public static function showSwitchField($name, $value)
     {
-        $rand = mt_rand();
-        $id = $name . $rand;
-        $js = "(function(){
-                    var toggleButton = $('.$id');
-                    toggleButton.on('click', function() {
-                        var el = $(this);
-                        var isOn = el.hasClass('fa-toggle-on');
-                        var input = document.getElementById('$id');
+        TemplateRenderer::getInstance()->display('@taskrules/rule/switch.html.twig', self::getSwitchData($name, $value));
+    }
 
-                        if (isOn) {
-                            el.removeClass('fa-toggle-on enabled')
-                              .addClass('fa-toggle-off disabled');
-                            input.value = '0';
-                        } else {
-                            el.removeClass('fa-toggle-off disabled')
-                              .addClass('fa-toggle-on enabled');
-                            input.value = '1';
-                        }
-                    });
-                })();";
-
-        echo Html::scriptBlock($js);
-
-        echo Html::hidden($name, [
-            'id' => $id,
-            'value' => ($value == 1 ? '1' : '0'),
-        ]);
-        // Génère l’icône dans un bouton
-        $classes = $value == 1
-            ? "$id fa-fw fas fa-2x fa-toggle-on enabled"
-            : "$id fa-fw fas fa-2x fa-toggle-off disabled";
-
-        echo "<a class=\"button\"><i class=\"$classes\"></i></a>";
+    /**
+     * Data of an on/off switch of a rule setting (rule/switch.html.twig, toggled by
+     * public/scripts/rule_form.js)
+     *
+     * @return array{name: string, id: string, value: bool}
+     */
+    public static function getSwitchData($name, $value): array
+    {
+        return [
+            'name'  => (string) $name,
+            'id'    => $name . mt_rand(),
+            'value' => $value == 1,
+        ];
     }
 
     public static function preAddTask($item)
@@ -722,83 +682,6 @@ class Rule extends CommonDBTM
             }
         }
     }
-
-    public function launchResultsOnTicketTaskState($tickettasks_id)
-    {
-        $task = new TicketTask();
-
-        if ($task->getFromDB($tickettasks_id)) {
-            echo Ajax::createIframeModalWindow(
-                "results$tickettasks_id",
-                PLUGIN_TASKRULES_WEBDIR . "/front/modalresults.php",
-                [
-                    'title' => __('Results of changes of linked items', 'taskrules'),
-                    'reloadonclose' => false,
-                    'display' => false,
-                    'width' => 1140,
-                    'height' => 500,
-                    'dialog_class'  => 'modal-xl',
-                ],
-            );
-
-            $id    = (int) $tickettasks_id;
-            $state = (int) $task->fields['state'];
-            $done  = Planning::DONE;
-            echo Html::scriptBlock(
-                "(function () {
-                    var taskItem = document.querySelector('#TicketTask_$id');
-                    if (!taskItem) return;
-
-                    var checkbox = taskItem.querySelector('.todo-list-state .task-state-checkbox');
-                    var isDone   = ($state === $done);
-
-                    if (checkbox) {
-                        checkbox.checked = isDone;
-                        checkbox.title = isDone ? " . json_encode(__('Done'), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) . " : " . json_encode(__('To do'), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) . ";
-                        checkbox.setAttribute('aria-label', isDone ? " . json_encode(__('Done'), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) . " : " . json_encode(__('To do'), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) . ");
-                    }
-
-                    var readOnly = taskItem.querySelector('.read-only-content');
-                    if (readOnly) {
-                        readOnly.classList.toggle('done', isDone);
-                    }
-
-                    var total = document.querySelectorAll('.todo-list-state .task-state-checkbox').length;
-                    var doneCount = document.querySelectorAll('.todo-list-state .task-state-checkbox:checked').length;
-                    var pct = total > 0 ? Math.floor(100 * doneCount / total) : 0;
-                    var bar = document.querySelector('.timeline-progress');
-                    if (bar) {
-                        bar.style.width = pct + '%';
-                        bar.setAttribute('aria-valuenow', pct);
-                    }
-                    var label = document.querySelector('.task-progress-label');
-                    if (label) label.innerHTML = pct + '%';
-                })();
-
-                        function plugin_taskrules_showresults(taskId) {
-
-                            $.ajax({
-                                type: 'POST',
-                                url: '" . PLUGIN_TASKRULES_WEBDIR . "/ajax/generateresult.php',
-                                data: {
-                                    'tickettasks_id': taskId
-                                },
-                                success: function (html) {
-                                    let modalBody = document.querySelector('#results' + taskId + ' div.modal-body');
-                                    if (modalBody) {
-                                        modalBody.innerHTML = html;
-
-                                        $('#results' + taskId).modal('show');
-                                        $('#ajax_loader').hide();
-                                    }
-                                }
-                            });
-                        }
-            ",
-            );
-        }
-    }
-
 
     public function prepareInputForAdd($input)
     {

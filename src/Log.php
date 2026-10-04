@@ -247,13 +247,13 @@ class Log extends CommonDBTM
                                             $action_type = Action::getGroupActionName($res['action']);
                                         }
 
-                                        $result_html = '';
+                                        $result = ['done' => false, 'errors' => [], 'value' => ''];
                                         if (($action == 'location_action'
                                                 || $action == 'status_action'
                                                 || $action == 'user_action'
                                                 || $action == 'group_action')
                                             && $res['action'] == 1 && $res['value'] == 0) {
-                                            $result_html = "<i class='ti ti-check' style='color: forestgreen;'></i>";
+                                            $result['done'] = true;
                                             $titlelog = "";
                                             if ($action == 'location_action') {
                                                 $titlelog = __('Location');
@@ -274,7 +274,7 @@ class Log extends CommonDBTM
                                             ];
                                         } elseif ($action == 'contact_action'
                                             && $res['value'] == 'null') {
-                                            $result_html = "<i class='ti ti-check' style='color: forestgreen;'></i>";
+                                            $result['done'] = true;
                                             $log_actions[$i][$j] = [
                                                 'itemtype' => $type,
                                                 'items_id' => $items_id,
@@ -287,9 +287,7 @@ class Log extends CommonDBTM
                                             ];
                                         } elseif ($action == 'state_action'
                                             && $res['action'] == 2) {
-                                            // Dropdown names are stored raw (GLPI 11) and result_html is
-                                            // rendered with |raw in results.html.twig: escape like the else branch.
-                                            $result_html = htmlspecialchars((string) Dropdown::getDropdownName('glpi_states', $res['value']), ENT_QUOTES, 'UTF-8');
+                                            $result['value'] = (string) Dropdown::getDropdownName('glpi_states', $res['value']);
                                             $log_actions[$i][$j] = [
                                                 'itemtype' => $type,
                                                 'items_id' => $items_id,
@@ -299,9 +297,7 @@ class Log extends CommonDBTM
                                             ];
                                         } elseif ($action == 'location_action'
                                             && ($res['action'] == 2 || $res['action'] == 3)) {
-                                            // Dropdown names are stored raw (GLPI 11) and result_html is
-                                            // rendered with |raw in results.html.twig: escape like the else branch.
-                                            $result_html = htmlspecialchars((string) Dropdown::getDropdownName('glpi_locations', $res['value']), ENT_QUOTES, 'UTF-8');
+                                            $result['value'] = (string) Dropdown::getDropdownName('glpi_locations', $res['value']);
                                             $log_actions[$i][$j] = [
                                                 'itemtype' => $type,
                                                 'items_id' => $items_id,
@@ -315,8 +311,7 @@ class Log extends CommonDBTM
                                             if ($errors) {
                                                 foreach ($errors as $name => $error) {
                                                     if ($name == 'user_action') {
-                                                        $result_html .= "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
-                                                        $result_html .= "<span style='color:red'>" . htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8') . "</span><br>";
+                                                        $result['errors'][] = (string) $error;
                                                         $ko = 1;
                                                         $log_actions[$i][$j] = [
                                                             'itemtype' => $type,
@@ -329,9 +324,7 @@ class Log extends CommonDBTM
                                                 }
                                             }
                                             if ($ko == 0) {
-                                                // User display name is stored raw (GLPI 11) and result_html is
-                                                // rendered with |raw in results.html.twig: escape it.
-                                                $result_html .= htmlspecialchars((string) getUserName($res['value']), ENT_QUOTES, 'UTF-8');
+                                                $result['value'] = (string) getUserName($res['value']);
                                                 $log_actions[$i][$j] = [
                                                     'itemtype' => $type,
                                                     'items_id' => $items_id,
@@ -347,8 +340,7 @@ class Log extends CommonDBTM
                                             if ($errors) {
                                                 foreach ($errors as $name => $error) {
                                                     if ($name == 'group_action') {
-                                                        $result_html .= "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
-                                                        $result_html .= "<span style='color:red'>" . htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8') . "</span><br>";
+                                                        $result['errors'][] = (string) $error;
                                                         $kp = 1;
                                                         $log_actions[$i][$j] = [
                                                             'itemtype' => $type,
@@ -359,8 +351,7 @@ class Log extends CommonDBTM
                                                         ];
                                                     }
                                                     if ($name == 'user_action') {
-                                                        $result_html .= "<i class='ti ti-circle-x' style='color: red;'></i>&nbsp;";
-                                                        $result_html .= "<span style='color:red'>" . htmlspecialchars((string) $error, ENT_QUOTES, 'UTF-8') . "</span><br>";
+                                                        $result['errors'][] = (string) $error;
                                                         $ko = 1;
                                                         $log_actions[$i][$j] = [
                                                             'itemtype' => $type,
@@ -373,9 +364,7 @@ class Log extends CommonDBTM
                                                 }
                                             }
                                             if ($ko == 0 && $kp == 0) {
-                                                // Group names are stored raw (GLPI 11) and result_html is
-                                                // rendered with |raw in results.html.twig: escape it.
-                                                $result_html .= htmlspecialchars((string) Dropdown::getDropdownName('glpi_groups', $res['value']), ENT_QUOTES, 'UTF-8');
+                                                $result['value'] = (string) Dropdown::getDropdownName('glpi_groups', $res['value']);
                                                 $log_actions[$i][$j] = [
                                                     'itemtype' => $type,
                                                     'items_id' => $items_id,
@@ -385,13 +374,13 @@ class Log extends CommonDBTM
                                                 ];
                                             }
                                         } else {
-                                            $result_html = htmlspecialchars((string) ($res['value'] ?? ''), ENT_QUOTES, 'UTF-8');
+                                            $result['value'] = (string) ($res['value'] ?? '');
                                         }
 
                                         $item_actions[] = [
                                             'action_name' => $action_name,
                                             'action_type' => $action_type,
-                                            'result_html' => $result_html,
+                                            'result'      => $result,
                                         ];
                                     }
 
@@ -514,7 +503,7 @@ class Log extends CommonDBTM
             'field' => 'tickettasks_id',
             'name' => __('Task'),
             'datatype' => 'itemlink',
-            'itemlink_type' => 'TicketTask',
+            'itemlink_type' => \TicketTask::class,
         ];
 
         $tab[] = [

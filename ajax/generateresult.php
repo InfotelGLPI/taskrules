@@ -28,80 +28,50 @@
  */
 
 use Glpi\Exception\Http\AccessDeniedHttpException;
-use GlpiPlugin\Taskrules\Action;
-use GlpiPlugin\Taskrules\Condition;
 use GlpiPlugin\Taskrules\Log;
 use GlpiPlugin\Taskrules\Rule;
 
-// This endpoint mutates the assets linked to the ticket, so it requires the
-// plugin UPDATE right (not merely READ).
+// Results of the rule of a task, shown in the modal opened after the task was saved.
+//
+// The actions themselves are run once, by the TicketTask hooks (Rule::afterAddTask() /
+// afterUpdateTask()), which keep their results in $_SESSION['plugin_taskrules']['results']
+// and set the one-shot marker consumed below. This endpoint used to replay
+// Condition::checkCriteras() + Action::launchActions() on the linked items, so every action
+// ran twice, while Log::showResults() rendered the session results anyway. It now only
+// renders and logs those results.
+//
+// Same right as the hook that opens the modal (plugin_taskrules_post_item_form()).
 Session::checkRight("plugin_taskrules", UPDATE);
 
 $tickettasks_id = (int) ($_POST['tickettasks_id'] ?? 0);
-if ($tickettasks_id > 0) {
-    $tickettask = new TicketTask();
-    if ($tickettask->getFromDB($tickettasks_id)) {
-        // Enforce access to the parent ticket before acting on its linked assets
-        // (defends against IDOR: a user must not drive writes on an arbitrary
-        // tickettasks_id belonging to a ticket they cannot access).
-        $ticket = new Ticket();
-        if (!$ticket->can((int) $tickettask->fields['tickets_id'], READ)) {
-            throw new AccessDeniedHttpException();
-        }
-        // Only replay the rule for a task whose rule was really triggered by the
-        // TicketTask hooks (one-shot marker set in plugin_taskrules_post_item_form).
-        if (empty($_SESSION['plugin_taskrules']['pending_results'][$tickettasks_id])) {
-            throw new AccessDeniedHttpException();
-        }
-        unset($_SESSION['plugin_taskrules']['pending_results'][$tickettasks_id]);
-        unset($_SESSION['plugin_taskrules']['show_updateresults']);
-        $rule = new Rule();
-        if ($rule->getFromDBByCrit(["tasktemplates_id" => $tickettask->fields['tasktemplates_id']])
-            && $rule->fields['active'] == 1
-            // Revalidate the trigger: creation trigger, or update trigger on a done task.
-            && ($rule->fields['trigger_creation'] == 1
-                || ($rule->fields['trigger_update'] == 1 && $tickettask->fields['state'] == Planning::DONE))) {
-            $item_ticket = new Item_Ticket();
-            $items_linked = $item_ticket->find([
-                'tickets_id' => $tickettask->fields['tickets_id'],
-            ]);
-            $found_items = [];
-            $results = [];
-            if (count($items_linked) > 0) {
-                $found_items = Condition::checkCriteras("launchresults", $rule, $tickettask->fields['tickets_id'], $tickettask->getID(), $items_linked);
-                if (count($found_items) > 0) {
-                    foreach ($items_linked as $item_linked) {
-                        if (getItemForItemtype($item_linked['itemtype'])) {
-                            $item = new $item_linked['itemtype']();
-                            if ($item->getfromDB($item_linked['items_id'])) {
-                                if (in_array($item_linked['items_id'], $found_items)) {
-                                    $results[] = Action::launchActions(
-                                        $rule,
-                                        $tickettask->fields['tickets_id'],
-                                        $tickettasks_id,
-                                        $item_linked,
-                                    );
-                                } else {
-                                    $results['errors']['not_found'][] = ['itemtype' => $item_linked['itemtype'], 'items_id' => $item_linked['items_id']];
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    foreach ($items_linked as $item_linked) {
-                        $results['errors']['not_found'][] = [
-                            'itemtype' => $item_linked['itemtype'],
-                            'items_id' => $item_linked['items_id'],
-                        ];
-                    }
-                }
-            }
-            if (count($results) > 0) {
-                Log::showResults($rule, $results, $tickettask->fields['tickets_id'], $tickettasks_id);
-            }
-            //            Html::redirect(Ticket::getFormURLWithID($tickettask->fields['tickets_id']));
-        }
-    }
-} else {
-    exit;
+if ($tickettasks_id <= 0) {
+    return;
+}
+
+$tickettask = new TicketTask();
+if (!$tickettask->getFromDB($tickettasks_id)) {
+    return;
+}
+
+// Access to the parent ticket (IDOR: the task id comes from the client)
+$ticket = new Ticket();
+if (!$ticket->can((int) $tickettask->fields['tickets_id'], READ)) {
+    throw new AccessDeniedHttpException();
+}
+
+// Only for a task whose rule was really triggered by the TicketTask hooks
+if (empty($_SESSION['plugin_taskrules']['pending_results'][$tickettasks_id])) {
+    throw new AccessDeniedHttpException();
+}
+unset($_SESSION['plugin_taskrules']['pending_results'][$tickettasks_id]);
+unset($_SESSION['plugin_taskrules']['show_updateresults']);
+
+$rule = new Rule();
+if (!$rule->getFromDBByCrit(['tasktemplates_id' => $tickettask->fields['tasktemplates_id']])) {
+    return;
+}
+
+$results = $_SESSION['plugin_taskrules']['results'] ?? [];
+if (is_array($results) && count($results) > 0) {
+    Log::showResults($rule, $results, $tickettask->fields['tickets_id'], $tickettasks_id);
 }

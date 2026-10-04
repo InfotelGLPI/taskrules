@@ -25,7 +25,9 @@
  # --------------------------------------------------------------------------
  #}
 
-{{ head_assets|raw }}
+{# jQuery UI (accordion of the form), tags built by the core asset helpers #}
+{{ call('Html::css', [webdir ~ '/lib/jquery-ui/jquery-ui.min.css'])|raw }}
+{{ call('Html::script', [webdir ~ '/lib/jquery-ui/jquery-ui.min.js'])|raw }}
 
 <form name="form" method="post" action="{{ target }}">
     <input type="hidden" name="_glpi_csrf_token" value="{{ csrf_token() }}">
@@ -39,18 +41,19 @@
 
                 <div id="accordion_rules">
                     <h3><a href="#">{{ _n('Parameter', 'Parameters', 2, 'taskrules') }}</a></h3>
-                    {{ parameters_form|raw }}
+                    {{ include('@taskrules/rule/settings_table.html.twig', {rows: parameters_rows}) }}
 
                     <h3><a href="#">{{ _n('Condition', 'Conditions', 2, 'taskrules') }}</a></h3>
+                    {# Rendered by Condition::renderCriteriasForm() from the search templates #}
                     {{ criterias_form|raw }}
 
                     <h3><a href="#">{{ _n('Trigger', 'Triggers', 2, 'taskrules') }}</a></h3>
-                    {{ triggers_form|raw }}
+                    {{ include('@taskrules/rule/settings_table.html.twig', {rows: triggers_rows}) }}
 
                     <h3><a href="#">{{ _n('Action', 'Actions', 2, 'taskrules') }}</a></h3>
-                    {{ actions_form|raw }}
+                    {{ include('@taskrules/rule/settings_table.html.twig', {rows: actions_rows}) }}
                 </div>
-                {{ call('Html::scriptBlock', ['accordion_taskrules();'])|raw }}
+                {# The accordion is started by public/scripts/rule_form.js #}
             </td>
         </tr>
         <tr class="tab_bg_1">
