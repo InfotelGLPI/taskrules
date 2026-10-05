@@ -753,11 +753,12 @@ class Condition extends CommonDBTM
 
         $itemtypecriteria = [];
         if (is_array($itemtypes) && count($itemtypes) > 0) {
-            foreach ($itemtypes as $k => $itemtype) {
-                $itemtype_l = strtolower($itemtype);
-                $itemtypecriteria["is_visible"] = 1;
-                $itemtypecriteria["visible_itemtype"] = $itemtype;
-            }
+            // States visible for any of the chosen itemtypes: the loop used to overwrite the
+            // criterion, so only the last itemtype filtered the list
+            $itemtypecriteria = [
+                'glpi_dropdownvisibilities.is_visible'       => 1,
+                'glpi_dropdownvisibilities.visible_itemtype' => array_values(array_map('strval', $itemtypes)),
+            ];
 
             /** Retrieve object types data from the database */
             $iterateur = $DB->request([

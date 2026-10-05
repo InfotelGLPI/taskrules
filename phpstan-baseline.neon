@@ -7,12 +7,6 @@ parameters:
 			path: ajax/search.php
 
 		-
-			message: '#^Method GlpiPlugin\\Taskrules\\Rule\:\:showForm\(\) invoked with 0 parameters, 1\-2 required\.$#'
-			identifier: arguments.count
-			count: 1
-			path: front/rule.form.php
-
-		-
 			message: '#^Instantiating an object from an unrestricted dynamic string is forbidden \(see https\://github\.com/glpi\-project/phpstan\-glpi\?tab\=readme\-ov\-file\#forbiddynamicinstantiationrule\)\.$#'
 			identifier: glpi.forbidDynamicInstantiation
 			count: 1

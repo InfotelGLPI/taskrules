@@ -90,13 +90,94 @@ class Rule extends CommonDBTM
                         `user_action` int {$default_key_sign} NOT NULL DEFAULT '0',
                         `group_action` int {$default_key_sign} NOT NULL DEFAULT '0',
                         PRIMARY KEY (`id`),
-                        KEY `tasktemplates_id` (`tasktemplates_id`),
+                        UNIQUE KEY `tasktemplates_id` (`tasktemplates_id`),
                         KEY `states_id` (`states_id`),
                         KEY `locations_id` (`locations_id`)
                ) ENGINE=InnoDB DEFAULT CHARSET={$default_charset} COLLATE={$default_collation} ROW_FORMAT=DYNAMIC;";
 
             $DB->doQuery($query);
+        } else {
+            self::migrateUniqueTaskTemplate($migration);
         }
+    }
+
+    /**
+     * One rule per task template: the engine reads the rule of a template with
+     * getFromDBByCrit(), which finds nothing as soon as several rows match.
+     *
+     * Removes the duplicates (keeping the most recent rule of each template, with its
+     * conditions) then turns the `tasktemplates_id` index into a UNIQUE one.
+     * Replayable: nothing is done once the index is unique.
+     */
+    public static function migrateUniqueTaskTemplate(Migration $migration): void
+    {
+        global $DB;
+
+        $table = self::getTable();
+        if (self::isUniqueIndex($table, 'tasktemplates_id')) {
+            return;
+        }
+
+        // Most recent rule first: the first one met for a template is kept
+        $kept_templates = [];
+        $removed_ids    = [];
+        $iterator = $DB->request([
+            'SELECT' => ['id', 'tasktemplates_id'],
+            'FROM'   => $table,
+            'ORDER'  => 'id DESC',
+        ]);
+        foreach ($iterator as $data) {
+            $tasktemplates_id = (int) $data['tasktemplates_id'];
+            if (isset($kept_templates[$tasktemplates_id])) {
+                $removed_ids[] = (int) $data['id'];
+            } else {
+                $kept_templates[$tasktemplates_id] = true;
+            }
+        }
+
+        if (count($removed_ids) > 0) {
+            // The log has no column referencing a rule: only the conditions are linked to it
+            $DB->delete(Condition::getTable(), ['taskrules_id' => $removed_ids]);
+            $DB->delete($table, ['id' => $removed_ids]);
+            $migration->addInfoMessage(sprintf(
+                'Removed %d duplicated task rule(s): %s',
+                count($removed_ids),
+                implode(', ', $removed_ids),
+            ));
+        }
+
+        // The key must be dropped before being added again (addKey() skips an existing name)
+        $migration->dropKey($table, 'tasktemplates_id');
+        $migration->migrationOneTable($table);
+        $migration->addKey($table, 'tasktemplates_id', 'tasktemplates_id', 'UNIQUE');
+        $migration->migrationOneTable($table);
+    }
+
+    /**
+     * Whether the index exists and is unique
+     */
+    private static function isUniqueIndex(string $table, string $indexname): bool
+    {
+        global $DB;
+
+        $iterator = $DB->request([
+            'SELECT' => ['NON_UNIQUE'],
+            'FROM'   => 'information_schema.STATISTICS',
+            'WHERE'  => [
+                'TABLE_SCHEMA' => $DB->dbdefault,
+                'TABLE_NAME'   => $table,
+                'INDEX_NAME'   => $indexname,
+            ],
+        ]);
+        if (count($iterator) === 0) {
+            return false;
+        }
+        foreach ($iterator as $data) {
+            if ((int) $data['NON_UNIQUE'] !== 0) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static function uninstall()
@@ -546,9 +627,10 @@ class Rule extends CommonDBTM
                             Session::addMessageAfterRedirect($errormsg, false, ERROR);
                         }
                         if (count($results) > 0) {
+                            // Logged here, whether the results modal is opened or not
+                            Log::writeLog($rule, $results, (int) $item->fields['tickets_id'], (int) $item->fields['id']);
                             $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'] = $item->fields['id'];
                             $_SESSION['plugin_taskrules']['results'] = $results;
-                            //                            Log::showResults($rule, $results, $item->fields['tickets_id'], $item->fields['id']);
                         }
                     }
                 }
@@ -668,11 +750,11 @@ class Rule extends CommonDBTM
                                 Session::addMessageAfterRedirect($errormsg, false, ERROR);
                             }
                             if (count($results) > 0) {
+                                // Logged here, whether the results modal is opened or not
+                                Log::writeLog($rule, $results, (int) $item->fields['tickets_id'], (int) $item->fields['id']);
                                 $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'] = $item->fields['id'];
                                 $_SESSION['plugin_taskrules']['results'] = $results;
-                                //                                Log::showResults($rule, $results, $item->fields['tickets_id'], $item->fields['id']);
                             }
-                            //                            Html::redirect(Ticket::getFormURLWithID($item->fields['tickets_id']));
                         }
                     }
                 }
@@ -688,6 +770,10 @@ class Rule extends CommonDBTM
             'user_action', 'group_action'];
         $input = array_intersect_key($input, array_flip($allowed));
 
+        if (!$this->isTaskTemplateAvailable((int) ($input['tasktemplates_id'] ?? 0), 0)) {
+            return false;
+        }
+
         if (!empty($input['used_itemtypes'])) {
             // Keep only known itemtypes: prevents persisting an arbitrary class name
             // later instantiated via `new $itemtype()` in Condition::showCriteriasForm.
@@ -701,9 +787,41 @@ class Rule extends CommonDBTM
     }
 
     /**
-     * @param $input
+     * Whether a rule may be attached to the task template: it must exist, be readable
+     * by the current user and have no rule yet (the engine reads a single rule per
+     * template). Adds an error message when it is refused.
      *
-     * @return mixed[]
+     * @param int $tasktemplates_id task template of the rule
+     * @param int $exclude_id       rule to ignore (the one being updated), 0 for none
+     */
+    private function isTaskTemplateAvailable(int $tasktemplates_id, int $exclude_id): bool
+    {
+        $error = null;
+        if ($tasktemplates_id <= 0) {
+            $error = __('A task template is required', 'taskrules');
+        } elseif (!(new TaskTemplate())->can($tasktemplates_id, READ)) {
+            $error = __('The task template does not exist or is not readable', 'taskrules');
+        } else {
+            $criteria = ['tasktemplates_id' => $tasktemplates_id];
+            if ($exclude_id > 0) {
+                $criteria['NOT'] = ['id' => $exclude_id];
+            }
+            if (countElementsInTable(self::getTable(), $criteria) > 0) {
+                $error = __('A rule already exists for this task template', 'taskrules');
+            }
+        }
+
+        if ($error !== null) {
+            Session::addMessageAfterRedirect($error, false, ERROR);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * @param array<string, mixed> $input
+     *
+     * @return false|array<string, mixed>
      */
     public function prepareInputForUpdate($input)
     {
@@ -712,6 +830,12 @@ class Rule extends CommonDBTM
             'states_id', 'location_action', 'locations_id', 'contact_action',
             'user_action', 'group_action'];
         $input = array_intersect_key($input, array_flip($allowed));
+
+        if (isset($input['tasktemplates_id'])
+            && (int) $input['tasktemplates_id'] !== (int) ($this->fields['tasktemplates_id'] ?? 0)
+            && !$this->isTaskTemplateAvailable((int) $input['tasktemplates_id'], (int) $this->getID())) {
+            return false;
+        }
 
         if (!empty($input['used_itemtypes'])) {
             // Keep only known itemtypes: prevents persisting an arbitrary class name

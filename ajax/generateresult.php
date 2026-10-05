@@ -38,7 +38,7 @@ use GlpiPlugin\Taskrules\Rule;
 // and set the one-shot marker consumed below. This endpoint used to replay
 // Condition::checkCriteras() + Action::launchActions() on the linked items, so every action
 // ran twice, while Log::showResults() rendered the session results anyway. It now only
-// renders and logs those results.
+// renders those results: the log is written by the hooks themselves (Log::writeLog()).
 //
 // Same right as the hook that opens the modal (plugin_taskrules_post_item_form()).
 Session::checkRight("plugin_taskrules", UPDATE);

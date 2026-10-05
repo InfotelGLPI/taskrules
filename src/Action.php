@@ -67,7 +67,7 @@ class Action extends CommonDBTM
         $states[1] = __('Empty the field on the linked item of ticket', 'taskrules');
         $states[2] = __('Affect a specific state on the linked item of ticket', 'taskrules');
 
-        return $states[$action];
+        return $states[$action] ?? '';
     }
 
     public static function getLocationActionName($action)
@@ -77,7 +77,7 @@ class Action extends CommonDBTM
         $locations[2] = __('Affect location of ticket requester on the linked item of ticket', 'taskrules');
         $locations[3] = __('Affect a specific location on the linked item of ticket', 'taskrules');
 
-        return $locations[$action];
+        return $locations[$action] ?? '';
     }
 
     public static function getContactActionName($action)
@@ -85,7 +85,7 @@ class Action extends CommonDBTM
         $contacts[0] = __('Do not change', 'taskrules');
         $contacts[1] = __('Empty the field on the linked item of ticket', 'taskrules');
 
-        return $contacts[$action];
+        return $contacts[$action] ?? '';
     }
 
     public static function getUserActionName($action)
@@ -94,7 +94,7 @@ class Action extends CommonDBTM
         $users[1] = __('Empty the field on the linked item of ticket', 'taskrules');
         $users[2] = __('Affect ticket requester on the linked item of ticket', 'taskrules');
 
-        return $users[$action];
+        return $users[$action] ?? '';
     }
 
     public static function getGroupActionName($action)
@@ -103,7 +103,7 @@ class Action extends CommonDBTM
         $groups[1] = __('Empty the field on the linked item of ticket', 'taskrules');
         $groups[2] = __('Affect group of the ticket requester on the linked item of ticket', 'taskrules');
 
-        return $groups[$action];
+        return $groups[$action] ?? '';
     }
 
     public static function launchActions($rule, $tickets_id, $tickettasks_id, $item_linked)

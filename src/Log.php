@@ -142,10 +142,12 @@ class Log extends CommonDBTM
         return $rows;
     }
 
+    /**
+     * Render the results modal of the actions of a rule. Writes nothing: the log lines
+     * are written by the TicketTask hooks (writeLog()).
+     */
     public static function showResults($rule, $results, $tickets_id, $tickettasks_id)
     {
-        $errors = [];
-        $not_found = [];
         if (isset($_SESSION['plugin_taskrules']['results'])) {
             $results = $_SESSION['plugin_taskrules']['results'];
         }
@@ -189,8 +191,58 @@ class Log extends CommonDBTM
             }
         }
 
-        // Build the "updated" render model and, as a side effect, the
-        // $log_actions entries persisted at the end of the method.
+        $updated_blocks = self::processResults($rule, $results)['blocks'];
+
+        TemplateRenderer::getInstance()->display('@taskrules/results.html.twig', [
+            'not_found_rows' => $not_found_rows,
+            'no_right_rows'  => $no_right_rows,
+            'updated_blocks' => $updated_blocks,
+        ]);
+        unset($_SESSION['plugin_taskrules']['show_updateresults']['results']);
+    }
+
+    /**
+     * Write the log lines of the actions run by a rule on the items linked to a ticket.
+     *
+     * Called by the TicketTask hooks right after the actions were run, so the log does
+     * not depend on the results modal being opened (API, cron, other rules...).
+     *
+     * @param array $results results of Action::launchActions(), as built by the hooks
+     */
+    public static function writeLog(Rule $rule, array $results, int $tickets_id, int $tickettasks_id): void
+    {
+        $log = new self();
+        foreach (self::processResults($rule, $results)['log_actions'] as $logs) {
+            foreach ($logs as $res) {
+                $log->add([
+                    'action_field'   => $res['action_field'],
+                    'tickets_id'     => $tickets_id,
+                    'tickettasks_id' => $tickettasks_id,
+                    'itemtype'       => $res['itemtype'],
+                    'items_id'       => $res['items_id'],
+                    'action'         => $res['action'],
+                    'value'          => $res['value'],
+                    'users_id'       => $_SESSION['glpiID'] ?? 0,
+                    'date'           => $_SESSION['glpi_currenttime'] ?? date('Y-m-d H:i:s'),
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Turn the results of the actions of a rule into both the render model of the
+     * "updated" part of the results modal and the lines of the log
+     *
+     * @param array $results results of Action::launchActions(), as built by the hooks
+     *
+     * @return array{blocks: list<array<string, mixed>>, log_actions: array<int, array<int, array<string, mixed>>>}
+     */
+    private static function processResults(Rule $rule, array $results): array
+    {
+        // Items that did not match the rule: neither shown here nor logged
+        unset($results['errors']);
+
+        $errors = [];
         $log_actions = [];
         $updated_blocks = [];
         if (count($results) > 0) {
@@ -202,7 +254,8 @@ class Log extends CommonDBTM
                         $errors = $itemtype['errors'];
                     }
                 }
-                $errors = array_unique($errors);
+                // SORT_REGULAR: the errors may hold arrays (no_right), not only messages
+                $errors = array_unique($errors, SORT_REGULAR);
             }
 
             $i = 0;
@@ -399,72 +452,7 @@ class Log extends CommonDBTM
             }
         }
 
-        TemplateRenderer::getInstance()->display('@taskrules/results.html.twig', [
-            'not_found_rows' => $not_found_rows,
-            'no_right_rows'  => $no_right_rows,
-            'updated_blocks' => $updated_blocks,
-        ]);
-        unset($_SESSION['plugin_taskrules']['show_updateresults']['results']);
-
-        $log = new Log();
-
-        //        $errors = [];
-        //        if (count($results) > 0) {
-        //            foreach ($results as $k => $itemtype) {
-        //                if (isset($itemtype['errors'])) {
-        //                    Toolbox::logInfo($itemtype['errors']);
-        //                    if (isset($itemtype['errors']['user'])) {
-        //                        $errors['user_action'] = $itemtype['errors']['user'];
-        //                        $errors['group_action'] = $itemtype['errors']['user'];
-        //                    }
-        //                    if (isset($itemtype['errors']['group'])) {
-        //                        $errors['group_action'] = $itemtype['errors']['group'];
-        //                    }
-        //                }
-        //            }
-        //        }
-        //        foreach ($not_found as $action => $res) {
-        //            $inputr['action_field'] = $action;
-        //            $inputr['tickets_id'] = $tickets_id;
-        //            $inputr['tickettasks_id'] = $tickettasks_id;
-        //            $inputr['itemtype'] = $res['itemtype'];
-        //            $inputr['items_id'] = $res['items_id'];
-        //            $inputr['action'] = '0';
-        //            $inputr['value'] = 'not found';
-        //            $inputr['users_id'] = $_SESSION['glpiID'];
-        //            $inputr['date'] = $_SESSION['glpi_currenttime'];
-        //            $log->add($inputr);
-        //        }
-
-        //        //report Results or errors
-
-        foreach ($log_actions as $k => $logs) {
-            foreach ($logs as $key => $res) {
-                $inputr['action_field'] = $res['action_field'];
-                $inputr['tickets_id'] = $tickets_id;
-                $inputr['tickettasks_id'] = $tickettasks_id;
-                $inputr['itemtype'] = $res['itemtype'];
-                $inputr['items_id'] = $res['items_id'];
-                $inputr['action'] = $res['action'];
-                $inputr['value'] = $res['value'];
-                $inputr['users_id'] = $_SESSION['glpiID'];
-                $inputr['date'] = $_SESSION['glpi_currenttime'];
-                $log->add($inputr);
-            }
-        }
-        //
-        //        $log = new Log();
-        //        $logs_found = $log->find([
-        //            'tickets_id' => $tickets_id,
-        //            'tickettasks_id' => $tickettasks_id,
-        //        ]);
-        //
-
-        //        $logs_found = $_SESSION['plugin_taskrules']['show_updateresults']['results'];
-        //        $log->deleteByCriteria([
-        //            'tickets_id' => $tickets_id,
-        //            'tickettasks_id' => $tickettasks_id,
-        //        ]);
+        return ['blocks' => $updated_blocks, 'log_actions' => $log_actions];
     }
 
     /**
