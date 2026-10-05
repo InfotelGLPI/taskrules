@@ -469,7 +469,9 @@ class Rule extends CommonDBTM
                         $items_linked = $item_ticket->find([
                             'tickets_id' => $item->input['tickets_id'],
                         ]);
-                        if ($items_linked === false) {
+                        // find() returns an array: an empty one means no linked item. When the
+                        // rule triggers on creation, afterAddTask() warns about it already.
+                        if (count($items_linked) === 0 && $rule->fields['trigger_creation'] != 1) {
                             $koitem = 1;
                         }
                     }
@@ -526,21 +528,18 @@ class Rule extends CommonDBTM
                                     }
                                 }
                             } else {
-                                $item_ticket = new Item_Ticket();
-                                $items_linked = $item_ticket->find([
-                                    'tickets_id' => $item->input['tickets_id'],
-                                ]);
-                                if ($items_linked === false) {
-                                    $koitem = 1;
-                                } else {
-                                    foreach ($items_linked as $item_linked) {
-                                        $results['errors']['not_found'][] = [
-                                            'itemtype' => $item_linked['itemtype'],
-                                            'items_id' => $item_linked['items_id'],
-                                        ];
-                                    }
+                                // No linked item matches the criteria (the items were read above,
+                                // from the stored task: input may not carry tickets_id)
+                                foreach ($items_linked as $item_linked) {
+                                    $results['errors']['not_found'][] = [
+                                        'itemtype' => $item_linked['itemtype'],
+                                        'items_id' => $item_linked['items_id'],
+                                    ];
                                 }
                             }
+                        } else {
+                            // find() returns an array: an empty one means no linked item
+                            $koitem = 1;
                         }
                         if ($koitem == 1) {
                             $errormsg = __('Warning : No items linked with this ticket', 'taskrules');
@@ -594,7 +593,8 @@ class Rule extends CommonDBTM
                         $items_linked = $item_ticket->find([
                             'tickets_id' => $item->fields['tickets_id'],
                         ]);
-                        if (!$items_linked) {
+                        // When the rule triggers on update, afterUpdateTask() warns about it already
+                        if (!$items_linked && $rule->fields['trigger_update'] != 1) {
                             $koitem = 1;
                         }
                     }
@@ -650,20 +650,17 @@ class Rule extends CommonDBTM
                                         }
                                     }
                                 }
+                            } elseif (count($items_linked) === 0) {
+                                // find() returns an array: an empty one means no linked item
+                                $koitem = 1;
                             } else {
-                                $item_ticket = new Item_Ticket();
-                                $items_linked = $item_ticket->find([
-                                    'tickets_id' => $item->input['tickets_id'],
-                                ]);
-                                if ($items_linked === false) {
-                                    $koitem = 1;
-                                } else {
-                                    foreach ($items_linked as $item_linked) {
-                                        $results['errors']['not_found'][] = [
-                                            'itemtype' => $item_linked['itemtype'],
-                                            'items_id' => $item_linked['items_id'],
-                                        ];
-                                    }
+                                // No linked item matches the criteria (the items were read above,
+                                // from the stored task: the input of an update carries no tickets_id)
+                                foreach ($items_linked as $item_linked) {
+                                    $results['errors']['not_found'][] = [
+                                        'itemtype' => $item_linked['itemtype'],
+                                        'items_id' => $item_linked['items_id'],
+                                    ];
                                 }
                             }
                             if ($koitem == 1) {

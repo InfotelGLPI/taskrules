@@ -90,7 +90,7 @@ if (isset($_POST["add"])) {
         unset($_POST[$criterianame]);
     }
 
-    $input['taskrules_id'] = $_POST['id'];
+    $input['taskrules_id'] = (int) $_POST['id'];
 
     if (!$cond->getFromDBByCrit(['taskrules_id' => $input['taskrules_id']])) {
         $cond->add($input);
@@ -102,9 +102,7 @@ if (isset($_POST["add"])) {
     $rule->update($_POST);
     Html::back();
 } else {
-    Html::header(_n('Task rule', 'Task rules', 2, 'taskrules'), $_SERVER['PHP_SELF'], 'config', Rule::class);
-
-    $rule->showForm();
-
-    Html::footer();
+    // A rule is edited in the tab of its task template (Rule::showForm($tasktemplates_id)):
+    // there is nothing to show on its own, a direct GET used to end on a fatal error
+    Html::redirect(TaskTemplate::getSearchURL());
 }
