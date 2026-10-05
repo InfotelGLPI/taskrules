@@ -32,6 +32,10 @@ namespace GlpiPlugin\Taskrules\Tests\Unit;
 use GlpiPlugin\Taskrules\Rule;
 use PHPUnit\Framework\TestCase;
 
+/**
+ * The add tests exercise Rule::filterInput(), the database-free part of prepareInputForAdd():
+ * the task template checks (existing, readable, not used by another rule) need a database.
+ */
 class RulePrepareInputTest extends TestCase
 {
     private function makeRule(): Rule
@@ -43,29 +47,25 @@ class RulePrepareInputTest extends TestCase
 
     public function testPrepareInputForAddFiltersUnknownFields(): void
     {
-        $rule = $this->makeRule();
-
-        $result = $rule->prepareInputForAdd([
+        $result = Rule::filterInput([
             'active'           => 1,
             'malicious_field'  => 'injected',
             'tasktemplates_id' => 5,
-        ]);
+        ], false);
 
         $this->assertArrayNotHasKey('malicious_field', $result);
     }
 
     public function testPrepareInputForAddKeepsWhitelistedFields(): void
     {
-        $rule = $this->makeRule();
-
-        $result = $rule->prepareInputForAdd([
+        $result = Rule::filterInput([
             'active'            => 1,
             'preventcreation'   => 0,
             'preventchange'     => 0,
             'trigger_creation'  => 1,
             'trigger_update'    => 0,
             'tasktemplates_id'  => 3,
-        ]);
+        ], false);
 
         $this->assertArrayHasKey('active', $result);
         $this->assertArrayHasKey('trigger_creation', $result);
@@ -74,22 +74,18 @@ class RulePrepareInputTest extends TestCase
 
     public function testPrepareInputForAddEncodesUsedItemtypes(): void
     {
-        $rule = $this->makeRule();
-
-        $result = $rule->prepareInputForAdd([
+        $result = Rule::filterInput([
             'used_itemtypes' => ['Computer', 'Monitor'],
-        ]);
+        ], false);
 
         $this->assertSame('["Computer","Monitor"]', $result['used_itemtypes']);
     }
 
     public function testPrepareInputForAddWithEmptyUsedItemtypesEncodesEmptyArray(): void
     {
-        $rule = $this->makeRule();
-
-        $result = $rule->prepareInputForAdd([
+        $result = Rule::filterInput([
             'active' => 1,
-        ]);
+        ], false);
 
         $this->assertSame('[]', $result['used_itemtypes']);
     }

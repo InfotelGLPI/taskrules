@@ -764,15 +764,34 @@ class Rule extends CommonDBTM
 
     public function prepareInputForAdd($input)
     {
-        $allowed = ['tasktemplates_id', 'used_itemtypes', 'active', 'preventcreation',
-            'preventchange', 'trigger_creation', 'trigger_update', 'state_action',
-            'states_id', 'location_action', 'locations_id', 'contact_action',
-            'user_action', 'group_action'];
-        $input = array_intersect_key($input, array_flip($allowed));
+        $input = self::filterInput($input, false);
 
         if (!$this->isTaskTemplateAvailable((int) ($input['tasktemplates_id'] ?? 0), 0)) {
             return false;
         }
+
+        return parent::prepareInputForAdd($input);
+    }
+
+    /**
+     * Whitelist of the fields a rule may be written with, and normalisation of the used
+     * itemtypes. Pure function: no database access, the task template checks are done by
+     * prepareInputForAdd() / prepareInputForUpdate().
+     *
+     * @param array<string, mixed> $input
+     *
+     * @return array<string, mixed>
+     */
+    public static function filterInput(array $input, bool $is_update): array
+    {
+        $allowed = ['tasktemplates_id', 'used_itemtypes', 'active', 'preventcreation',
+            'preventchange', 'trigger_creation', 'trigger_update', 'state_action',
+            'states_id', 'location_action', 'locations_id', 'contact_action',
+            'user_action', 'group_action'];
+        if ($is_update) {
+            $allowed[] = 'id';
+        }
+        $input = array_intersect_key($input, array_flip($allowed));
 
         if (!empty($input['used_itemtypes'])) {
             // Keep only known itemtypes: prevents persisting an arbitrary class name
@@ -783,7 +802,7 @@ class Rule extends CommonDBTM
             $input['used_itemtypes'] = json_encode([]);
         }
 
-        return parent::prepareInputForAdd($input);
+        return $input;
     }
 
     /**
@@ -825,25 +844,12 @@ class Rule extends CommonDBTM
      */
     public function prepareInputForUpdate($input)
     {
-        $allowed = ['id', 'tasktemplates_id', 'used_itemtypes', 'active', 'preventcreation',
-            'preventchange', 'trigger_creation', 'trigger_update', 'state_action',
-            'states_id', 'location_action', 'locations_id', 'contact_action',
-            'user_action', 'group_action'];
-        $input = array_intersect_key($input, array_flip($allowed));
+        $input = self::filterInput($input, true);
 
         if (isset($input['tasktemplates_id'])
             && (int) $input['tasktemplates_id'] !== (int) ($this->fields['tasktemplates_id'] ?? 0)
             && !$this->isTaskTemplateAvailable((int) $input['tasktemplates_id'], (int) $this->getID())) {
             return false;
-        }
-
-        if (!empty($input['used_itemtypes'])) {
-            // Keep only known itemtypes: prevents persisting an arbitrary class name
-            // later instantiated via `new $itemtype()` in Condition::showCriteriasForm.
-            $itemtypes = array_values(array_intersect((array) $input['used_itemtypes'], Condition::$types));
-            $input['used_itemtypes'] = json_encode($itemtypes);
-        } else {
-            $input['used_itemtypes'] = json_encode([]);
         }
 
         return parent::prepareInputForUpdate($input);
