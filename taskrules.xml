@@ -1,59 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <root>
-   <name>TaskRules</name>
-   <key>taskrules</key>
-   <!-- stable, beta, development, alpha, ... -->
-   <state>stable</state>
-<!--   <logo>https://raw.githubusercontent.com/pluginsGLPI/taskrules/master/{LNAME}.png</logo>-->
-   <description>
-      <short>
-         <!-- Add as many lang tag you want -->
-         <en>Automation of actions on ticket tasks</en>
-         <fr>Automatisation d'actions sur des tâches de ticket</fr>
-      </short>
-      <long>
-         <!-- Add as many lang tag you want -->
-         <en>The TaskRules plugin automates updates to the inventory items (assets) linked to a ticket whenever a task is added to that ticket, or when the task's status changes to "Done". Each rule is attached to a task template: as soon as a ticket task using that template is created or completed, the rule evaluates its conditions against the assets linked to the ticket, then applies the configured actions (change of status, location, user, group, or contact).
-         </en>
-         <fr>Le plugin TaskRules permet d'automatiser la mise à jour des éléments d'inventaire (matériels) liés à un ticket lorsqu'une tâche est ajoutée à ce ticket ou que son statut passe à « Fait ». Chaque règle est attachée à un modèle de tâche  : dès qu'une tâche de ticket utilisant ce modèle est créée ou clôturée, la règle évalue ses conditions sur les matériels liés au ticket, puis applique les actions configurées (changement de statut, de localisation, d'utilisateur, de groupe, de contact).
-         </fr>
-      </long>
-   </description>
-   <homepage>https://github.com/pluginsGLPI/taskrules</homepage>
-   <download>https://github.com/pluginsGLPI/taskrules/releases</download>
-   <issues>https://github.com/pluginsGLPI/taskrules/issues</issues>
-   <readme>https://github.com/pluginsGLPI/taskrules/blob/master/README.md</readme>
-   <authors>
-      <!-- Add as many author tag you want -->
-      <author>Infotel</author>
-      <author>Edmond Doudard</author>
-   </authors>
-   <versions>
-      <!-- Add as many version tag you want -->
-       <version>
-           <num>2.0.2</num>
-           <!-- Add as many compatibility tag you want -->
-           <compatibility>11.0</compatibility>
-           <download_url>https://github.com/InfotelGLPI/taskrules/releases/download/2.0.2/taskrules_2.0.2.tar.bz2</download_url>
-       </version>
-
-   </versions>
-   <langs>
-      <!-- Add as many lang tag you want -->
-      <lang>fr_FR</lang>
-   </langs>
-   <license>GPL V3+</license>
-   <!--tags>
-      <en>
-         <tag>One tag</tag>
-         <tag>Another tag</tag>
-      </en>
-      <fr>
-         <tag>Un tag</tag>
-         <tag>Un autre tag</tag>
-      </fr>
-   </tags-->
-   <!--screenshots>
-      <screenshot>https://github.com/pluginsGLPI/fields/raw/master/screenshot.png</screenshot>
-      <screenshot>https://github.com/pluginsGLPI/fields/raw/master/screenshot2.png</screenshot>
-   </screenshots-->
+    <name>TaskRules</name>
+    <key>taskrules</key>
+    <state>stable</state>
+    <description>
+        <short>
+            <fr><![CDATA[Mise à jour automatique des matériels liés à un ticket lors de l'ajout ou de la réalisation d'une tâche]]></fr>
+            <en><![CDATA[Automatic update of the assets linked to a ticket when a task is added or done]]></en>
+        </short>
+        <long>
+            <fr><![CDATA[Ce plugin automatise la mise à jour des éléments d'inventaire (matériels) liés à un ticket lorsqu'une tâche est ajoutée à ce ticket ou que son statut passe à « Fait ».<br />Chaque règle est attachée à un modèle de tâche : dès qu'une tâche de ticket utilisant ce modèle est créée ou réalisée, la règle évalue ses conditions sur les matériels liés au ticket, puis applique les actions configurées.<br />Caractéristiques :<br />- Règles rattachées aux modèles de tâche<br />- Déclenchement à la création de la tâche ou à son passage à « Fait »<br />- Conditions évaluées sur les matériels liés au ticket<br />- Actions : changement de statut, de localisation, d'utilisateur, de groupe ou de contact]]></fr>
+            <en><![CDATA[This plugin automates updates to the inventory items (assets) linked to a ticket when a task is added to the ticket or its status changes to "Done".<br />Each rule is attached to a task template: as soon as a ticket task using that template is created or done, the rule evaluates its conditions against the assets linked to the ticket, then applies the configured actions.<br />Characteristics:<br />- Rules attached to task templates<br />- Triggered when the task is created or set to "Done"<br />- Conditions evaluated on the assets linked to the ticket<br />- Actions: change of status, location, user, group or contact]]></en>
+        </long>
+    </description>
+    <homepage>https://github.com/InfotelGLPI/taskrules</homepage>
+    <download>https://github.com/InfotelGLPI/taskrules/releases</download>
+    <issues>https://github.com/InfotelGLPI/taskrules/issues</issues>
+    <readme>https://github.com/InfotelGLPI/taskrules/blob/main/README.md</readme>
+    <authors>
+        <author>Edmond Doudard</author>
+        <author>Infotel</author>
+    </authors>
+    <versions>
+        <version>
+            <num>2.0.2</num>
+            <compatibility>~11.0</compatibility>
+            <download_url>https://github.com/InfotelGLPI/taskrules/releases/download/2.0.2/taskrules_2.0.2.tar.bz2</download_url>
+        </version>
+    </versions>
+    <langs>
+        <lang>en_GB</lang>
+        <lang>fr_FR</lang>
+    </langs>
+    <license>GPL v3+</license>
+    <tags>
+        <fr>
+            <tag>Tâches</tag>
+            <tag>Règles</tag>
+            <tag>Automatisation</tag>
+            <tag>Inventaire</tag>
+        </fr>
+        <en>
+            <tag>Tasks</tag>
+            <tag>Rules</tag>
+            <tag>Automation</tag>
+            <tag>Inventory</tag>
+        </en>
+    </tags>
 </root>
