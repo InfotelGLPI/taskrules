@@ -25,10 +25,10 @@
  # --------------------------------------------------------------------------
  #}
 
-{# Results of the rule of a task (plugin_taskrules_post_item_form()): one modal per page, its
-   body filled by public/scripts/task_results.js from ajax/generateresult.php. The marker
-   carries the task whose results are pending, or none: the task states are then only
-   synchronised (data-taskrules-task-states). #}
+{# Results of the rule of a task (plugin_taskrules_post_item_form()): one modal per page. The
+   marker carries the results of the task just saved, rendered with the page (Log::showResults(),
+   escaped by its own template), that public/scripts/task_results.js moves into the modal and
+   shows; without results, the task states are only synchronised (data-task-states). #}
 {% if not modal_rendered %}
     <div id="taskrules_results" class="modal fade" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-xl">
@@ -43,8 +43,10 @@
     </div>
 {% endif %}
 <div class="d-none" data-taskrules-results
-     data-url="{{ url }}"
-     data-pending="{{ pending_task|default(0) }}"
      data-task-states="{{ task_states|json_encode }}"
      data-done-label="{{ __('Done') }}"
-     data-todo-label="{{ __('To do') }}"></div>
+     data-todo-label="{{ __('To do') }}">
+    {% if results_html is not empty %}
+        <template>{{ results_html|raw }}</template>
+    {% endif %}
+</div>

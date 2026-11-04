@@ -148,6 +148,42 @@ function plugin_taskrules_updateitem(CommonDBTM $item)
     Rule::afterUpdateTask($item);
 }
 
+/**
+ * Task whose rule results wait to be shown (set by Rule::afterAddTask() / afterUpdateTask()).
+ *
+ * @return int 0 when no result is pending
+ */
+function plugin_taskrules_get_pending_task(): int
+{
+    $tickettasks_id = $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'] ?? 0;
+    return is_int($tickettasks_id) && $tickettasks_id > 0 ? $tickettasks_id : 0;
+}
+
+/**
+ * Results modal of the rules (one per page, whatever the number of tasks displayed), with the
+ * results of the pending task when given: they are rendered with the page, so the modal opens
+ * at once, without an extra AJAX round trip.
+ *
+ * @param array<int, bool> $task_states states of the tasks a rule may change
+ */
+function plugin_taskrules_display_results_modal(int $pending_task, array $task_states = []): void
+{
+    static $rendered = false;
+
+    $results_html = '';
+    if ($pending_task > 0) {
+        unset($_SESSION['plugin_taskrules']['show_updateresults']);
+        $results_html = Log::renderPendingResults($pending_task);
+    }
+
+    TemplateRenderer::getInstance()->display('@taskrules/results_modal.html.twig', [
+        'modal_rendered' => $rendered,
+        'results_html'   => $results_html,
+        'task_states'    => $task_states,
+    ]);
+    $rendered = true;
+}
+
 function plugin_taskrules_post_show_item($params)
 {
     if (!Session::haveRight("plugin_taskrules", READ)) {
@@ -156,6 +192,13 @@ function plugin_taskrules_post_show_item($params)
     $item = $params['item'];
     if (!($item instanceof TicketTask) || $item->isNewItem()) {
         return;
+    }
+
+    // The timeline shows the task just saved: its results are shown now, not when a task
+    // form is opened later (plugin_taskrules_post_item_form() only runs for the forms)
+    if (Session::haveRight("plugin_taskrules", UPDATE)
+        && plugin_taskrules_get_pending_task() === (int) $item->fields['id']) {
+        plugin_taskrules_display_results_modal((int) $item->fields['id']);
     }
     if (!isset($item->fields['tasktemplates_id']) || $item->fields['tasktemplates_id'] <= 0) {
         return;
@@ -174,25 +217,14 @@ function plugin_taskrules_post_show_item($params)
 
 function plugin_taskrules_post_item_form($params)
 {
-    // Same right as ajax/generateresult.php, which the results modal calls: a READ-only
-    // profile used to get the modal and a silent 403 in it
+    // Results of the rules are only shown to the profiles that can update them
     if (!Session::haveRight("plugin_taskrules", UPDATE)
         || !($params['item'] instanceof TicketTask)) {
         return;
     }
 
-    static $rendered = false;
-
-    $pending_task = 0;
-    if (isset($_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'])
-        && is_int($_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'])
-        && $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'] > 0) {
-        $pending_task = $_SESSION['plugin_taskrules']['show_updateresults']['tickettasks_id'];
-        unset($_SESSION['plugin_taskrules']['show_updateresults']);
-        // One-shot marker consumed by ajax/generateresult.php: the endpoint only renders the
-        // results of a task whose rule was actually triggered by a hook
-        $_SESSION['plugin_taskrules']['pending_results'][$pending_task] = true;
-    }
+    // Results still pending (the task just saved was not shown in a timeline)
+    $pending_task = plugin_taskrules_get_pending_task();
 
     // States of the tasks of the ticket a rule may change, synchronised in the timeline
     $task_states = [];
@@ -214,12 +246,5 @@ function plugin_taskrules_post_item_form($params)
         return;
     }
 
-    // One modal for the page, whatever the number of task forms displayed
-    TemplateRenderer::getInstance()->display('@taskrules/results_modal.html.twig', [
-        'modal_rendered' => $rendered,
-        'url'            => PLUGIN_TASKRULES_WEBDIR . '/ajax/generateresult.php',
-        'pending_task'   => $pending_task,
-        'task_states'    => $task_states,
-    ]);
-    $rendered = true;
+    plugin_taskrules_display_results_modal($pending_task, $task_states);
 }

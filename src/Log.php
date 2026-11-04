@@ -143,6 +143,43 @@ class Log extends CommonDBTM
     }
 
     /**
+     * Results of the rule of a task just saved, rendered with the page that follows the save.
+     *
+     * The actions are run once, by the TicketTask hooks (Rule::afterAddTask() /
+     * afterUpdateTask()), which keep their results in the session: rendering them here, in
+     * the page, spares the extra AJAX round trip the results modal used to wait for.
+     *
+     * @return string empty when there is nothing to show for this task
+     */
+    public static function renderPendingResults(int $tickettasks_id): string
+    {
+        $tickettask = new \TicketTask();
+        if ($tickettasks_id <= 0 || !$tickettask->getFromDB($tickettasks_id)) {
+            return '';
+        }
+
+        // The task id comes from the session, the ticket access is replayed all the same
+        $ticket = new Ticket();
+        if (!$ticket->can((int) $tickettask->fields['tickets_id'], READ)) {
+            return '';
+        }
+
+        $rule = new Rule();
+        if (!$rule->getFromDBByCrit(['tasktemplates_id' => $tickettask->fields['tasktemplates_id']])) {
+            return '';
+        }
+
+        $results = $_SESSION['plugin_taskrules']['results'] ?? [];
+        if (!is_array($results) || count($results) === 0) {
+            return '';
+        }
+
+        ob_start();
+        self::showResults($rule, $results, $tickettask->fields['tickets_id'], $tickettasks_id);
+        return (string) ob_get_clean();
+    }
+
+    /**
      * Render the results modal of the actions of a rule. Writes nothing: the log lines
      * are written by the TicketTask hooks (writeLog()).
      */

@@ -28,7 +28,8 @@
 // Ticket timeline (templates/results_modal.html.twig, templates/task_locked.html.twig):
 // - the "done" checkbox of a task whose state is managed by a rule is locked;
 // - the state of the tasks a rule may change is synchronised (checkbox, label, progress);
-// - the results of the rule of a task just saved are loaded into the single results modal.
+// - the results of the rule of a task just saved, rendered with the page, are shown in the
+//   single results modal (no request).
 // The timeline is loaded over AJAX: everything runs again on each AJAX completion, once per
 // marker.
 (function () {
@@ -85,24 +86,16 @@
         }
     }
 
+    // The results are rendered with the page (templates/results_modal.html.twig): no request
     function showResults(marker) {
-        const task_id = parseInt(marker.dataset.pending, 10);
+        const results = marker.querySelector(':scope > template');
         const modal = document.getElementById('taskrules_results');
-        if (!task_id || modal === null) {
+        if (results === null || modal === null) {
             return;
         }
-        $.ajax({
-            type: 'POST',
-            url: marker.dataset.url,
-            data: {tickettasks_id: task_id},
-            success: function (html) {
-                if (!html) {
-                    return;
-                }
-                modal.querySelector('.modal-body').innerHTML = html;
-                bootstrap.Modal.getOrCreateInstance(modal).show();
-            },
-        });
+        const body = modal.querySelector('.modal-body');
+        body.replaceChildren(results.content.cloneNode(true));
+        bootstrap.Modal.getOrCreateInstance(modal).show();
     }
 
     function init() {
