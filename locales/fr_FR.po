@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GLPI - Taskrules 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 13:01+0200\n"
+"POT-Creation-Date: 2026-11-04 11:41+0000\n"
 "PO-Revision-Date: 2026-08-29 13:13+0200\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -18,50 +18,45 @@ msgstr ""
 "X-Generator: Poedit 3.0\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
-#: hook.php:156
-msgid "State managed by a rule"
-msgstr "Statut géré par une règle"
+#: src/Rule.php:829
+msgid "A rule already exists for this task template"
+msgstr ""
 
-#: hook.php:178 src/Rule.php:733
-msgid "Results of changes of linked items"
-msgstr "Résultats des modifications des objets liés"
+#: src/Rule.php:820
+msgid "A task template is required"
+msgstr ""
 
-#: setup.php:98 front/config.form.php:36 front/log.php:36
-#: front/rule.form.php:101 src/Rule.php:57
-msgid "Task rule"
-msgid_plural "Task rules"
-msgstr[0] "Règle de tâches"
-msgstr[1] "Règles de tâches"
+#: ⁨standard input⁩:53
+msgid "Action"
+msgid_plural "Actions"
+msgstr[0] "Action"
+msgstr[1] "Actions"
 
-#: src/Action.php:66 src/Action.php:75 src/Action.php:85 src/Action.php:93
-#: src/Action.php:102 src/Rule.php:308 src/Rule.php:353 src/Rule.php:395
-#: src/Rule.php:408 src/Rule.php:422
-msgid "Do not change"
-msgstr "Ne pas modifier"
+#: src/Rule.php:326
+msgid "Activate when a task is added to the ticket"
+msgstr "Déclencher à l'ajout de la tâche dans le ticket"
 
-#: src/Action.php:67 src/Action.php:76 src/Action.php:86 src/Action.php:94
-#: src/Action.php:103 src/Rule.php:309 src/Rule.php:354 src/Rule.php:396
-#: src/Rule.php:409 src/Rule.php:423
-msgid "Empty the field on the linked item of ticket"
-msgstr "Vider le champ sur les objets liés au ticket"
+#: src/Rule.php:281
+msgid "Active"
+msgstr "Actif"
 
-#: src/Action.php:68 src/Rule.php:310
-msgid "Affect a specific state on the linked item of ticket"
-msgstr "Affecter un statut spécifique sur les objets liés au ticket"
+#: ⁨standard input⁩:64
+msgctxt "button"
+msgid "Add"
+msgstr ""
 
-#: src/Action.php:77 src/Rule.php:355
-msgid "Affect location of ticket requester on the linked item of ticket"
-msgstr "Affecter le lieu du demandeur du ticket sur les objets liés au ticket"
-
-#: src/Action.php:78 src/Rule.php:356
+#: src/Action.php:78 src/Rule.php:406
 msgid "Affect a specific location on the linked item of ticket"
 msgstr "Affecter un lieu spécifique sur les objets liés au ticket"
 
-#: src/Action.php:95 src/Rule.php:410
-msgid "Affect ticket requester on the linked item of ticket"
+#: src/Action.php:68 src/Rule.php:371
+msgid "Affect a specific state on the linked item of ticket"
+msgstr "Affecter un statut spécifique sur les objets liés au ticket"
+
+#: src/Rule.php:450
+msgid "Affect group of the requester on the linked item of ticket"
 msgstr ""
-"Affecter le demandeur du ticket comme utilisateur sur les objets liés au "
-"ticket"
+"Affecter le groupe du demandeur comme groupe sur les objets liés au ticket"
 
 #: src/Action.php:104
 msgid "Affect group of the ticket requester on the linked item of ticket"
@@ -69,49 +64,89 @@ msgstr ""
 "Affecter le groupe demandeur du ticket comme groupe sur les objets liés au "
 "ticket"
 
+#: src/Action.php:77 src/Rule.php:405
+msgid "Affect location of ticket requester on the linked item of ticket"
+msgstr "Affecter le lieu du demandeur du ticket sur les objets liés au ticket"
+
+#: src/Action.php:95 src/Rule.php:445
+msgid "Affect ticket requester on the linked item of ticket"
+msgstr ""
+"Affecter le demandeur du ticket comme utilisateur sur les objets liés au "
+"ticket"
+
+#: ⁨standard input⁩:38
+msgid "Close"
+msgstr ""
+
+#: ⁨standard input⁩:46
+msgid "Condition"
+msgid_plural "Conditions"
+msgstr[0] "Condition"
+msgstr[1] "Conditions"
+
+#: ⁨standard input⁩:43
+msgid "Confirm the definitive deletion of all logs?"
+msgstr ""
+
+#: ⁨standard input⁩:40 ⁨standard input⁩:35
+msgid "Delete a rule"
+msgstr ""
+
+#: src/Action.php:66 src/Action.php:75 src/Action.php:85 src/Action.php:93
+#: src/Action.php:102 src/Rule.php:369 src/Rule.php:403 src/Rule.php:439
+#: src/Rule.php:443 src/Rule.php:448
+msgid "Do not change"
+msgstr "Ne pas modifier"
+
+#: ⁨standard input⁩:49
+msgid "Done"
+msgstr ""
+
+#: ⁨standard input⁩:40
+msgid "Drop logs"
+msgstr "Supprimer les logs"
+
+#: src/Log.php:326 src/Log.php:337
+msgid "Empty the field"
+msgstr "Vider le champ"
+
+#: src/Action.php:67 src/Action.php:76 src/Action.php:86 src/Action.php:94
+#: src/Action.php:103 src/Rule.php:370 src/Rule.php:404 src/Rule.php:440
+#: src/Rule.php:444 src/Rule.php:449
+msgid "Empty the field on the linked item of ticket"
+msgstr "Vider le champ sur les objets liés au ticket"
+
+#: src/Rule.php:566
+msgid "Items not match with rule, task not created"
+msgstr "Les éléments ne correspondent pas à la règle, tâche non créée"
+
+#: src/Rule.php:690
+msgid "Items not match with rule, task not updated"
+msgstr "Les éléments ne correspondent pas à la règle, tâche non mise à jour"
+
+#: ⁨standard input⁩:44
+msgid "Items not updated (insufficient rights)"
+msgstr ""
+
+#: ⁨standard input⁩:29
+msgid "Items not updated (not match with rule)"
+msgstr "Éléments non mis à jour (ne correspondent pas à la règle)"
+
+#: ⁨standard input⁩:59
+msgid "Items updated"
+msgstr "Éléments mis à jour"
+
 #: src/Action.php:117
 msgid "Multiple requesters"
 msgstr "Demandeurs multiples"
 
-#: src/Action.php:145
-msgid "Requester have multiple groups"
-msgstr "Le demandeur a plusieurs groupes"
+#: ⁨standard input⁩:43
+msgid "Parameter"
+msgid_plural "Parameters"
+msgstr[0] "Paramètre"
+msgstr[1] "Paramètres"
 
-#: src/Log.php:273 src/Log.php:284
-msgid "Empty the field"
-msgstr "Vider le champ"
-
-#: src/Rule.php:198
-msgid "Active"
-msgstr "Actif"
-
-#: src/Rule.php:207
-msgid "Prevent task creation on error"
-msgstr "Empêcher la création de la tâche en cas d'erreur"
-
-#: src/Rule.php:217
-msgid ""
-"Prevent the task from changing its status (from \"to do\" to \"done\") in "
-"case of an error"
-msgstr ""
-"Empêcher le changement de statut (de \"à faire\" à \"fait\") de la tâche en "
-"cas d'erreur"
-
-#: src/Rule.php:228
-msgid "Used itemtypes"
-msgstr "Types d'objet utilisés"
-
-#: src/Rule.php:267
-msgid "Activate when a task is added to the ticket"
-msgstr "Déclencher à l'ajout de la tâche dans le ticket"
-
-#: src/Rule.php:276
-msgid "Trigger upon updating the task status from \"to do\" to \"done\""
-msgstr ""
-"Déclencher à la mise à jour du statut de la tâche de \"à faire\" vers \"fait"
-"\""
-
-#: src/Rule.php:341
+#: src/Rule.php:460
 msgid ""
 "Please note that only statuses common to all objects appear if multiple "
 "itemtypes are used."
@@ -119,54 +154,86 @@ msgstr ""
 "Veuillez noter que seuls les statuts communs à tous les objets apparaissent "
 "si plusieurs types sont utilisés."
 
-#: src/Rule.php:424
-msgid "Affect group of the requester on the linked item of ticket"
-msgstr ""
-"Affecter le groupe du demandeur comme groupe sur les objets liés au ticket"
+#: src/Rule.php:286
+msgid "Prevent task creation on error"
+msgstr "Empêcher la création de la tâche en cas d'erreur"
 
-#: src/Rule.php:517 src/Rule.php:583 src/Rule.php:643 src/Rule.php:708
+#: src/Rule.php:292
+msgid ""
+"Prevent the task from changing its status (from \"to do\" to \"done\") in "
+"case of an error"
+msgstr ""
+"Empêcher le changement de statut (de \"à faire\" à \"fait\") de la tâche en "
+"cas d'erreur"
+
+#: src/Action.php:145
+msgid "Requester have multiple groups"
+msgstr "Le demandeur a plusieurs groupes"
+
+#: ⁨standard input⁩:37
+msgid "Results of changes of linked items"
+msgstr "Résultats des modifications des objets liés"
+
+#: ⁨standard input⁩:34
+msgctxt "button"
+msgid "Save"
+msgstr ""
+
+#: ⁨standard input⁩:34
+msgid "See logs"
+msgstr "Voir les logs"
+
+#: ⁨standard input⁩:30
+msgid "State managed by a rule"
+msgstr "Statut géré par une règle"
+
+#: setup.php:104 front/config.form.php:36 front/log.php:36 src/Rule.php:58
+#: ⁨standard input⁩:30
+msgid "Task rule"
+msgid_plural "Task rules"
+msgstr[0] "Règle de tâches"
+msgstr[1] "Règles de tâches"
+
+#: src/Rule.php:822
+msgid "The task template does not exist or is not readable"
+msgstr ""
+
+#: ⁨standard input⁩:50
+msgid "To do"
+msgstr ""
+
+#: ⁨standard input⁩:50
+msgid "Trigger"
+msgid_plural "Triggers"
+msgstr[0] "Déclencheur"
+msgstr[1] "Déclencheurs"
+
+#: src/Rule.php:331
+msgid "Trigger upon updating the task status from \"to do\" to \"done\""
+msgstr ""
+"Déclencher à la mise à jour du statut de la tâche de \"à faire\" vers "
+"\"fait\""
+
+#: ⁨standard input⁩:62
+msgctxt "button"
+msgid "Update"
+msgstr ""
+
+#: src/Rule.php:299
+msgid "Used itemtypes"
+msgstr "Types d'objet utilisés"
+
+#: src/Rule.php:562 src/Rule.php:626 src/Rule.php:686 src/Rule.php:749
 msgid "Warning : No items linked with this ticket"
 msgstr "Avertissement : Aucun objet n'est lié à ce ticket"
 
-#: src/Rule.php:521
-msgid "Items not match with rule, task not created"
-msgstr "Les éléments ne correspondent pas à la règle, tâche non créée"
+#: ⁨standard input⁩:51
+msgid "group"
+msgstr ""
 
-#: src/Rule.php:647
-msgid "Items not match with rule, task not updated"
-msgstr "Les éléments ne correspondent pas à la règle, tâche non mise à jour"
-
-#~ msgid "See logs"
-#~ msgstr "Voir les logs"
-
-#~ msgid "Drop logs"
-#~ msgstr "Supprimer les logs"
-
-#~ msgid "Items not updated (not match with rule)"
-#~ msgstr "Éléments non mis à jour (ne correspondent pas à la règle)"
-
-#~ msgid "Items updated"
-#~ msgstr "Éléments mis à jour"
-
-#~ msgid "Parameter"
-#~ msgid_plural "Parameters"
-#~ msgstr[0] "Paramètre"
-#~ msgstr[1] "Paramètres"
-
-#~ msgid "Condition"
-#~ msgid_plural "Conditions"
-#~ msgstr[0] "Condition"
-#~ msgstr[1] "Conditions"
-
-#~ msgid "Trigger"
-#~ msgid_plural "Triggers"
-#~ msgstr[0] "Déclencheur"
-#~ msgstr[1] "Déclencheurs"
-
-#~ msgid "Action"
-#~ msgid_plural "Actions"
-#~ msgstr[0] "Action"
-#~ msgstr[1] "Actions"
+#: ⁨standard input⁩:47
+msgid "rule"
+msgstr ""
 
 #~ msgid "Multiple group requesters"
 #~ msgstr "Groupes de demandeurs multiples"

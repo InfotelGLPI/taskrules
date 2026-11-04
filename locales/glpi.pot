@@ -1,126 +1,225 @@
 # SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR Taskrules Development Team
-# This file is distributed under the same license as the GLPI - Taskrules plugin package.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
 # FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
 #
 #, fuzzy
 msgid ""
 msgstr ""
-"Project-Id-Version: GLPI - Taskrules plugin 1.0.0\n"
+"Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-08-29 13:01+0200\n"
+"POT-Creation-Date: 2026-11-04 11:41+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
 
-#: hook.php:156
-msgid "State managed by a rule"
+#: src/Rule.php:829
+msgid "A rule already exists for this task template"
 msgstr ""
 
-#: hook.php:178 src/Rule.php:733
-msgid "Results of changes of linked items"
+#: src/Rule.php:820
+msgid "A task template is required"
 msgstr ""
 
-#: setup.php:98 front/config.form.php:36 front/log.php:36
-#: front/rule.form.php:101 src/Rule.php:57
-msgid "Task rule"
-msgid_plural "Task rules"
+#: ⁨standard input⁩:53
+msgid "Action"
+msgid_plural "Actions"
 msgstr[0] ""
 msgstr[1] ""
 
-#: src/Action.php:66 src/Action.php:75 src/Action.php:85 src/Action.php:93
-#: src/Action.php:102 src/Rule.php:308 src/Rule.php:353 src/Rule.php:395
-#: src/Rule.php:408 src/Rule.php:422
-msgid "Do not change"
+#: src/Rule.php:326
+msgid "Activate when a task is added to the ticket"
 msgstr ""
 
-#: src/Action.php:67 src/Action.php:76 src/Action.php:86 src/Action.php:94
-#: src/Action.php:103 src/Rule.php:309 src/Rule.php:354 src/Rule.php:396
-#: src/Rule.php:409 src/Rule.php:423
-msgid "Empty the field on the linked item of ticket"
+#: src/Rule.php:281
+msgid "Active"
 msgstr ""
 
-#: src/Action.php:68 src/Rule.php:310
-msgid "Affect a specific state on the linked item of ticket"
+#: ⁨standard input⁩:64
+msgctxt "button"
+msgid "Add"
 msgstr ""
 
-#: src/Action.php:77 src/Rule.php:355
-msgid "Affect location of ticket requester on the linked item of ticket"
-msgstr ""
-
-#: src/Action.php:78 src/Rule.php:356
+#: src/Action.php:78 src/Rule.php:406
 msgid "Affect a specific location on the linked item of ticket"
 msgstr ""
 
-#: src/Action.php:95 src/Rule.php:410
-msgid "Affect ticket requester on the linked item of ticket"
+#: src/Action.php:68 src/Rule.php:371
+msgid "Affect a specific state on the linked item of ticket"
+msgstr ""
+
+#: src/Rule.php:450
+msgid "Affect group of the requester on the linked item of ticket"
 msgstr ""
 
 #: src/Action.php:104
 msgid "Affect group of the ticket requester on the linked item of ticket"
 msgstr ""
 
+#: src/Action.php:77 src/Rule.php:405
+msgid "Affect location of ticket requester on the linked item of ticket"
+msgstr ""
+
+#: src/Action.php:95 src/Rule.php:445
+msgid "Affect ticket requester on the linked item of ticket"
+msgstr ""
+
+#: ⁨standard input⁩:38
+msgid "Close"
+msgstr ""
+
+#: ⁨standard input⁩:46
+msgid "Condition"
+msgid_plural "Conditions"
+msgstr[0] ""
+msgstr[1] ""
+
+#: ⁨standard input⁩:43
+msgid "Confirm the definitive deletion of all logs?"
+msgstr ""
+
+#: ⁨standard input⁩:40 ⁨standard input⁩:35
+msgid "Delete a rule"
+msgstr ""
+
+#: src/Action.php:66 src/Action.php:75 src/Action.php:85 src/Action.php:93
+#: src/Action.php:102 src/Rule.php:369 src/Rule.php:403 src/Rule.php:439
+#: src/Rule.php:443 src/Rule.php:448
+msgid "Do not change"
+msgstr ""
+
+#: ⁨standard input⁩:49
+msgid "Done"
+msgstr ""
+
+#: ⁨standard input⁩:40
+msgid "Drop logs"
+msgstr ""
+
+#: src/Log.php:326 src/Log.php:337
+msgid "Empty the field"
+msgstr ""
+
+#: src/Action.php:67 src/Action.php:76 src/Action.php:86 src/Action.php:94
+#: src/Action.php:103 src/Rule.php:370 src/Rule.php:404 src/Rule.php:440
+#: src/Rule.php:444 src/Rule.php:449
+msgid "Empty the field on the linked item of ticket"
+msgstr ""
+
+#: src/Rule.php:566
+msgid "Items not match with rule, task not created"
+msgstr ""
+
+#: src/Rule.php:690
+msgid "Items not match with rule, task not updated"
+msgstr ""
+
+#: ⁨standard input⁩:44
+msgid "Items not updated (insufficient rights)"
+msgstr ""
+
+#: ⁨standard input⁩:29
+msgid "Items not updated (not match with rule)"
+msgstr ""
+
+#: ⁨standard input⁩:59
+msgid "Items updated"
+msgstr ""
+
 #: src/Action.php:117
 msgid "Multiple requesters"
+msgstr ""
+
+#: ⁨standard input⁩:43
+msgid "Parameter"
+msgid_plural "Parameters"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Rule.php:460
+msgid ""
+"Please note that only statuses common to all objects appear if multiple "
+"itemtypes are used."
+msgstr ""
+
+#: src/Rule.php:286
+msgid "Prevent task creation on error"
+msgstr ""
+
+#: src/Rule.php:292
+msgid ""
+"Prevent the task from changing its status (from \"to do\" to \"done\") in "
+"case of an error"
 msgstr ""
 
 #: src/Action.php:145
 msgid "Requester have multiple groups"
 msgstr ""
 
-#: src/Log.php:273 src/Log.php:284
-msgid "Empty the field"
+#: ⁨standard input⁩:37
+msgid "Results of changes of linked items"
 msgstr ""
 
-#: src/Rule.php:198
-msgid "Active"
+#: ⁨standard input⁩:34
+msgctxt "button"
+msgid "Save"
 msgstr ""
 
-#: src/Rule.php:207
-msgid "Prevent task creation on error"
+#: ⁨standard input⁩:34
+msgid "See logs"
 msgstr ""
 
-#: src/Rule.php:217
-msgid ""
-"Prevent the task from changing its status (from \"to do\" to \"done\") in "
-"case of an error"
+#: ⁨standard input⁩:30
+msgid "State managed by a rule"
 msgstr ""
 
-#: src/Rule.php:228
-msgid "Used itemtypes"
+#: setup.php:104 front/config.form.php:36 front/log.php:36 src/Rule.php:58
+#: ⁨standard input⁩:30
+msgid "Task rule"
+msgid_plural "Task rules"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Rule.php:822
+msgid "The task template does not exist or is not readable"
 msgstr ""
 
-#: src/Rule.php:267
-msgid "Activate when a task is added to the ticket"
+#: ⁨standard input⁩:50
+msgid "To do"
 msgstr ""
 
-#: src/Rule.php:276
+#: ⁨standard input⁩:50
+msgid "Trigger"
+msgid_plural "Triggers"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/Rule.php:331
 msgid "Trigger upon updating the task status from \"to do\" to \"done\""
 msgstr ""
 
-#: src/Rule.php:341
-msgid ""
-"Please note that only statuses common to all objects appear if multiple "
-"itemtypes are used."
+#: ⁨standard input⁩:62
+msgctxt "button"
+msgid "Update"
 msgstr ""
 
-#: src/Rule.php:424
-msgid "Affect group of the requester on the linked item of ticket"
+#: src/Rule.php:299
+msgid "Used itemtypes"
 msgstr ""
 
-#: src/Rule.php:517 src/Rule.php:583 src/Rule.php:643 src/Rule.php:708
+#: src/Rule.php:562 src/Rule.php:626 src/Rule.php:686 src/Rule.php:749
 msgid "Warning : No items linked with this ticket"
 msgstr ""
 
-#: src/Rule.php:521
-msgid "Items not match with rule, task not created"
+#: ⁨standard input⁩:51
+msgid "group"
 msgstr ""
 
-#: src/Rule.php:647
-msgid "Items not match with rule, task not updated"
+#: ⁨standard input⁩:47
+msgid "rule"
 msgstr ""
