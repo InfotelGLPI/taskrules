@@ -25,20 +25,17 @@
    <authors>
       <!-- Add as many author tag you want -->
       <author>Infotel</author>
-       <author>Edmond Doudard</author>
+      <author>Edmond Doudard</author>
    </authors>
    <versions>
       <!-- Add as many version tag you want -->
        <version>
-           <num>2.0.1</num>
+           <num>2.0.2</num>
            <!-- Add as many compatibility tag you want -->
            <compatibility>11.0</compatibility>
+           <download_url>https://github.com/InfotelGLPI/taskrules/releases/download/2.0.2/taskrules_2.0.2.tar.bz2</download_url>
        </version>
-      <version>
-         <num>2.0.0</num>
-         <!-- Add as many compatibility tag you want -->
-         <compatibility>11.0</compatibility>
-      </version>
+
    </versions>
    <langs>
       <!-- Add as many lang tag you want -->
