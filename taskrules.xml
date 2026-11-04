@@ -2,6 +2,7 @@
     <name>TaskRules</name>
     <key>taskrules</key>
     <state>stable</state>
+    <logo>https://raw.githubusercontent.com/InfotelGLPI/taskrules/main/docs/taskrules.png</logo>
     <description>
         <short>
             <fr><![CDATA[Mise à jour automatique des matériels liés à un ticket lors de l'ajout ou de la réalisation d'une tâche]]></fr>
