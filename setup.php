@@ -33,7 +33,7 @@ use Glpi\Plugin\Hooks;
 use GlpiPlugin\Taskrules\Profile;
 use GlpiPlugin\Taskrules\Rule;
 
-define('PLUGIN_TASKRULES_VERSION', '2.0.2');
+define('PLUGIN_TASKRULES_VERSION', '2.0.3');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_TASKRULES_MIN_GLPI_VERSION", "11.0.0");
