@@ -29,6 +29,7 @@
 
 use Glpi\Application\View\TemplateRenderer;
 use Glpi\DBAL\QuerySubQuery;
+use GlpiPlugin\Taskrules\AssetRestriction;
 use GlpiPlugin\Taskrules\Condition;
 use GlpiPlugin\Taskrules\Log;
 use GlpiPlugin\Taskrules\Profile;
@@ -99,6 +100,8 @@ function plugin_taskrules_uninstall()
     }
 
     Condition::uninstall();
+
+    AssetRestriction::uninstall();
 
     Log::uninstall();
 

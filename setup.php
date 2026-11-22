@@ -30,6 +30,8 @@
 global $CFG_GLPI;
 
 use Glpi\Plugin\Hooks;
+use GlpiPlugin\Taskrules\AssetRestriction;
+use GlpiPlugin\Taskrules\Condition;
 use GlpiPlugin\Taskrules\Profile;
 use GlpiPlugin\Taskrules\Rule;
 
@@ -65,6 +67,11 @@ function plugin_init_taskrules()
         $PLUGIN_HOOKS[Hooks::ITEM_ADD]['taskrules']        = [TicketTask::class => 'plugin_taskrules_additem'];
         $PLUGIN_HOOKS[Hooks::PRE_ITEM_UPDATE]['taskrules'] = [TicketTask::class => 'plugin_taskrules_pre_updateitem'];
         $PLUGIN_HOOKS[Hooks::ITEM_UPDATE]['taskrules']     = [TicketTask::class => 'plugin_taskrules_updateitem'];
+
+        /* Profiles that may only update the assets through the task rules (see AssetRestriction) */
+        foreach (Condition::$types as $itemtype) {
+            $PLUGIN_HOOKS[Hooks::ITEM_CAN]['taskrules'][$itemtype] = [AssetRestriction::class, 'itemCan'];
+        }
 
         if (Session::haveRight("plugin_taskrules", READ)
             || Session::haveRight("config", READ)) {
@@ -106,6 +113,9 @@ function plugin_version_taskrules()
         'author'         => 'Doudard Edmond / Infotel',
         'license'        => 'GPLv3+',
         'homepage'       => '',
+        // No inline event handler, javascript: URL nor script without nonce: the plugin works
+        // under the Content Security Policy of GLPI
+        'csp_compliant'  => true,
         'requirements'   => [
             'glpi'       => [
                 'min' => PLUGIN_TASKRULES_MIN_GLPI_VERSION,

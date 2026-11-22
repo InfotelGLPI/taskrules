@@ -146,6 +146,26 @@ class Action extends CommonDBTM
         }
         //Launch Actions
         $item = new $item_linked['itemtype']();
+
+        // From the right check to the last update, these are the plugin's own updates: the
+        // profiles AssetRestriction forbids to edit the assets directly keep their real UPDATE
+        // right here, so the check below still decides.
+        return AssetRestriction::runAsTaskrules(
+            static fn(): array => self::applyActions(
+                $rule,
+                $tickets_id,
+                $tickettasks_id,
+                $item_linked,
+                $item,
+                $users_id,
+                $groups_id,
+                $results,
+            ),
+        );
+    }
+
+    private static function applyActions($rule, $tickets_id, $tickettasks_id, $item_linked, $item, $users_id, $groups_id, array $results): array
+    {
         // Defense in depth: never mutate an asset the current user is not allowed
         // to update (this checks both the UPDATE right and entity access). Covers
         // every caller of launchActions (AJAX endpoint and TicketTask hooks).
