@@ -35,7 +35,7 @@ use GlpiPlugin\Taskrules\Condition;
 use GlpiPlugin\Taskrules\Profile;
 use GlpiPlugin\Taskrules\Rule;
 
-define('PLUGIN_TASKRULES_VERSION', '2.0.3');
+define('PLUGIN_TASKRULES_VERSION', '2.0.4');
 
 // Minimal GLPI version, inclusive
 define("PLUGIN_TASKRULES_MIN_GLPI_VERSION", "11.0.0");
