@@ -106,6 +106,23 @@ class Action extends CommonDBTM
         return $groups[$action] ?? '';
     }
 
+    /**
+     * Whether the actions of a rule may update this item linked to the ticket, as applyActions()
+     * checks it: UPDATE right and entity access of the current user, the restriction of
+     * AssetRestriction lifted as it is for the plugin's own updates.
+     *
+     * @param array{itemtype: string, items_id: int|string} $item_linked Item_Ticket row
+     */
+    public static function canUpdateLinkedItem(array $item_linked): bool
+    {
+        $item = getItemForItemtype($item_linked['itemtype']);
+
+        return $item instanceof CommonDBTM
+            && AssetRestriction::runAsTaskrules(
+                static fn(): bool => $item->can((int) $item_linked['items_id'], UPDATE),
+            );
+    }
+
     public static function launchActions($rule, $tickets_id, $tickettasks_id, $item_linked)
     {
         $results = [];

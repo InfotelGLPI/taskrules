@@ -514,10 +514,43 @@ class Rule extends CommonDBTM
         ];
     }
 
+    /**
+     * Items the actions of the rule apply to but the current user may not update
+     * (Action::applyActions() refuses them): with the "prevent ... in case of an error"
+     * options, an error as a non-matching item is.
+     *
+     * @param array<array<string, mixed>> $items_linked Item_Ticket rows of the ticket
+     * @param array<int|string>           $found_items  ids of the items matching the criteria
+     *
+     * @return string[] names of the refused items
+     */
+    private static function getItemsWithoutUpdateRight(array $items_linked, array $found_items): array
+    {
+        $refused = [];
+        foreach ($items_linked as $item_linked) {
+            $asset = getItemForItemtype($item_linked['itemtype']);
+            if (!$asset
+                || !in_array($item_linked['items_id'], $found_items)
+                || !$asset->getFromDB($item_linked['items_id'])
+                || Action::canUpdateLinkedItem($item_linked)) {
+                continue;
+            }
+            // The name only to a user allowed to read the item
+            $refused[] = sprintf(
+                '%s %s',
+                $asset::getTypeName(1),
+                $asset->can($asset->getID(), READ) ? $asset->getNameID() : '#' . $asset->getID(),
+            );
+        }
+
+        return $refused;
+    }
+
     public static function preAddTask($item)
     {
         $ko = 0;
         $koitem = 0;
+        $refused_items = [];
         if ($item::getType() === TicketTask::getType()) {
             if (isset($item->input['tasktemplates_id'])) {
                 $rule = new self();
@@ -545,6 +578,11 @@ class Rule extends CommonDBTM
                         } else {
                             $ko = 1;
                         }
+                        // The actions run once the task is created: an item they may not update
+                        // is an error too
+                        if ($ko == 0 && $rule->fields['trigger_creation'] == 1) {
+                            $refused_items = self::getItemsWithoutUpdateRight($items_linked, $found_items);
+                        }
                     } else {
                         $item_ticket = new Item_Ticket();
                         $items_linked = $item_ticket->find([
@@ -566,6 +604,15 @@ class Rule extends CommonDBTM
                 $errormsg = __('Items not match with rule, task not created', 'taskrules');
                 Session::addMessageAfterRedirect($errormsg, false, ERROR);
                 // Cancel the TicketTask creation (core aborts add() when input is not an array)
+                $item->input = false;
+                return false;
+            }
+            if ($refused_items !== []) {
+                $errormsg = sprintf(
+                    __('You are not allowed to update %s, task not created', 'taskrules'),
+                    implode(', ', $refused_items),
+                );
+                Session::addMessageAfterRedirect(htmlescape($errormsg), false, ERROR);
                 $item->input = false;
                 return false;
             }
@@ -642,6 +689,7 @@ class Rule extends CommonDBTM
     {
         $ko = 0;
         $koitem = 0;
+        $refused_items = [];
         if ($item::getType() === TicketTask::getType()) {
             if (isset($item->fields['tasktemplates_id'], $item->input['state']) && $item->input['state'] == Planning::DONE) {
                 $rule = new self();
@@ -670,6 +718,11 @@ class Rule extends CommonDBTM
                         } else {
                             $ko = 1;
                         }
+                        // The actions run once the task is done: an item they may not update
+                        // is an error too
+                        if ($ko == 0 && $rule->fields['trigger_update'] == 1) {
+                            $refused_items = self::getItemsWithoutUpdateRight($items_linked, $found_items);
+                        }
                     } else {
                         $item_ticket = new Item_Ticket();
                         $items_linked = $item_ticket->find([
@@ -690,6 +743,15 @@ class Rule extends CommonDBTM
                 $errormsg = __('Items not match with rule, task not updated', 'taskrules');
                 Session::addMessageAfterRedirect($errormsg, false, ERROR);
                 // Block the state change on the TicketTask itself
+                unset($item->input['state']);
+                return false;
+            }
+            if ($refused_items !== []) {
+                $errormsg = sprintf(
+                    __('You are not allowed to update %s, task not updated', 'taskrules'),
+                    implode(', ', $refused_items),
+                );
+                Session::addMessageAfterRedirect(htmlescape($errormsg), false, ERROR);
                 unset($item->input['state']);
                 return false;
             }
